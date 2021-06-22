@@ -1,26 +1,86 @@
 {
   "name": "dot11-components",
-  "version": "0.1.0",
+  "version": "1.0.0",
+  "description": "Components for dot11 apps",
   "private": true,
+  "main": "dist",
+  "files": [
+    "table",
+    "store",
+    "general",
+    "lib",
+    "modals"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rjstacey/dot11-components.git"
+  },
+  "author": "Robert Stacey <rjstacey@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rjstacey/dot11-components/issues"
+  },
+  "homepage": "https://github.com/rjstacey/dot11-components#readme",
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^1.2.35",
+    "@fortawesome/free-regular-svg-icons": "^5.15.3",
+    "@fortawesome/free-solid-svg-icons": "^5.15.3",
+    "@fortawesome/react-fontawesome": "^0.1.14",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^11.2.7",
     "@testing-library/user-event": "^12.8.3",
-    "react": "^17.0.2",
+    "file-saver": "^2.0.5",
+    "lorem-ipsum": "^2.0.3",
+    "re-reselect": "^4.0.0",
     "react-dom": "^17.0.2",
+    "react-draggable": "^4.4.3",
+    "react-dropdown-select": "^4.7.4",
+    "react-modal": "^3.12.1",
     "react-scripts": "4.0.3",
+    "react-virtualized-auto-sizer": "^1.0.5",
     "web-vitals": "^1.1.2"
+  },
+  "peerDependencies": {
+    "@emotion/styled": "^11.1.5",
+    "@reduxjs/toolkit": "^1.5.0",
+    "draft-js": "^0.11.7",
+    "react": "^17.0.0",
+    "react-redux": "^7.2.2",
+    "react-window": "^1.8.5",
+    "redux-logger": "^3.0.6"
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "prebuild": "rm -rf table store general lib modals",
+    "build": "babel src --copy-files --out-dir . --ignore __tests__,spec.js,test.js,stories.js,__snapshots__",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "storybook": "start-storybook -p 6006 -s public",
+    "build-storybook": "build-storybook -s public"
   },
   "eslintConfig": {
     "extends": [
       "react-app",
       "react-app/jest"
+    ],
+    "overrides": [
+      {
+        "files": [
+          "**/*.stories.*"
+        ],
+        "rules": {
+          "import/no-anonymous-default-export": "off"
+        }
+      }
+    ]
+  },
+  "babel": {
+    "presets": [
+      "@babel/preset-env",
+      "@babel/preset-react"
+    ],
+    "plugins": [
+      "@babel/plugin-proposal-class-properties"
     ]
   },
   "browserslist": {
@@ -34,5 +94,18 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.13.10",
+    "@babel/core": "^7.13.10",
+    "@babel/plugin-proposal-class-properties": "^7.13.0",
+    "@babel/preset-env": "^7.13.12",
+    "@babel/preset-react": "^7.12.13",
+    "@storybook/addon-actions": "^6.2.9",
+    "@storybook/addon-essentials": "^6.2.9",
+    "@storybook/addon-links": "^6.2.9",
+    "@storybook/node-logger": "^6.2.9",
+    "@storybook/preset-create-react-app": "^3.1.7",
+    "@storybook/react": "^6.2.9"
   }
 }

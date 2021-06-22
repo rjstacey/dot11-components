@@ -1,0 +1,158 @@
+import PropTypes from 'prop-types'
+import React from 'react'
+import {connect} from 'react-redux'
+import styled from '@emotion/styled'
+
+import {Expander, DoubleExpander} from '../lib/icons'
+import {Checkbox} from '../general/Form'
+import Dropdown from '../general/Dropdown'
+
+import {getSelected, setSelected, toggleSelected} from '../store/selected'
+import {getExpanded, setExpanded, toggleExpanded} from '../store/expanded'
+import {getSortedFilteredIds} from '../store/dataSelectors'
+
+const Selector = styled.div`
+	display: flex;
+	flex-direction: column;
+	border-radius: 3px;
+	align-items: center;
+	:hover,
+	:focus-within {
+		background-color: #ddd;
+	}
+`;
+
+const Container = styled.div`
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+`;
+
+function _ControlHeader({
+	shownIds,
+	selected,
+	setSelected,
+	expanded,
+	setExpanded,
+	anchorEl,
+	customSelectorElement
+}) {
+
+	const allSelected = React.useMemo(() => (
+			shownIds.length > 0 &&	// not if list is empty
+			shownIds.filter(id => !selected.includes(id)).length === 0
+		),
+		[shownIds, selected]
+	);
+
+	const isIndeterminate = !allSelected && selected.length;
+
+	const allExpanded = React.useMemo(() => (
+			expanded &&
+			shownIds.length > 0 &&	// not if list is empty
+			shownIds.filter(id => !expanded.includes(id)).length === 0
+		),
+		[shownIds, expanded]
+	);
+
+	const toggleAllSelected = () => setSelected(selected.length? []: shownIds);
+	const toggleAllExpanded = () => setExpanded(expanded.length? []: shownIds);
+
+	if (!anchorEl)
+		return null;
+	
+	return (
+		<Container>
+			<Selector>
+				<Checkbox
+					title={allSelected? "Clear all": isIndeterminate? "Clear selected": "Select all"}
+					checked={allSelected}
+					indeterminate={isIndeterminate}
+					onChange={toggleAllSelected}
+				/>
+				{customSelectorElement &&
+					<Dropdown
+						style={{display: 'flex', width: '100%', justifyContent: 'center'}}
+						alignLeft
+						anchorEl={anchorEl}
+						children={customSelectorElement}
+					/>}
+			</Selector>
+			{expanded &&
+				<DoubleExpander
+					title="Expand All"
+					open={allExpanded}
+					onClick={toggleAllExpanded}
+				/>
+			}
+		</Container>
+	)
+}
+
+const ControlHeader = connect(
+	(state, ownProps) => ({
+		selected: getSelected(state, ownProps.dataSet),
+		expanded: getExpanded(state, ownProps.dataSet),
+		shownIds: getSortedFilteredIds(state, ownProps.dataSet)
+	}),
+	(dispatch, ownProps) => ({
+		setSelected: ids => dispatch(setSelected(ownProps.dataSet, ids)),
+		setExpanded: ids => dispatch(setExpanded(ownProps.dataSet, ids))
+	})
+)(_ControlHeader);
+
+ControlHeader.propTypes = {
+	dataSet: PropTypes.string.isRequired,
+	anchorEl: PropTypes.oneOfType([PropTypes.element, PropTypes.object]),
+	customSelectorElement: PropTypes.element
+}
+
+function _ControlCell({
+	rowId,
+	selected,
+	toggleSelected,
+	expanded,
+	toggleExpanded
+}) {
+	return (
+		<Container onClick={e => e.stopPropagation()} >
+			<Checkbox
+				title="Select row"
+				checked={selected.includes(rowId)}
+				onChange={() => toggleSelected(rowId)}
+			/>
+			{expanded && 
+				<Expander
+					title="Expand row"
+					open={expanded.includes(rowId)}
+					onClick={() => toggleExpanded(rowId)}
+				/>
+			}
+		</Container>
+	)
+}
+
+_ControlCell.propTypes = {
+	selected: PropTypes.array.isRequired,
+	toggleSelected: PropTypes.func.isRequired,
+	expanded: PropTypes.array,
+	toggleExpanded: PropTypes.func,
+}
+
+const ControlCell = connect(
+	(state, ownProps) => ({
+		selected: getSelected(state, ownProps.dataSet),
+		expanded: getExpanded(state, ownProps.dataSet)
+	}),
+	(dispatch, ownProps) => ({
+		toggleSelected: id => dispatch(toggleSelected(ownProps.dataSet, [id])),
+		toggleExpanded: id => dispatch(toggleExpanded(ownProps.dataSet, [id]))
+	})
+)(_ControlCell)
+
+ControlCell.propTypes = {
+	dataSet: PropTypes.string.isRequired,
+	rowId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired
+}
+
+export {ControlHeader, ControlCell};
