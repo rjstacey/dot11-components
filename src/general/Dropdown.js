@@ -158,11 +158,12 @@ Dropdown.defaultProps = {
 		)
 }
 
-export const ActionButtonDropdown = ({name, title, disabled, ...rest}) =>
+export const ActionButtonDropdown = ({name, label, title, disabled, ...rest}) =>
 	<Dropdown
 		selectRenderer={({isOpen, open, close}) =>
 			<ActionButton
 				name={name}
+				label={label}
 				title={title}
 				disabled={disabled} 
 				onClick={isOpen? close: open}

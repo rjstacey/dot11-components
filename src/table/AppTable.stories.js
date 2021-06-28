@@ -1,69 +1,59 @@
 import { LoremIpsum } from "lorem-ipsum";
 import React from 'react';
-import { configureStore, combineReducers, createSlice, createEntityAdapter } from '@reduxjs/toolkit'
+import { configureStore, combineReducers, createEntityAdapter } from '@reduxjs/toolkit'
 import { createLogger } from 'redux-logger'
 import thunk from 'redux-thunk'
-import { Provider, connect } from 'react-redux'
+import { Provider, useDispatch, useSelector } from 'react-redux'
 
 import {displayDate} from '../lib/utils'
-import sortsSlice, {sortInit, SortDirection, SortType} from '../store/sort'
-import filtersSlice, {filtersInit} from '../store/filters'
-import selectedSlice from '../store/selected'
-import expandedSlice from '../store/expanded'
-import uiSlice from '../store/ui'
+import {appTableCreateSlice} from '../store/appTableData'
+import {SortType} from '../store/sort'
+import {initTableConfig} from '../store/ui'
 
-import AppTable, {ControlHeader, ControlCell, ColumnDropdown, ColumnSelector, ShowFilters, IdSelector, IdFilter} from '.'
+import AppTable, {SelectHeader, SelectCell, SelectExpandHeader, SelectExpandCell, DataColumnHeader, ColumnSelector, ShowFilters, IdSelector, IdFilter} from '.'
+
+const statusOptions = [
+	{value: 0, label: 'Good'},
+	{value: 1, label: 'Bad'},
+	{value: 2, label: 'Ugly'}
+];
+
+const renderStatus = (v) => {
+	const o = statusOptions.find(o => o.value === v);
+	return o? o.label: v;
+}
 
 const fields = {
 	id: {label: 'ID'},
 	Name: {label: 'Name'},
-	Date: {label: 'Date', dataRenderer: displayDate},
+	Date: {
+		label: 'Date',
+		dataRenderer: displayDate,
+		sortType: SortType.DATE
+	},
 	Text: {label: 'Text'},
-	Number: {label: 'Number'},
+	Number: {
+		label: 'Number',
+		sortType: SortType.NUMERIC
+	},
+	Status: {
+		label: 'Status',
+		dataRenderer: renderStatus,
+		options: statusOptions,
+		sortType: SortType.NUMERIC
+	},
 };
-
-/*
- * Generate a filter for each field (table column)
- */
-const defaultFiltersEntries = Object.keys(fields).reduce((entries, dataKey) => {
-	let options;
-	return {...entries, [dataKey]: {options}}
-}, {});
-
-/*
- * Generate object that describes the initial sort state
- */
-const defaultSortEntries = Object.keys(fields).reduce((entries, dataKey) => {
-	let type
-	switch (dataKey) {
-		case 'id':
-		case 'Number':
-			type = SortType.NUMERIC
-			break
-		case 'Date':
-			type = SortType.DATE
-			break
-		default:
-			type = SortType.STRING
-	}
-	const direction = SortDirection.NONE;
-	return {...entries, [dataKey]: {type, direction}}
-}, {});
 
 const dataAdapter = createEntityAdapter({});
 
 const dataSet = 'data';
 
-const slice = createSlice({
+const slice = appTableCreateSlice({
 	name: dataSet,
+	fields,
 	initialState: dataAdapter.getInitialState({
 		valid: false,
-		loading: false,
-		[sortsSlice.name]: sortsSlice.reducer(undefined, sortInit(defaultSortEntries)),
-		[filtersSlice.name]: filtersSlice.reducer(undefined, filtersInit(defaultFiltersEntries)),
-		[selectedSlice.name]: selectedSlice.reducer(undefined, {}),
-		[expandedSlice.name]: expandedSlice.reducer(undefined, {}),
-		[uiSlice.name]: uiSlice.reducer(undefined, {})	
+		loading: false
 	}),
 	reducers: {
 		getPending(state, action) {
@@ -77,44 +67,25 @@ const slice = createSlice({
 		getFailure(state, action) {
 			state.loading = false;
 		},
-	},
-	extraReducers: builder => {
-		builder
-		.addMatcher(
-			(action) => action.type.startsWith(dataSet + '/'),
-			(state, action) => {
-				const sliceAction = {...action, type: action.type.replace(dataSet + '/', '')}
-				state[sortsSlice.name] = sortsSlice.reducer(state[sortsSlice.name], sliceAction);
-				state[filtersSlice.name] = filtersSlice.reducer(state[filtersSlice.name], sliceAction);
-				state[selectedSlice.name] = selectedSlice.reducer(state[selectedSlice.name], sliceAction);
-				state[expandedSlice.name] = expandedSlice.reducer(state[expandedSlice.name], sliceAction);
-				state[uiSlice.name] = uiSlice.reducer(state[uiSlice.name], sliceAction);
-			}
-		)
 	}
 });
 
 const store = configureStore({
-  reducer: combineReducers({[slice.name]: slice.reducer}),
+  reducer: combineReducers({
+  	[slice.name]: slice.reducer
+  }),
   middleware: [thunk, createLogger({collapsed: true})],
   devTools: true
 });
 
-const columns = [
+const tableColumns = [
 	{key: '__ctrl__',
-		width: 30, flexGrow: 0, flexShrink: 0,
-		headerRenderer: p =>
-			<ControlHeader
-				dataSet={dataSet}
-				customSelectorElement=<IdSelector style={{width: '200px'}} dataSet={dataSet} focusOnMount />
-				{...p}
-			/>,
-		cellRenderer: p => <ControlCell dataSet={dataSet} {...p} />},
+		width: 48, flexGrow: 0, flexShrink: 0},
 	{key: 'id', 
 		...fields.id,
 		width: 80, flexGrow: 1, flexShrink: 1, dropdownWidth: 200,
 		headerRenderer: p =>
-			<ColumnDropdown
+			<DataColumnHeader
 				dataSet={dataSet}
 				customFilterElement=<IdFilter dataSet={dataSet} dataKey='id' />
 				{...p}
@@ -125,28 +96,22 @@ const columns = [
 		width: 80, flexGrow: 1, flexShrink: 1, dropdownWidth: 200},
 	{key: 'Date',
 		...fields.Date,
-		width: 200, flexGrow: 1, flexShrink: 1,
-		cellRenderer: ({rowData, dataKey}) => displayDate(rowData[dataKey])},
+		width: 200, flexGrow: 1, flexShrink: 1},
 	{key: 'Text',
 		...fields.Text,
 		width: 200, flexGrow: 1, flexShrink: 1},
 	{key: 'Number',
 		...fields.Number,
 		width: 200, flexGrow: 1, flexShrink: 1},
+	{key: 'Status',
+		...fields.Status,
+		width: 200, flexGrow: 1, flexShrink: 1},
 ];
-
-export default {
-  title: 'Table',
-  component: AppTable,
-  argTypes: {
-  	fixed: {
-  		type: {name: 'boolean'},
-  	}
-  }
-};
 
 const randomDate = (start, end) =>
 	new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+
+const randomStatus = () => Math.round(Math.random() * 2);
 
 const lorem = new LoremIpsum({
   sentencesPerParagraph: {max: 8, min: 4},
@@ -161,12 +126,13 @@ const genData = () =>
 			Name: Math.random().toString(36).slice(2),
 			Date: randomDate(new Date(2010, 0, 1), new Date()),
 			Number: Math.round(Math.random() * 5),
-			Text: lorem.generateSentences(3)
+			Text: lorem.generateSentences(3),
+			Status: randomStatus()
 		}));
 
-const {getPending, getSuccess} = slice.actions;
 const loadData = () =>
 	async (dispatch, getState) => {
+		const {getPending, getSuccess} = slice.actions;
 		if (getState()[dataSet].loading)
 			return;
 		dispatch(getPending());
@@ -174,24 +140,103 @@ const loadData = () =>
 		setTimeout(() => dispatch(getSuccess(data)), 1000)
 	}
 
-const Butt = ({loadData}) =>
-	<button onClick={loadData}>Loader...</button>
-const ConnectedButton = connect(null, {loadData})(Butt)
+const defaultTablesConfig = {
+	default: {
+		fixed: false,
+		columns: ['id', 'Name', 'Date', 'Text', 'Number', 'Status']
+	}
+}
 
-export const Table1 = ({fixed}) =>
-  <Provider store={store}>
-  	<div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '80vh'}}>
-  		<ShowFilters dataSet={dataSet} fields={fields} />
-  		<div style={{width: '100%', flex: 1}}>
-		    <AppTable
-		    	fixed={fixed}
+const LoaderButton = (props) => {
+	const dispatch = useDispatch();
+
+	return <button onClick={() => dispatch(loadData())} {...props}>Loader...</button>
+}
+
+const Table = ({expandable}) => {
+
+	const dispatch = useDispatch();
+	const tablesConfig = useSelector((state) => state[dataSet].ui.tablesConfig);
+
+	React.useEffect(() => {
+		for (const tableView of Object.keys(defaultTablesConfig)) {
+			const tableConfig = tablesConfig[tableView];
+			if (tableConfig)
+				continue;
+			const columns = tableColumns.reduce((cols, c) => {
+				cols[c.key] = {
+					visible: c.key.startsWith('__') || defaultTablesConfig[tableView].columns.includes(c.key),
+					width: c.width
+				}
+				return cols;
+			}, {});
+			const newTableConfig = {
+				fixed: defaultTablesConfig[tableView].fixed,
+				columns
+			}
+			dispatch(initTableConfig(dataSet, tableView, newTableConfig));
+		}
+	}, []);
+
+	const columns = React.useMemo(() => {
+
+		const columns = tableColumns.slice();
+		let headerRenderer, cellRenderer;
+		if (expandable) {
+			headerRenderer = p =>
+				<SelectExpandHeader
+					dataSet={dataSet}
+					customSelectorElement=<IdSelector style={{width: '200px'}} dataSet={dataSet} focusOnMount />
+					{...p}
+				/>;
+			cellRenderer = p => <SelectExpandCell dataSet={dataSet} {...p} />;
+		}
+		else {
+			headerRenderer = p =>
+				<SelectHeader
+					dataSet={dataSet}
+					customSelectorElement=<IdSelector style={{width: '200px'}} dataSet={dataSet} focusOnMount />
+					{...p}
+				/>;
+			cellRenderer = p => <SelectCell dataSet={dataSet} {...p} />;
+		}
+		columns[0] = {...columns[0], headerRenderer, cellRenderer};
+
+		return columns;
+	}, [expandable]);
+
+	return (
+		<div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '80vh'}}>
+			<div style={{display: 'flex', width: '100%', justifyContent: 'space-between'}}>
+				<LoaderButton />
+				<ColumnSelector dataSet={dataSet} columns={columns} />
+			</div>
+			<ShowFilters dataSet={dataSet} fields={fields} />
+			<div style={{width: '100%', flex: 1}}>
+				<AppTable
+					fixed={false}
 					columns={columns}
-					headerHeight={50}
+					headerHeight={46}
 					estimatedRowHeight={50}
 					dataSet={dataSet}
 					rowKey='id'
-			/>
+				/>
+			</div>
 		</div>
-	</div>
-  	<ConnectedButton />
-  </Provider>
+	)
+}
+
+export default {
+	title: 'Table',
+	component: AppTable,
+	argTypes: {
+		expandable: {
+			type: {name: 'boolean'},
+		}
+	}
+};
+
+export const Table1 = (props) =>
+	<Provider store={store}>
+		<Table {...props} />
+	</Provider>

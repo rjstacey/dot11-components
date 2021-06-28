@@ -1,33 +1,27 @@
 import {createSlice} from '@reduxjs/toolkit'
 
-const sliceName = 'ui';
-
 const initialTableConfig = {fixed: false, columns: {}}
 
-const tablesConfigSlice = createSlice({
-	name: sliceName,
+const slice = createSlice({
+	name: 'ui',
 	initialState: {
-  		view: 'default',
-  		tablesConfig: {
-  			default: initialTableConfig
-  		}
+  		tableView: 'default',
+  		tablesConfig: {}
   	},
   	reducers: {
   		setTableView(state, action) {
-  			const {view} = action.payload;
-			state.view = view;
-			if (!state.tablesConfig[view])
-				state.tablesConfig[view] = initialTableConfig;
+  			const {tableView} = action.payload;
+			state.tableView = tableView;
   		},
 		initTableConfig(state, action) {
-			const {view, fixed, columns} = action.payload;
-			state.tablesConfig[view] = {fixed, columns};
+			const {tableView, tableConfig} = action.payload;
+			state.tablesConfig[tableView] = tableConfig;
 		},
 		upsertTableColumns(state, action) {
-			const {view, columns} = action.payload;
-			if (!state.tablesConfig[view])
-				state.tablesConfig[view] = {fixed: false, columns: {}}; 
-			const tableConfig = state.tablesConfig[view]
+			const {tableView, columns} = action.payload;
+			if (!state.tablesConfig[tableView])
+				state.tablesConfig[tableView] = initialTableConfig; 
+			const tableConfig = state.tablesConfig[tableView]
 			for (const key of Object.keys(columns)) {
 				if (!tableConfig.columns[key])
 					tableConfig.columns[key] = {}
@@ -35,25 +29,24 @@ const tablesConfigSlice = createSlice({
 			}
 		},
 		upsertTableColumn(state, action) {
-			const {view, column} = action.payload;
-			if (!state.tablesConfig[view])
-				state.tablesConfig[view] = initialTableConfig; 
-			const tableConfig = state.tablesConfig[view]
+			const {tableView, column} = action.payload;
+			if (!state.tablesConfig[tableView])
+				state.tablesConfig[tableView] = initialTableConfig; 
+			const tableConfig = state.tablesConfig[tableView]
 			const key = column.key;
 			if (!tableConfig.columns[key])
 				tableConfig.columns[key] = {}
 			tableConfig.columns[key] = {...tableConfig.columns[key], ...column}
 		},
-		toggleTableFixed(state, action) {
-			const {view} = action.payload;
-			state.tablesConfig[view].fixed = !state.tablesConfig[view].fixed;
+		adjustTableColumnWidth(state, action) {
+			const {tableView, key, delta} = action.payload;
+			const tableConfig = state.tablesConfig[tableView];
+			const column = tableConfig.columns[key];
+			column.width = Math.max(0, column.width + delta);
 		},
-		setTableColumnVisible(state, action) {
-			const {view, key, visible} = action.payload;
-			if (!state.tablesConfig[view])
-				state.tablesConfig[view] = initialTableConfig;
-			const col = state.tablesConfig[view].columns[key];
-			state.tablesConfig[view].columns[key] = {...col, visible}
+		toggleTableFixed(state, action) {
+			const {tableView} = action.payload;
+			state.tablesConfig[tableView].fixed = !state.tablesConfig[tableView].fixed;
 		},
 		setProperty(state, action) {
 			const {property, value} = action.payload;
@@ -62,10 +55,14 @@ const tablesConfigSlice = createSlice({
   	}
 });
 
-export default tablesConfigSlice;
+export default slice;
 
-export const setTableView = (dataSet, view) => ({type: dataSet + '/' + sliceName + '/setTableView', payload: {view}});
-export const upsertTableColumns = (dataSet, view, columns) => ({type: dataSet + '/' + sliceName + '/upsertTableColumns', payload: {view, columns}});
-export const upsertTableColumn = (dataSet, view, column) => ({type: dataSet + '/' + sliceName + '/upsertTableColumn', payload: {view, column}});
-export const toggleTableFixed = (dataSet, view) => ({type: dataSet + '/' + sliceName + '/toggleTableFixed', payload: {view}});
-export const setProperty = (dataSet, property, value) => ({type: dataSet + '/' + sliceName + '/setProperty', payload: {property, value}});
+/* Actions */
+export const initTableConfig = (dataSet, tableView, tableConfig) => ({type: dataSet + '/' + slice.name + '/initTableConfig', payload: {tableView, tableConfig}})
+export const setTableView = (dataSet, tableView) => ({type: dataSet + '/' + slice.name + '/setTableView', payload: {tableView}});
+export const toggleTableFixed = (dataSet, tableView) => ({type: dataSet + '/' + slice.name + '/toggleTableFixed', payload: {tableView}});
+export const upsertTableColumns = (dataSet, tableView, columns) => ({type: dataSet + '/' + slice.name + '/upsertTableColumns', payload: {tableView, columns}});
+export const upsertTableColumn = (dataSet, tableView, column) => ({type: dataSet + '/' + slice.name + '/upsertTableColumn', payload: {tableView, column}});
+export const adjustTableColumnWidth = (dataSet, tableView, key, delta) => ({type: dataSet + '/' + slice.name + '/adjustTableColumnWidth', payload: {tableView, key, delta}});
+export const setProperty = (dataSet, property, value) => ({type: dataSet + '/' + slice.name + '/setProperty', payload: {property, value}});
+

@@ -3,7 +3,7 @@ import React from 'react'
 import {connect} from 'react-redux'
 import styled from '@emotion/styled'
 
-import {getData, getSortedFilteredIds} from '../store/dataSelectors'
+import {getIds, getSortedFilteredIds} from '../store/dataSelectors'
 import {getFilters, removeFilter, clearAllFilters} from '../store/filters'
 
 const ActiveFilterLabel = styled.label`
@@ -155,7 +155,7 @@ export default connect(
 	(state, ownProps) => {
 		const {dataSet} = ownProps
 		return {
-			totalRows: getData(state, dataSet).length,
+			totalRows: getIds(state, dataSet).length,
 			shownRows: getSortedFilteredIds(state, dataSet).length,
 			filters: getFilters(state, dataSet)
 		}

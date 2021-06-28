@@ -4,14 +4,11 @@ import {shouldComponentUpdate} from 'react-window';
 
 import styled from '@emotion/styled'
 
-const defaultCellRenderer = ({rowData, dataKey}) => rowData[dataKey];
-
 const BodyRow = styled.div`
 	display: flex;
 	position: relative;
 	box-sizing: border-box;
 `;
-
 
 /**
  * TableRow component for AppTable
@@ -58,14 +55,17 @@ class TableRow extends React.Component {
 		/* eslint-enable no-unused-vars */
 
 		const cells = columns.map(column => {
-			const {headerRenderer, cellRenderer, width, flexGrow, flexShrink, key: dataKey, ...colProps} = column;
+			const {headerRenderer, cellRenderer, dataRenderer, width, flexGrow, flexShrink, key: dataKey, ...colProps} = column;
 			const style = {
 				flexBasis: width,
 				flexGrow: fixed? 0: flexGrow,
 				flexShrink: fixed? 0: flexShrink,
 				overflow: 'hidden'	// necessary to ensure that the content does not affect size
 			}
-			const renderer = cellRenderer || defaultCellRenderer;
+			const renderer = cellRenderer ||
+				(dataRenderer
+					? ({rowData, dataKey}) => dataRenderer(rowData[dataKey])
+					: ({rowData, dataKey}) => rowData[dataKey]);
 			const props = {rowIndex, rowId, rowData, rowKey, dataKey, ...colProps}
 			return (
 				<div

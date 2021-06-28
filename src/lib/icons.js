@@ -1,7 +1,6 @@
 import React from 'react'
 import styled from '@emotion/styled'
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-// import what we use
 import {
 	faFileUpload, faFileDownload, faFileExport, faFileImport,
 	faHighlighter, faBold, faItalic, faStrikethrough, faUnderline,
@@ -21,7 +20,9 @@ import {
 	faUserSlash, faUserCheck,
 	faBookOpen,
 } from '@fortawesome/free-solid-svg-icons'
-import { faPlusSquare, faMinusSquare, faCopy } from '@fortawesome/free-regular-svg-icons';
+import {
+	faPlusSquare, faMinusSquare, faCopy
+} from '@fortawesome/free-regular-svg-icons';
 
 export const availableIcons = {
 	'refresh': faSync,
@@ -149,13 +150,12 @@ export const ActionButton = ({name, label, ...rest}) =>
 		{name? <Icon name={name} />: label}
 	</Button>
 
-
 const IconContainer = styled.div`
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	width: 22px;
-	height: 22px;
+	width: 16px;
+	height: 16px;
 `;
 
 /** <Handle
@@ -176,10 +176,10 @@ const TriangleDown = styled.div`
     width: 0;
     height: 0;
     border-top-style: solid;
-    border-top-width: 4px;
-    border-right: 4px solid transparent;
+    border-top-width: 6px;
+    border-right: 6px solid transparent;
     border-bottom: 0 solid transparent;
-    border-left: 4px solid transparent;
+    border-left: 6px solid transparent;
 `;
 
 export const Handle = (props) =>
@@ -187,31 +187,26 @@ export const Handle = (props) =>
 		<TriangleDown />
 	</IconContainer>
 
-export const Cross = (props) => {
-	return (
-		<IconContainer {...props}>
-			<svg fill="currentColor" viewBox="0 0 40 40">
-				<path d="M 10 10 L 30 30 M 10 30 L 30 10" stroke="currentColor" strokeWidth="4" />
-			</svg>
-		</IconContainer>
-	)
-}
+export const Cross = (props) =>
+	<IconContainer {...props}>
+		<svg fill="currentColor" viewBox="0 0 40 40">
+			<path d="M 10 10 L 30 30 M 10 30 L 30 10" stroke="currentColor" strokeWidth="4" />
+		</svg>
+	</IconContainer>
 
-export const Expander = ({open, ...otherProps}) => (
+export const Expander = ({open, ...otherProps}) =>
 	<IconContainer {...otherProps}>
 		<svg style={open? {transform: 'rotate(90deg)'}: {}} fill="currentColor" viewBox="0 0 40 40">
 			<path d="M 10 10 L 10 30 L 20 20 Z" stroke="currentColor" strokeWidth="4" />
 		</svg>
 	</IconContainer>
-)
 
-export const DoubleExpander = ({open, ...otherProps}) => (
+export const DoubleExpander = ({open, ...otherProps}) =>
 	<IconContainer {...otherProps}>
 		<svg style={open? {transform: 'rotate(90deg)'}: {}} fill="currentColor" viewBox="0 0 40 40">
 			<path d="M 10 10 L 10 30 L 20 20 Z M 20 10 L 20 30 L 30 20 Z" stroke="currentColor" strokeWidth="4" />
 		</svg>
 	</IconContainer>
-)
 
 const VoteIcon = styled.div`
 	display: inline-block;
@@ -288,28 +283,20 @@ const SpinnerWrap = styled.div`
 		animation: lds-ellipsis3 0.6s infinite;
 	}
 	@keyframes lds-ellipsis1 {
-		0% {
-			transform: scale(0);
-		}
-		100% {
-			transform: scale(1);
-		}
+		0% {transform: scale(0);}
+		100% {transform: scale(1);}
 	}
 	@keyframes lds-ellipsis3 {
-		0% {
-			transform: scale(1);
-		}
-		100% {
-			transform: scale(0);
-		}
+		0% {transform: scale(1);}
+		100% {transform: scale(0);}
 	}
 	@keyframes lds-ellipsis2 {
-		0% {
-			transform: translate(0, 0);
-		}
-		100% {
-			transform: translate(24px, 0);
-		}
+		0% {transform: translate(0, 0);}
+		100% {transform: translate(24px, 0);}
 	}
 `;
-export const Spinner = (props) => <SpinnerWrap {...props}><div></div><div></div><div></div><div></div></SpinnerWrap>
+
+export const Spinner = (props) =>
+	<SpinnerWrap {...props}>
+		<div></div><div></div><div></div><div></div>
+	</SpinnerWrap>

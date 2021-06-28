@@ -13,7 +13,7 @@ import {getSortedFilteredIds} from '../store/dataSelectors'
 
 const Selector = styled.div`
 	display: flex;
-	flex-direction: column;
+	flex-direction: row;
 	border-radius: 3px;
 	align-items: center;
 	:hover,
@@ -60,7 +60,7 @@ function _ControlHeader({
 
 	if (!anchorEl)
 		return null;
-	
+
 	return (
 		<Container>
 			<Selector>
@@ -74,8 +74,9 @@ function _ControlHeader({
 					<Dropdown
 						style={{display: 'flex', width: '100%', justifyContent: 'center'}}
 						alignLeft
+						portal
 						anchorEl={anchorEl}
-						children={customSelectorElement}
+						dropdownRenderer={() => customSelectorElement}
 					/>}
 			</Selector>
 			{expanded &&
@@ -89,7 +90,7 @@ function _ControlHeader({
 	)
 }
 
-const ControlHeader = connect(
+const SelectExpandHeader = connect(
 	(state, ownProps) => ({
 		selected: getSelected(state, ownProps.dataSet),
 		expanded: getExpanded(state, ownProps.dataSet),
@@ -101,10 +102,26 @@ const ControlHeader = connect(
 	})
 )(_ControlHeader);
 
-ControlHeader.propTypes = {
+SelectExpandHeader.propTypes = {
 	dataSet: PropTypes.string.isRequired,
 	anchorEl: PropTypes.oneOfType([PropTypes.element, PropTypes.object]),
-	customSelectorElement: PropTypes.element
+	customSelectorElement: PropTypes.element,
+}
+
+const SelectHeader = connect(
+	(state, ownProps) => ({
+		selected: getSelected(state, ownProps.dataSet),
+		shownIds: getSortedFilteredIds(state, ownProps.dataSet)
+	}),
+	(dispatch, ownProps) => ({
+		setSelected: ids => dispatch(setSelected(ownProps.dataSet, ids))
+	})
+)(_ControlHeader);
+
+SelectHeader.propTypes = {
+	dataSet: PropTypes.string.isRequired,
+	anchorEl: PropTypes.oneOfType([PropTypes.element, PropTypes.object]),
+	customSelectorElement: PropTypes.element,
 }
 
 function _ControlCell({
@@ -139,7 +156,7 @@ _ControlCell.propTypes = {
 	toggleExpanded: PropTypes.func,
 }
 
-const ControlCell = connect(
+const SelectExpandCell = connect(
 	(state, ownProps) => ({
 		selected: getSelected(state, ownProps.dataSet),
 		expanded: getExpanded(state, ownProps.dataSet)
@@ -148,11 +165,25 @@ const ControlCell = connect(
 		toggleSelected: id => dispatch(toggleSelected(ownProps.dataSet, [id])),
 		toggleExpanded: id => dispatch(toggleExpanded(ownProps.dataSet, [id]))
 	})
-)(_ControlCell)
+)(_ControlCell);
 
-ControlCell.propTypes = {
+SelectExpandCell.propTypes = {
 	dataSet: PropTypes.string.isRequired,
 	rowId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired
 }
 
-export {ControlHeader, ControlCell};
+const SelectCell = connect(
+	(state, ownProps) => ({
+		selected: getSelected(state, ownProps.dataSet)
+	}),
+	(dispatch, ownProps) => ({
+		toggleSelected: id => dispatch(toggleSelected(ownProps.dataSet, [id])),
+	})
+)(_ControlCell);
+
+SelectCell.propTypes = {
+	dataSet: PropTypes.string.isRequired,
+	rowId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired
+}
+
+export {SelectHeader, SelectCell, SelectExpandHeader, SelectExpandCell};

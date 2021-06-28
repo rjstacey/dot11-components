@@ -1,9 +1,19 @@
 import AppTable from './AppTable';
 import ShowFilters from './ShowFilters'
-import {ControlHeader, ControlCell} from './ControlColumn'
-import ColumnDropdown from './ColumnDropdown'
+import {SelectHeader, SelectCell, SelectExpandHeader, SelectExpandCell} from './ControlColumn'
+import DataColumnHeader from './ColumnDropdown'
 import ColumnSelector from './ColumnSelector'
 import {IdSelector, IdFilter} from './IdList'
 
 export default AppTable;
-export {ControlHeader, ControlCell, ColumnDropdown, ColumnSelector, ShowFilters, IdSelector, IdFilter}
+export {
+	SelectHeader,
+	SelectCell,
+	SelectExpandHeader,
+	SelectExpandCell,
+	DataColumnHeader,
+	ColumnSelector,
+	ShowFilters,
+	IdSelector,
+	IdFilter
+}

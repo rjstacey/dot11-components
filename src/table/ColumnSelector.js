@@ -5,7 +5,7 @@ import {connect} from 'react-redux'
 
 import {Button} from '../lib/icons'
 import {ActionButtonDropdown} from '../general/Dropdown'
-import {toggleTableFixed, upsertTableColumn} from '../store/ui'
+import {toggleTableFixed, upsertTableColumns} from '../store/ui'
 
 const Row = styled.div`
 	margin: 5px 10px;
@@ -36,21 +36,23 @@ const Item = styled.div`
 `;
 
 function _ColumnSelectorDropdown({
-		tableView,
-		tableConfig,
-		toggleTableFixed,
-		upsertTableColumn
-	}) {
+	tableView,
+	tableConfig,
+	columns,
+	toggleTableFixed,
+	setTableColumnVisible
+}) {
 
 	/* Build an array of columns with the 'visible' property */
-	const columns = [];
-	for (const [key, col] of Object.entries(tableConfig.columns)) {
-		if (col.hasOwnProperty('visible'))
-			columns.push({key, ...col})
-	}
+	const selectableColumns = columns
+		.filter(col => !col.key.startsWith('__'))	// exclude control columns
+		.map(col => ({
+			...col,
+			visible: (!(tableConfig && tableConfig.columns)) || tableConfig.columns[col.key].visible
+		}));
 
 	return (
-		<React.Fragment>
+		<>
 			<Row>
 				<label>Fixed column width:</label>
 				<Button
@@ -61,7 +63,7 @@ function _ColumnSelectorDropdown({
 				</Button>
 			</Row>
 			<ItemList>
-				{columns.map((col) => 
+				{selectableColumns.map((col) => 
 					<Item
 						key={col.key}
 						isSelected={col.visible}
@@ -69,27 +71,28 @@ function _ColumnSelectorDropdown({
 						<input
 							type='checkbox'
 							checked={col.visible}
-							onChange={() => upsertTableColumn(tableView, col.key, !col.visible)}
+							onChange={() => setTableColumnVisible(tableView, col.key, !col.visible)}
 						/>
 						<span>{col.label || col.key}</span>
 					</Item>
 				)}
 			</ItemList>
-		</React.Fragment>
+		</>
 	)
 }
 
 _ColumnSelectorDropdown.propTypes = {
 	tableView: PropTypes.string.isRequired,
 	tableConfig: PropTypes.object,
+	columns: PropTypes.array.isRequired,
 	toggleTableFixed: PropTypes.func.isRequired,
-	upsertTableColumn: PropTypes.func.isRequired,
+	setTableColumnVisible: PropTypes.func.isRequired,
 }
 
 const ColumnSelectorDropdown = connect(
 	(state, ownProps) => {
 		const {dataSet} = ownProps;
-		const tableView = state[dataSet].ui.view;
+		const tableView = state[dataSet].ui.tableView;
 		const tableConfig = state[dataSet].ui.tablesConfig[tableView];
 		return {
 			tableView,
@@ -99,22 +102,23 @@ const ColumnSelectorDropdown = connect(
 	(dispatch, ownProps) => {
 		const {dataSet} = ownProps;
 		return {
-			toggleTableFixed: (view) => dispatch(toggleTableFixed(dataSet, view)),
-			upsertTableColumn: (view, key, visible) => dispatch(upsertTableColumn(dataSet, view, {key, visible}))
+			toggleTableFixed: (tableView) => dispatch(toggleTableFixed(dataSet, tableView)),
+			setTableColumnVisible: (tableView, key, visible) => dispatch(upsertTableColumns(dataSet, tableView, {[key]: {visible}}))
 		}
 	}
 )(_ColumnSelectorDropdown);
 
-const ColumnSelector = ({dataSet}) =>
-		<ActionButtonDropdown
-			name='columns'
-			title='Configure table'
-		>
-			<ColumnSelectorDropdown dataSet={dataSet} />
-		</ActionButtonDropdown>
+const ColumnSelector = (props) =>
+	<ActionButtonDropdown
+		name='columns'
+		title='Configure table'
+	>
+		<ColumnSelectorDropdown {...props} />
+	</ActionButtonDropdown>
 
 ColumnSelector.propTypes = {
-	dataSet: PropTypes.string.isRequired
+	dataSet: PropTypes.string.isRequired,
+	columns: PropTypes.array.isRequired
 }
 
 export default ColumnSelector;

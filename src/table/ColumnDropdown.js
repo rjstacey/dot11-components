@@ -136,10 +136,15 @@ function Filter({
 
 
 	const values = filter.values.length > 0? allValues: availableValues;
-	const renderData = dataRenderer || (v => v);
+	const renderLabel = v => {
+		let s = dataRenderer? dataRenderer(v): v;
+		if (s === '')
+			s = '(Blank)'
+		return s;
+	}
 	const options = filter.options?
 		filter.options:
-		values.map(v => ({value: v, label: renderData(v) || '(Blank)'}));
+		values.map(v => ({value: v, label: renderLabel(v)}));
 	let searchItems = filter.values
 		.filter(v => v.filterType !== FilterType.EXACT)
 		.map(v => ({
@@ -187,7 +192,7 @@ function Filter({
 	const listHeight = Math.min(items.length * itemHeight, 200);
 
 	return (
-		<React.Fragment>
+		<>
 			<Row>
 				<label>Filter:</label>
 				{selected && dataKey === rowKey &&
@@ -239,7 +244,7 @@ function Filter({
 					)
 				}}
 			</StyledList>
-		</React.Fragment>
+		</>
 	)
 }
 
@@ -282,7 +287,7 @@ const Label = styled.label`
 	font-weight: bold;
 `;
 
-function _ColumnDropdown({
+function _DataColumnHeader({
 	className,
 	style,
 	label,
@@ -364,7 +369,7 @@ function _ColumnDropdown({
 	)
 }
 
-_ColumnDropdown.propTypes = {
+_DataColumnHeader.propTypes = {
 	sort: PropTypes.object,
 	filter: PropTypes.object,
 	selected: PropTypes.array.isRequired,
@@ -376,7 +381,7 @@ _ColumnDropdown.propTypes = {
 	setSort: PropTypes.func.isRequired,
 }
 
-const ColumnDropdown = connect(
+const DataColumnHeader = connect(
 	(state, ownProps) => {
 		const {dataSet, dataKey} = ownProps
 		return {
@@ -396,9 +401,9 @@ const ColumnDropdown = connect(
 			setSort: (direction) => dispatch(sortSet(dataSet, dataKey, direction)),
 		}
 	}
-)(_ColumnDropdown);
+)(_DataColumnHeader);
 
-ColumnDropdown.propTypes = {
+DataColumnHeader.propTypes = {
 	dataSet: PropTypes.string.isRequired,
 	dataKey: PropTypes.string.isRequired,
 	label: PropTypes.string.isRequired,
@@ -407,4 +412,4 @@ ColumnDropdown.propTypes = {
 	anchorEl: PropTypes.oneOfType([PropTypes.element, PropTypes.object]),
 }
 
-export default ColumnDropdown
+export default DataColumnHeader

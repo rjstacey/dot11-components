@@ -1,9 +1,7 @@
 import {createSlice} from '@reduxjs/toolkit'
 
-const sliceName = 'expanded';
-
-const expandedSlice = createSlice({
-	name: sliceName,
+const slice = createSlice({
+	name: 'expanded',
 	initialState: [],
 	reducers: {
 		set(state, action) {return action.ids},
@@ -19,15 +17,13 @@ const expandedSlice = createSlice({
 	}
 });
 
-/* Export reducer as default */
-export default expandedSlice;
+/* Export slice as default */
+export default slice;
 
-/* Export actions */
-export const setExpanded = (dataSet, ids) => ({type: dataSet + '/' + expandedSlice.name + '/set', ids})
-export const toggleExpanded = (dataSet, ids) => ({type: dataSet + '/' + expandedSlice.name + '/toggle', ids})
+/* Actions */
+export const setExpanded = (dataSet, ids) => ({type: dataSet + '/' + slice.name + '/set', ids})
+export const toggleExpanded = (dataSet, ids) => ({type: dataSet + '/' + slice.name + '/toggle', ids})
 
-/*
- * Selectors
- */
-export const getExpanded = (state, dataSet) => state[dataSet][sliceName]
+/* Selectors */
+export const getExpanded = (state, dataSet) => state[dataSet][slice.name]
  

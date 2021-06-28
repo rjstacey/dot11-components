@@ -161,40 +161,38 @@ function setSort(state, dataKey, direction) {
 	return {...state, by, settings}
 }
 
-function initSorts(entries) {
+function sortsInit(fields) {
 	const settings = {};
-	Object.keys(entries).forEach(dataKey => {
+	Object.entries(fields).forEach(([dataKey, field]) => {
 		settings[dataKey] = {
-			type: entries[dataKey].type,
-			direction: entries[dataKey].direction
+			type: field.sortType || SortType.STRING,
+			direction: field.sortDirection || SortDirection.NONE
 		}
 	});
 	return {by: [], settings};
 }
 
-const sliceName = 'sorts';
-
-const sortsSlice = createSlice({
-	name: sliceName,
-	initialState: initSorts({}),
+const slice = createSlice({
+	name: 'sorts',
+	initialState: sortsInit({}),
 	reducers: {
 		set(state, action) {
 			const {dataKey, direction} = action;
 			return setSort(state, dataKey, direction)
 		},
 		init(state, action) {
-			return initSorts(action.entries)
+			return sortsInit(action.fields)
 		}
 	}
 })
 
-export default sortsSlice
+/* Export slice as default */
+export default slice
 
-export const sortSet = (dataSet, dataKey, direction) => ({type: dataSet + '/' + sliceName + '/set', dataKey, direction})
-export const sortInit = (entries) => ({type: sliceName + '/init', entries})
+/* Actions */
+export const initSorts = (fields) => ({type: slice.name + '/init', fields})
+export const sortSet = (dataSet, dataKey, direction) => ({type: dataSet + '/' + slice.name + '/set', dataKey, direction})
 
-/*
- * Selectors
- */
-export const getSorts = (state, dataSet) => state[dataSet][sliceName]
-export const getSort = (state, dataSet, dataKey) => state[dataSet][sliceName].settings[dataKey]
+/* Selectors */
+export const getSorts = (state, dataSet) => state[dataSet][slice.name]
+export const getSort = (state, dataSet, dataKey) => state[dataSet][slice.name].settings[dataKey]

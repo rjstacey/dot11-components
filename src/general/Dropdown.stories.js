@@ -19,7 +19,7 @@ export default {
   }
 };
 
-export const ActionButton = (args) =>
+export const IconButton = (args) =>
 	<div style={{display: 'flex', justifyContent: 'space-between'}}>
 		<ActionButtonDropdown {...args}>
 			<Content />
@@ -32,8 +32,26 @@ export const ActionButton = (args) =>
 		</ActionButtonDropdown>
 	</div>
 
-ActionButton.args = {
+IconButton.args = {
   name: 'add',
+  title: 'Add something',
+};
+
+export const LabelButton = (args) =>
+	<div style={{display: 'flex', justifyContent: 'space-between'}}>
+		<ActionButtonDropdown {...args}>
+			<Content />
+		</ActionButtonDropdown>
+		<ActionButtonDropdown {...args}>
+			<Content />
+		</ActionButtonDropdown>
+		<ActionButtonDropdown {...args}>
+			<Content />
+		</ActionButtonDropdown>
+	</div>
+
+LabelButton.args = {
+  label: 'Click Me',
   title: 'Add something',
 };
 

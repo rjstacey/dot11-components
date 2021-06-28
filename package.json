@@ -1,8 +1,8 @@
 {
   "name": "dot11-components",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Components for dot11 apps",
-  "private": true,
+  "private": false,
   "main": "dist",
   "files": [
     "table",

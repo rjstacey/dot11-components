@@ -6,13 +6,13 @@ import {VariableSizeGrid as Grid} from 'react-window'
 import AutoSizer from 'react-virtualized-auto-sizer'
 import TableRow from './AppTableRow'
 import TableHeader from './AppTableHeader'
-import ColumnDropdown from './ColumnDropdown'
+import ColumnHeader from './ColumnDropdown'
 
 import {debounce, getScrollbarSize} from '../lib/utils'
 
 import {getSelected, setSelected} from '../store/selected'
 import {getExpanded} from '../store/expanded'
-import {upsertTableColumns} from '../store/ui'
+import {adjustTableColumnWidth} from '../store/ui'
 import {getSortedFilteredIds, getSortedFilteredData} from '../store/dataSelectors'
 
 const scrollbarSize = getScrollbarSize();
@@ -72,18 +72,6 @@ class AppTableSized extends React.PureComponent {
 	constructor(props) {
 		super(props);
 
-		const {tableConfig} = props;
-
-		//console.log(props.columns)
-		const columns = props.columns.map(
-			(col) => (
-				(tableConfig.columns[col.key] && tableConfig.columns[col.key].width)
-					? {...col, width: tableConfig.columns[col.key].width}
-					: col
-			)
-		);
-		this.state = {columns, fixed: tableConfig.fixed};
-
 		this._resetIndex = null;
 		this._rowHeightMap = {};
 		this._rowHeightMapBuffer = {};
@@ -101,23 +89,16 @@ class AppTableSized extends React.PureComponent {
 	}*/
 
 	componentDidUpdate(prevProps, prevState) {
-		if (prevProps.width !== this.props.width && this.gridRef)
+		if (this.gridRef &&
+			(prevProps.width !== this.props.width ||
+			 prevProps.fixed !== this.props.fixed))
 			this.gridRef.resetAfterColumnIndex(0, true);
 	}
 
-	componentWillUnmount() {
-		const columnsConfig = this.state.columns.reduce((cfg, col) => ({...cfg, [col.key]: {width: col.width}}), {});
-		this.props.upsertTableColumns(this.props.tableView, columnsConfig);
-	}
-
-	setColumnWidth = (key, deltaX) => {
-		this.setState(
-			(state, props) => {
-				const columns = state.columns.map(c => c.key === key? {...c, width: Math.max(0, c.width + deltaX)}: c);
-				return {...state, columns}
-			},
-			() => this.gridRef && this.gridRef.resetAfterColumnIndex(0, true)
-		);
+	adjustColumnWidth = async (key, deltaX) => {
+		await this.props.adjustTableColumnWidth(this.props.tableView, key, deltaX);
+		if (this.gridRef)
+			this.gridRef.resetAfterColumnIndex(0, true);
 	}
 
     onRowHeightChange = (rowIndex, height) => {
@@ -138,16 +119,30 @@ class AppTableSized extends React.PureComponent {
 		if (!selected)
 			return
 
+		const setAndMove = (i) => {
+			setSelected([ids[i]]);
+			if (this.gridRef)
+				this.gridRef.scrollToItem({rowIndex: i});
+		}
+
 		// Ctrl-A selects all
-		if ((event.ctrlKey || event.metaKey) && event.keyCode === 65) {
+		if ((event.ctrlKey || event.metaKey) && event.key === 'a') {
 			setSelected(ids);
 			event.preventDefault();
 		}
-		else if (event.keyCode === 38 || event.keyCode === 40) {
+		else if (event.key === 'Home') {
+			if (ids.length)
+				setAndMove(0);
+		}
+		else if (event.key === 'End') {
+			if (ids.length)
+				setAndMove(ids.length - 1);
+		}
+		else if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
 
 			if (selected.length === 0) {
 				if (ids.length > 0)
-					setSelected([ids[0]]);
+					setAndMove(0);
 				return;
 			}
 
@@ -155,11 +150,11 @@ class AppTableSized extends React.PureComponent {
 			let i = ids.indexOf(id);
 			if (i === -1) {
 				if (ids.length > 0)
-					setSelected([ids[0]]);
+					setAndMove(0);
 				return;
 			}
 
-			if (event.keyCode === 38) {			// Up arrow
+			if (event.key === 'ArrowUp') {
 				if (i === 0)
 					i = ids.length - 1;
 				else
@@ -172,10 +167,7 @@ class AppTableSized extends React.PureComponent {
 					i = i + 1;
 			}
 
-			if (this.gridRef)
-				this.gridRef.scrollToItem({rowIndex: i});
-
-			setSelected([ids[i]]);
+			setAndMove(i);
 		}
 	}
 
@@ -224,8 +216,18 @@ class AppTableSized extends React.PureComponent {
 	}
 
 	render() {
-		const {props, state} = this;
-		const totalWidth = state.columns.reduce((totalWidth, col) => totalWidth = totalWidth + col.width, 0);
+		const {props} = this;
+		let {fixed, columns, tableConfig} = props;
+		if (tableConfig && tableConfig.columns) {
+			columns = columns
+				.filter(col => col.key.startsWith('__') || tableConfig.columns[col.key].visible)
+				.map(col => ({
+					...col,
+					...tableConfig.columns[col.key]
+				}));
+		}
+		//const id = (fixed? 'f-': '') + columns.map(col => col.key).join('-');
+		const totalWidth = columns.reduce((totalWidth, col) => totalWidth = totalWidth + col.width, 0);
 
 		let {width, height} =  props;
 		if (!width) {
@@ -237,14 +239,20 @@ class AppTableSized extends React.PureComponent {
 		// put header after body and reverse the display order via css
 		// to prevent header's shadow being covered by body
 		return (
-			<Table role='table' style={{height, width: containerWidth}} onKeyDown={this.handleKeyDown} tabIndex={0}>
+			<Table
+				role='table'
+				style={{height, width: containerWidth}}
+				onKeyDown={this.handleKeyDown}
+				tabIndex={0}
+			>
 				{props.ids.length?
 					<Grid
+						//key={'grid-' + id}
 						ref={ref => this.gridRef = ref}
 						height={height - props.headerHeight}
 						width={width}
 						columnCount={1}
-						columnWidth={() => (state.fixed? totalWidth: width - scrollbarSize)}
+						columnWidth={() => (fixed? totalWidth: width - scrollbarSize)}
 						rowCount={props.ids.length}
 						estimatedRowHeight={props.estimatedRowHeight}
 						rowHeight={this.getRowHeight}
@@ -271,8 +279,8 @@ class AppTableSized extends React.PureComponent {
 									key={rowId}
 									className={classNames.join(' ')}
 									style={style}
-									fixed={state.fixed}
-									columns={state.columns}
+									fixed={fixed}
+									columns={columns}
 									rowIndex={rowIndex}
 									rowId={rowId}
 									rowData={rowData}
@@ -292,13 +300,13 @@ class AppTableSized extends React.PureComponent {
 				<TableHeader
 					ref={ref => this.headerRef = ref}
 					outerStyle={{width, height: props.headerHeight, paddingRight: scrollbarSize}}
-					innerStyle={{width: state.fixed? totalWidth + scrollbarSize: '100%'}}
-					fixed={state.fixed}
-					columns={state.columns}
-					setColumnWidth={this.setColumnWidth}
+					innerStyle={{width: fixed? totalWidth + scrollbarSize: '100%'}}
+					fixed={fixed}
+					columns={columns}
+					setColumnWidth={this.adjustColumnWidth}
 					setTableWidth={props.resizeWidth}
 					rowKey={props.rowKey}
-					defaultHeaderCellRenderer={(p) => <ColumnDropdown dataSet={props.dataSet} {...p}/>}
+					defaultHeaderCellRenderer={(p) => <ColumnHeader dataSet={props.dataSet} {...p}/>}
 				/>
 			</Table>
 		)
@@ -332,8 +340,9 @@ _AppTable.propTypes = {
 const AppTable = connect(
 	(state, ownProps) => {
 		const {dataSet} = ownProps;
-		const tableView = state[dataSet].ui.view;
+		const {tableView} = state[dataSet].ui;
 		const tableConfig = state[dataSet].ui.tablesConfig[tableView];
+		const fixed = tableConfig? tableConfig.fixed: ownProps.fixed;
 		return {
 			selected: getSelected(state, dataSet),
 			expanded: getExpanded(state, dataSet),
@@ -343,13 +352,14 @@ const AppTable = connect(
 			data: getSortedFilteredData(state, dataSet),
 			tableView,
 			tableConfig,
+			fixed
 		}
 	},
 	(dispatch, ownProps) => {
 		const {dataSet} = ownProps;
 		return {
 			setSelected: ids => dispatch(setSelected(dataSet, ids)),
-			upsertTableColumns: (view, columns) => dispatch(upsertTableColumns(dataSet, view, columns))
+			adjustTableColumnWidth: (tableView, key, delta) => dispatch(adjustTableColumnWidth(dataSet, tableView, key, delta))
 		}
 	}
 )(_AppTable)
@@ -361,6 +371,7 @@ AppTable.propTypes = {
 	rowGetter: PropTypes.func,
 	headerHeight: PropTypes.number.isRequired,
 	estimatedRowHeight: PropTypes.number.isRequired,
+	expandable: PropTypes.bool,
 }
 
 export default AppTable;

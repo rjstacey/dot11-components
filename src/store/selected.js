@@ -1,9 +1,7 @@
 import {createSlice} from '@reduxjs/toolkit'
 
-const sliceName = 'selected';
-
-const selectedSlice = createSlice({
-	name: sliceName,
+const slice = createSlice({
+	name: 'selected',
 	initialState: [],
 	reducers: {
 		set(state, action) {return action.ids},
@@ -19,14 +17,12 @@ const selectedSlice = createSlice({
 	}
 })
 
-/* Export reducer as default */
-export default selectedSlice;
+/* Export slice as default */
+export default slice;
 
-/* Export actions */
-export const setSelected = (dataSet, ids) => ({type: dataSet + '/' + selectedSlice.name + '/set', ids})
-export const toggleSelected = (dataSet, ids) => ({type: dataSet + '/' + selectedSlice.name + '/toggle', ids})
+/* Actions */
+export const setSelected = (dataSet, ids) => ({type: dataSet + '/' + slice.name + '/set', ids})
+export const toggleSelected = (dataSet, ids) => ({type: dataSet + '/' + slice.name + '/toggle', ids})
 
-/*
- * Selectors
- */
-export const getSelected = (state, dataSet) => state[dataSet][sliceName]
+/* Selectors */
+export const getSelected = (state, dataSet) => state[dataSet][slice.name]

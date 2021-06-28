@@ -114,7 +114,7 @@ const HeaderRow = styled.div`
 			)
 		});
 		setCells(cells);
-	}, []);
+	}, [columns, fixed]);
 
 	const classNames = [className, 'AppTable__headerRow'].join(' ')
 
