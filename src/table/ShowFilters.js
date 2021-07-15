@@ -41,28 +41,26 @@ const ActiveFilterClose = styled.span`
 	:hover {color: tomato}
 `;
 
-function ActiveFilter({children, remove}) {
-	return (
-		<ActiveFilterContainer role='listitem' direction='ltr'>
-			{children && <ActiveFilterItem>{children}</ActiveFilterItem>}
-			<ActiveFilterClose onClick={remove} />
-		</ActiveFilterContainer>
-	)
-}
+const ActiveFilter = ({children, remove}) =>
+	<ActiveFilterContainer role='listitem' direction='ltr'>
+		{children && <ActiveFilterItem>{children}</ActiveFilterItem>}
+		<ActiveFilterClose onClick={remove} />
+	</ActiveFilterContainer>
 
 function renderActiveFilters({fields, filters, removeFilter, clearAllFilters}) {
 	let elements = [];
-	for (const [dataKey, field] of Object.entries(fields)) {
-		let f = filters[dataKey];
-		if (f.values.length > 0) {
+	for (const [dataKey, filter] of Object.entries(filters)) {
+		const {label, dataRenderer} = fields[dataKey];
+		const {values, options} = filter;
+		if (values.length > 0) {
 			elements.push(
 				<ActiveFilterLabel key={dataKey}>
-					{field.label + ':'}
+					{label + ':'}
 				</ActiveFilterLabel>
 			);
-			for (let v of f.values) {
-				const o = f.options && f.options.find(o => o.value === v.value);
-				let s = o? o.label: (field.dataRenderer? field.dataRenderer(v.value): v.value);
+			for (let v of values) {
+				const o = options && options.find(o => o.value === v.value);
+				let s = o? o.label: (dataRenderer? dataRenderer(v.value): v.value);
 				if (s === '')
 					s = '(Blank)'
 				elements.push(

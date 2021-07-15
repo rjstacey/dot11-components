@@ -19,6 +19,7 @@ import {
 	faHistory,
 	faUserSlash, faUserCheck,
 	faBookOpen,
+	faAngleRight, faAngleLeft,
 } from '@fortawesome/free-solid-svg-icons'
 import {
 	faPlusSquare, faMinusSquare, faCopy
@@ -47,6 +48,8 @@ export const availableIcons = {
 	'copy': faCopy,
 	'user-slash': faUserSlash,
 	'user-check': faUserCheck,
+	'angle-right': faAngleRight,
+	'angle-left': faAngleLeft,
 
 	/* editing: inline styles */
 	'bold': faBold,
@@ -95,8 +98,6 @@ export const ButtonGroup = styled.div`
 	display: inline-block;
 	margin: 0 5px 0 0;
 	padding: 3px 8px;
-	height: 30px;
-	line-height: 22px;
 	box-sizing: border-box;
 	background: none #fdfdfd;
 	background: linear-gradient(to bottom, #fdfdfd 0%,#f6f7f8 100%);

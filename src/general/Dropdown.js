@@ -5,6 +5,12 @@ import styled from '@emotion/styled'
 import useClickOutside from '../lib/useClickOutside'
 import {ActionButton, Handle} from '../lib/icons'
 
+/***
+ * There is potentially an issue here. If the dropdown opens and causes a scrollbar to appear in the parent due to
+ * overflow, then the dropdown will close again on scroll event. In effect, the user will not see the dropdown
+ * appear.
+ */
+
 const Wrapper = styled.div`
 	display: flex;
 	flex-direction: column;
@@ -66,7 +72,7 @@ function DropdownContainer({
 
 	const dropdownEl = <StyledDropdownContainer ref={ref} style={{...style, ...position}} {...rest} />
 
-	//console.log(anchorEl? 'portal': 'local')
+	//console.log(anchorEl? 'portal': 'local', dropdownEl, anchorEl);
 
 	return portal? ReactDOM.createPortal(dropdownEl, anchorEl): dropdownEl;
 }
@@ -96,16 +102,20 @@ function Dropdown({
 		setOpen(true);
 	}
 
-	const close = (e) => {
-		// ignore if not open or if event target is an element inside the dropdown
-		if (!isOpen || (anchorElement && anchorElement.lastChild.contains(e.target)))
-			return;
+	const close = () => {
 		if (onRequestClose)
 			onRequestClose();
 		setOpen(false);
 	}
 
-	useClickOutside(wrapperRef, close);
+	const outsideClick = (e) => {
+		// ignore if not open or if event target is an element inside the dropdown
+		if (!isOpen || (anchorElement && anchorElement.lastChild.contains(e.target)))
+			return;
+		close();
+	}
+
+	useClickOutside(wrapperRef, outsideClick);
 
 	return (
 		<Wrapper

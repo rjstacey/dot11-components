@@ -3,14 +3,26 @@ import React from 'react';
 import { configureStore, combineReducers, createEntityAdapter } from '@reduxjs/toolkit'
 import { createLogger } from 'redux-logger'
 import thunk from 'redux-thunk'
-import { Provider, useDispatch, useSelector } from 'react-redux'
+import { Provider, useDispatch } from 'react-redux'
 
 import {displayDate} from '../lib/utils'
+import {ButtonGroup, Button, ActionButton} from '../lib/icons'
 import {appTableCreateSlice} from '../store/appTableData'
 import {SortType} from '../store/sort'
-import {initTableConfig} from '../store/ui'
 
-import AppTable, {SelectHeader, SelectCell, SelectExpandHeader, SelectExpandCell, DataColumnHeader, ColumnSelector, ShowFilters, IdSelector, IdFilter} from '.'
+import AppTable, {
+	SelectHeader, 
+	SelectCell, 
+	SelectExpandHeader,
+	SelectExpandCell,
+	TableColumnHeader,
+	TableViewSelector,
+	TableColumnSelector,
+	ShowFilters,
+	IdSelector,
+	IdFilter,
+} from '.'
+import SplitPanel, {Panel} from './SplitPanel'
 
 const statusOptions = [
 	{value: 0, label: 'Good'},
@@ -31,7 +43,10 @@ const fields = {
 		dataRenderer: displayDate,
 		sortType: SortType.DATE
 	},
-	Text: {label: 'Text'},
+	Text: {
+		label: 'Text',
+		dontFilter: true
+	},
 	Number: {
 		label: 'Number',
 		sortType: SortType.NUMERIC
@@ -40,7 +55,9 @@ const fields = {
 		label: 'Status',
 		dataRenderer: renderStatus,
 		options: statusOptions,
-		sortType: SortType.NUMERIC
+		sortType: SortType.NUMERIC,
+		dontSort: true,
+		dontFilter: true
 	},
 };
 
@@ -85,7 +102,7 @@ const tableColumns = [
 		...fields.id,
 		width: 80, flexGrow: 1, flexShrink: 1, dropdownWidth: 200,
 		headerRenderer: p =>
-			<DataColumnHeader
+			<TableColumnHeader
 				dataSet={dataSet}
 				customFilterElement=<IdFilter dataSet={dataSet} dataKey='id' />
 				{...p}
@@ -118,8 +135,8 @@ const lorem = new LoremIpsum({
   wordsPerSentence: {max: 16, min: 4}
 });
 
-const genData = () =>
-	new Array(1000)
+const genData = (n) =>
+	new Array(n)
 		.fill(true)
 		.map((r, i) => ({
 			id: i,
@@ -130,97 +147,137 @@ const genData = () =>
 			Status: randomStatus()
 		}));
 
-const loadData = () =>
+const loadData = (n = 1000) =>
 	async (dispatch, getState) => {
 		const {getPending, getSuccess} = slice.actions;
 		if (getState()[dataSet].loading)
 			return;
 		dispatch(getPending());
-		const data = genData();
+		const data = genData(n);
 		setTimeout(() => dispatch(getSuccess(data)), 1000)
 	}
 
 const defaultTablesConfig = {
-	default: {
+	'1': {
 		fixed: false,
-		columns: ['id', 'Name', 'Date', 'Text', 'Number', 'Status']
+		columns: {
+			__ctrl__: {unselectable: true, shown: true, width: 48},
+			id: {shown: true, width: 80},
+			Name: {shown: true, width: 200},
+			Text: {shown: true,	width: 200},
+			Date: {shown: true,	width: 200},
+			Number: {shown: true,	width: 200},
+			Status: {shown: true,	width: 200}
+		}
+	},
+	'2': {
+		fixed: false,
+		columns: {
+			__ctrl__: {unselectable: true, shown: true, width: 48},
+			id: {shown: true, width: 80},
+			Name: {unselectable: true, shown: false, width: 200},
+			Text: {shown: true,	width: 200},
+			Date: {shown: true,	width: 200},
+			Number: {shown: true,	width: 200},
+			Status: {shown: true,	width: 200}
+		}
 	}
 }
 
-const LoaderButton = (props) => {
+const LoaderButton= ({numberOfRows}) => {
 	const dispatch = useDispatch();
 
-	return <button onClick={() => dispatch(loadData())} {...props}>Loader...</button>
+	return (
+		<Button onClick={() => dispatch(loadData(numberOfRows))} >Load {numberOfRows}</Button>
+	)
 }
 
-const Table = ({expandable}) => {
+function tableColumnsWithControl(expandable) {
+	const columns = tableColumns.slice();
+	let headerRenderer, cellRenderer;
+	if (expandable) {
+		headerRenderer = p =>
+			<SelectExpandHeader
+				dataSet={dataSet}
+				customSelectorElement=<IdSelector style={{width: '200px'}} dataSet={dataSet} focusOnMount />
+				{...p}
+			/>;
+		cellRenderer = p => <SelectExpandCell dataSet={dataSet} {...p} />;
+	}
+	else {
+		headerRenderer = p =>
+			<SelectHeader
+				dataSet={dataSet}
+				customSelectorElement=<IdSelector style={{width: '200px'}} dataSet={dataSet} focusOnMount />
+				{...p}
+			/>;
+		cellRenderer = p => <SelectCell dataSet={dataSet} {...p} />;
+	}
+	columns[0] = {...columns[0], headerRenderer, cellRenderer};
+	return columns;
+}
 
-	const dispatch = useDispatch();
-	const tablesConfig = useSelector((state) => state[dataSet].ui.tablesConfig);
+export const SplitTable = ({expandable, numberOfRows}) => {
 
-	React.useEffect(() => {
-		for (const tableView of Object.keys(defaultTablesConfig)) {
-			const tableConfig = tablesConfig[tableView];
-			if (tableConfig)
-				continue;
-			const columns = tableColumns.reduce((cols, c) => {
-				cols[c.key] = {
-					visible: c.key.startsWith('__') || defaultTablesConfig[tableView].columns.includes(c.key),
-					width: c.width
-				}
-				return cols;
-			}, {});
-			const newTableConfig = {
-				fixed: defaultTablesConfig[tableView].fixed,
-				columns
-			}
-			dispatch(initTableConfig(dataSet, tableView, newTableConfig));
-		}
-	}, []);
-
-	const columns = React.useMemo(() => {
-
-		const columns = tableColumns.slice();
-		let headerRenderer, cellRenderer;
-		if (expandable) {
-			headerRenderer = p =>
-				<SelectExpandHeader
-					dataSet={dataSet}
-					customSelectorElement=<IdSelector style={{width: '200px'}} dataSet={dataSet} focusOnMount />
-					{...p}
-				/>;
-			cellRenderer = p => <SelectExpandCell dataSet={dataSet} {...p} />;
-		}
-		else {
-			headerRenderer = p =>
-				<SelectHeader
-					dataSet={dataSet}
-					customSelectorElement=<IdSelector style={{width: '200px'}} dataSet={dataSet} focusOnMount />
-					{...p}
-				/>;
-			cellRenderer = p => <SelectCell dataSet={dataSet} {...p} />;
-		}
-		columns[0] = {...columns[0], headerRenderer, cellRenderer};
-
-		return columns;
-	}, [expandable]);
+	const [splitView, setSplitView] = React.useState(false);
+	const columns = React.useMemo(() => tableColumnsWithControl(expandable), [expandable]);
 
 	return (
 		<div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '80vh'}}>
 			<div style={{display: 'flex', width: '100%', justifyContent: 'space-between'}}>
-				<LoaderButton />
-				<ColumnSelector dataSet={dataSet} columns={columns} />
+				<LoaderButton numberOfRows={numberOfRows} />
+				<ButtonGroup>
+					<div style={{textAlign: 'center'}}>Table view</div>
+					<div style={{display: 'flex', justifyContent: 'center'}}>
+						<TableViewSelector dataSet={dataSet} />
+						<TableColumnSelector dataSet={dataSet} columns={columns} />
+						<ActionButton
+							name='book-open'
+							title='Show detail'
+							isActive={splitView} 
+							onClick={() => setSplitView(!splitView)} 
+						/>
+					</div>
+				</ButtonGroup>
 			</div>
 			<ShowFilters dataSet={dataSet} fields={fields} />
-			<div style={{width: '100%', flex: 1}}>
-				<AppTable
-					fixed={false}
-					columns={columns}
-					headerHeight={46}
-					estimatedRowHeight={50}
-					dataSet={dataSet}
-					rowKey='id'
-				/>
+			<SplitPanel splitView={splitView} >
+				<Panel>
+					<AppTable
+						defaultTablesConfig={defaultTablesConfig}
+						columns={columns}
+						headerHeight={46}
+						estimatedRowHeight={50}
+						dataSet={dataSet}
+						rowKey='id'
+					/>
+				</Panel>
+				<Panel>
+					<span>Something here...</span>
+				</Panel>
+			</SplitPanel>
+		</div>
+	)
+}
+
+export const NoDefaultTable = ({expandable, numberOfRows}) => {
+
+	const columns = React.useMemo(() => tableColumnsWithControl(expandable), [expandable]);
+
+	return (
+		<div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '80vh'}}>
+			<div style={{display: 'flex', width: '100%', justifyContent: 'space-between'}}>
+				<LoaderButton numberOfRows={numberOfRows} />
+			</div>
+			<ShowFilters dataSet={dataSet} fields={fields} />
+			<div style={{flex: 1, width: '100%'}} >
+					<AppTable
+						columns={columns}
+						headerHeight={46}
+						estimatedRowHeight={50}
+						dataSet={dataSet}
+						rowKey='id'
+					/>
 			</div>
 		</div>
 	)
@@ -232,11 +289,16 @@ export default {
 	argTypes: {
 		expandable: {
 			type: {name: 'boolean'},
+		},
+		numberOfRows: {
+			type: {name: 'number'},
+			defaultValue: 5,
 		}
-	}
+	},
+	decorators: [
+		(Story) =>
+			<Provider store={store}>
+				<Story />
+			</Provider>
+	]
 };
-
-export const Table1 = (props) =>
-	<Provider store={store}>
-		<Table {...props} />
-	</Provider>

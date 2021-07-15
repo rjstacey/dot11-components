@@ -99,9 +99,10 @@ const filterCreate = ({options}) => ({
 
 function filtersInit(fields) {
 	const filters = {};
-	Object.entries(fields).forEach(([dataKey, field]) =>
-		filters[dataKey] = filterCreate(field)
-	);
+	for (const [dataKey, field] of Object.entries(fields)) {
+		if (!field.dontFilter)
+			filters[dataKey] = filterCreate(field)
+	}
 	return filters;
 }
 
@@ -141,12 +142,12 @@ const slice = createSlice({
 export default slice;
 
 /* Actions */
-export const initFilters = (fields) => ({type: slice.name + '/init', fields})
-export const setFilter = (dataSet, dataKey, values) => ({type: dataSet + '/' + slice.name + '/setAll', dataSet, dataKey, values})
-export const addFilter = (dataSet, dataKey, value, filterType) => ({type: dataSet + '/' + slice.name + '/addOne', dataSet, dataKey, value, filterType})
-export const removeFilter = (dataSet, dataKey, value, filterType) => ({type: dataSet + '/' + slice.name + '/removeOne', dataSet, dataKey, value, filterType})
-export const clearFilter = (dataSet, dataKey) => ({type: dataSet + '/' + slice.name + '/clear', dataSet, dataKey})
-export const clearAllFilters = (dataSet) => ({type: dataSet + '/' + slice.name + '/clearAll', dataSet})
+export const initFilters = (fields) => ({type: slice.actions.init, fields})
+export const setFilter = (dataSet, dataKey, values) => ({type: dataSet + '/' + slice.actions.setAll, dataSet, dataKey, values})
+export const addFilter = (dataSet, dataKey, value, filterType) => ({type: dataSet + '/' + slice.actions.addOne, dataSet, dataKey, value, filterType})
+export const removeFilter = (dataSet, dataKey, value, filterType) => ({type: dataSet + '/' + slice.actions.removeOne, dataSet, dataKey, value, filterType})
+export const clearFilter = (dataSet, dataKey) => ({type: dataSet + '/' + slice.actions.clear, dataSet, dataKey})
+export const clearAllFilters = (dataSet) => ({type: dataSet + '/' + slice.actions.clearAll, dataSet})
 
 /* Selectors */
  export const getFilters = (state, dataSet) => state[dataSet][slice.name]

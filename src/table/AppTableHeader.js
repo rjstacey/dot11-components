@@ -1,7 +1,8 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import {DraggableCore} from 'react-draggable'
 import styled from '@emotion/styled'
+
+import ColumnResizer from './ColumnResizer'
 
 const HeaderCell = styled.div`
 	display: flex;
@@ -11,45 +12,6 @@ const HeaderCellContent = styled.div`
 	height: 100%;
 	width: calc(100% - 12px)
 `;
-
-const ResizeHandle = styled.div`
-	height: 100%;
-	width: 12px;
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	align-items: center;
-	cursor: col-resize;
-	color: #0085ff;
-	::after {
-		content: "⋮";
-	}
-	:hover,
-	.dragging {
-		color: #0b6fcc;
-		background-color: rgba(0, 0, 0, 0.1)
-	}
-`;
-
-function ColumnResizer({style, setWidth}) {
-	const [drag, setDrag] = React.useState(false)
-	const nodeRef = React.useRef(null);
-	return (
-		<DraggableCore
-			axis="x"
-			onDrag={(event, {deltaX}) => setWidth(deltaX)}
-			onStart={e => setDrag(true)}
-			onStop={e => setDrag(false)}
-			nodeRef={nodeRef}
-		>
-			<ResizeHandle
-				ref={nodeRef}
-				style={style}
-				className={drag? 'dragging': undefined}
-			/>
-		</DraggableCore>
-	)
-}
 
 const HeaderAnchor = styled.div`
 	position: relative;
@@ -79,7 +41,6 @@ const HeaderRow = styled.div`
 	fixed,
 	columns,
 	setColumnWidth,
-	setTableWidth,
 	rowKey,
 	defaultHeaderCellRenderer}, ref) => {
 
@@ -131,11 +92,6 @@ const HeaderRow = styled.div`
 				>
 					{cells}
 				</HeaderRow>
-				{setTableWidth &&
-					<ColumnResizer 
-						style={{position: 'absolute', right: 0, top: 0}}
-						setWidth={setTableWidth}
-					/>}
 			</HeaderContainer>
 		</HeaderAnchor>
 	)
@@ -148,7 +104,6 @@ TableHeader.propTypes = {
 	fixed: PropTypes.bool,
 	columns: PropTypes.array.isRequired,
 	setColumnWidth: PropTypes.func.isRequired,
-	setTableWidth: PropTypes.func,
 	rowKey: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 	defaultHeaderCellRenderer: PropTypes.func,
 }

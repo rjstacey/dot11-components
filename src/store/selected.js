@@ -21,8 +21,8 @@ const slice = createSlice({
 export default slice;
 
 /* Actions */
-export const setSelected = (dataSet, ids) => ({type: dataSet + '/' + slice.name + '/set', ids})
-export const toggleSelected = (dataSet, ids) => ({type: dataSet + '/' + slice.name + '/toggle', ids})
+export const setSelected = (dataSet, ids) => ({type: dataSet + '/' + slice.actions.set, ids})
+export const toggleSelected = (dataSet, ids) => ({type: dataSet + '/' + slice.actions.toggle, ids})
 
 /* Selectors */
 export const getSelected = (state, dataSet) => state[dataSet][slice.name]

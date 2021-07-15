@@ -287,7 +287,7 @@ const Label = styled.label`
 	font-weight: bold;
 `;
 
-function _DataColumnHeader({
+function _TableColumnHeader({
 	className,
 	style,
 	label,
@@ -311,6 +311,9 @@ function _DataColumnHeader({
 }) {
 	const isFiltered = filter && filter.values.length > 0;
 	const isSorted = sort && sort.direction !== SortDirection.NONE;
+
+	if (!sort && !filter)
+		return <Header><Label>{label}</Label></Header>
 
 	const selectRenderer = ({isOpen, open, close}) =>
 		<Header
@@ -369,7 +372,7 @@ function _DataColumnHeader({
 	)
 }
 
-_DataColumnHeader.propTypes = {
+_TableColumnHeader.propTypes = {
 	sort: PropTypes.object,
 	filter: PropTypes.object,
 	selected: PropTypes.array.isRequired,
@@ -381,7 +384,7 @@ _DataColumnHeader.propTypes = {
 	setSort: PropTypes.func.isRequired,
 }
 
-const DataColumnHeader = connect(
+const TableColumnHeader = connect(
 	(state, ownProps) => {
 		const {dataSet, dataKey} = ownProps
 		return {
@@ -401,9 +404,9 @@ const DataColumnHeader = connect(
 			setSort: (direction) => dispatch(sortSet(dataSet, dataKey, direction)),
 		}
 	}
-)(_DataColumnHeader);
+)(_TableColumnHeader);
 
-DataColumnHeader.propTypes = {
+TableColumnHeader.propTypes = {
 	dataSet: PropTypes.string.isRequired,
 	dataKey: PropTypes.string.isRequired,
 	label: PropTypes.string.isRequired,
@@ -412,4 +415,4 @@ DataColumnHeader.propTypes = {
 	anchorEl: PropTypes.oneOfType([PropTypes.element, PropTypes.object]),
 }
 
-export default DataColumnHeader
+export default TableColumnHeader

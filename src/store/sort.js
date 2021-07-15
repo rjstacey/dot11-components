@@ -163,12 +163,13 @@ function setSort(state, dataKey, direction) {
 
 function sortsInit(fields) {
 	const settings = {};
-	Object.entries(fields).forEach(([dataKey, field]) => {
-		settings[dataKey] = {
-			type: field.sortType || SortType.STRING,
-			direction: field.sortDirection || SortDirection.NONE
-		}
-	});
+	for (const [dataKey, field] of Object.entries(fields)) {
+		if (!field.dontSort)
+			settings[dataKey] = {
+				type: field.sortType || SortType.STRING,
+				direction: field.sortDirection || SortDirection.NONE
+			}
+	}
 	return {by: [], settings};
 }
 
@@ -190,8 +191,8 @@ const slice = createSlice({
 export default slice
 
 /* Actions */
-export const initSorts = (fields) => ({type: slice.name + '/init', fields})
-export const sortSet = (dataSet, dataKey, direction) => ({type: dataSet + '/' + slice.name + '/set', dataKey, direction})
+export const initSorts = (fields) => ({type: slice.actions.init, fields})
+export const sortSet = (dataSet, dataKey, direction) => ({type: dataSet + '/' + slice.actions.set, dataKey, direction})
 
 /* Selectors */
 export const getSorts = (state, dataSet) => state[dataSet][slice.name]

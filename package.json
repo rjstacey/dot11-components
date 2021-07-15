@@ -1,6 +1,6 @@
 {
   "name": "dot11-components",
-  "version": "1.0.1",
+  "version": "1.0.9",
   "description": "Components for dot11 apps",
   "private": false,
   "main": "dist",
@@ -52,7 +52,7 @@
   "scripts": {
     "start": "react-scripts start",
     "prebuild": "rm -rf table store general lib modals",
-    "build": "babel src --copy-files --out-dir . --ignore __tests__,spec.js,test.js,stories.js,__snapshots__",
+    "build": "babel src --out-dir . --ignore \"**/*.stories.js\",__tests__,__snapshots__ --no-copy-ignored",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "storybook": "start-storybook -p 6006 -s public",

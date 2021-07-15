@@ -1,10 +1,10 @@
-# DataColumnHeader
+# TableColumnHeader
 
 A component that renderes a heading and provides a dropdown with sort and filter operations for a particular field in a data table.
 
-The component does not necessary map 1:1 to the actual table columns. A Table column might render multiple data fields with a DataColumnHeader component for each field.
+The component does not necessary map 1:1 to the actual table columns. A Table column might render multiple data fields with a TableColumnHeader component for each field.
 
-In the table header, DataColumnHeader renders the field label along with icons. If the table is sorted by the field data (sort direction is not `None`), then an ascending or descending sort icon is displayed. The sort icon is also alphabetical or numerical based is sort type. If the table is filtered based on the field data, then the filter icon is displayed. If the table is either sortable or filterable (or both) on the field, then a down-caret is displayed to show that the these functions are availble and the user can open the dropdown by clicking/touching the field label. 
+In the table header, TableColumnHeader renders the field label along with icons. If the table is sorted by the field data (sort direction is not `None`), then an ascending or descending sort icon is displayed. The sort icon is also alphabetical or numerical based is sort type. If the table is filtered based on the field data, then the filter icon is displayed. If the table is either sortable or filterable (or both) on the field, then a down-caret is displayed to show that the these functions are availble and the user can open the dropdown by clicking/touching the field label. 
 
 ## Component props
 
@@ -18,7 +18,7 @@ In the table header, DataColumnHeader renders the field label along with icons. 
 
 ## Component store
 
-DataColumnHeader is connected to the redux store slice identified by `dataSet` and expects the store slice to provide the following:
+TableColumnHeader is connected to the redux store slice identified by `dataSet` and expects the store slice to provide the following:
 
 The selector `getSort(state, dataSet, dataKey)` from 'store/sort' is used to get the sort data for the table column. The action `setSort()` modifies the sort data.
 
