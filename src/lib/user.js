@@ -26,7 +26,6 @@ export function userInit() {
 }
 
 export function logout() {
-	let user;
-	try {user = JSON.parse(localStorage.getItem(LOGIN_STORAGE))} catch (err) {/* ignore errors */}
-	window.location = (user && user.logoutUrl) || '/logout';
+	localStorage.removeItem('User');
+	window.location = '/login?redirect=' + window.location.pathname;
 }

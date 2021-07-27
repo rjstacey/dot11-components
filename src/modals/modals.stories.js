@@ -5,7 +5,7 @@ import { createLogger } from 'redux-logger'
 import thunk from 'redux-thunk'
 import { Provider, connect } from 'react-redux'
 
-import {AppModal, ErrorModal, ConfirmModal} from '.'
+import {AppModal, ActionButtonModal, ErrorModal, ConfirmModal} from '.'
 import errMsg, {setError} from '../store/error'
 
 const store = configureStore({
@@ -18,14 +18,11 @@ export default {
   title: 'Modals',
 };
 
-function Content() {
-  return (
+const Content = () => 
     <form style={{width: '200px'}}>
       <label><input type='radio' id='1' />Fred</label><br />
       <label><input type='radio' id='1' />Frog</label><br />
     </form>
-  )
-}
 
 export const Basic = (args) =>
   <AppModal {...args} >
@@ -34,6 +31,19 @@ export const Basic = (args) =>
 Basic.args = {
   isOpen: true
 };
+
+export const BasicActionButtonModal = (args) => 
+  <ActionButtonModal
+    name='add'
+    title='I have a title'
+    {...args}
+  >
+    <Content />
+  </ActionButtonModal>
+
+BasicActionButtonModal.args = {
+  disabled: false
+}
 
 function SendError({setError}) {
   const [summary, setSummary] = React.useState('');

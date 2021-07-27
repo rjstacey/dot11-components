@@ -47,6 +47,7 @@ const Button = styled.button`
 `;
 
 const SignOutForm = ({user, close}) => {
+	
 	const submit = async () => {
 		await logout();
 		if (close)
@@ -57,13 +58,13 @@ const SignOutForm = ({user, close}) => {
 	const accessLabel = accessOption? accessOption.label: 'Unknown';
 
 	return (
-		<React.Fragment>
+		<>
 			<label>{user.Name}</label>
 			<label>{user.SAPIN}</label>
 			<label>{user.Username}</label>
 			<label>{accessLabel}</label>
 			<Button value="Sign Out" onClick={submit}>Sign out</Button>
-		</React.Fragment>
+		</>
 	)
 }
 

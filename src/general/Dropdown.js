@@ -162,9 +162,9 @@ Dropdown.defaultProps = {
 			{label && <label>{label}</label>}
 			<Handle />
 		</div>,
-	dropdownRenderer: ({close, children}) =>
+	dropdownRenderer: ({isOpen, close, children}) =>
 		React.Children.map(children,
-			child => React.isValidElement(child)? React.cloneElement(child, {close}): child
+			child => React.isValidElement(child)? React.cloneElement(child, {isOpen, close}): child
 		)
 }
 
@@ -176,6 +176,7 @@ export const ActionButtonDropdown = ({name, label, title, disabled, ...rest}) =>
 				label={label}
 				title={title}
 				disabled={disabled} 
+				active={isOpen}
 				onClick={isOpen? close: open}
 			/>}
 		{...rest}

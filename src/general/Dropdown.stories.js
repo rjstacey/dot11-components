@@ -3,10 +3,18 @@ import React from 'react';
 import Dropdown, {ActionButtonDropdown} from './Dropdown';
 
 function Content() {
+	const [text, setText] = React.useState('');
 	return (
 		<form style={{width: '200px'}}>
 			<label><input type='radio' id='1' />Fred</label><br />
 			<label><input type='radio' id='1' />Frog</label><br />
+			<label>Text:
+				<input type='text'
+					size={24}
+					value={text}
+					onChange={e => setText(e.target.value)} 
+				/>
+			</label>
 		</form>
 	)
 }

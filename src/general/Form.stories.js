@@ -14,6 +14,8 @@ import {
 	Checkbox
 } from './Form';
 
+import {ActionButtonDropdown} from './Dropdown';
+
 export default {
   title: 'Form',
   component: Form,
@@ -68,3 +70,31 @@ export const TwoColsForm = (args) =>
 		<Row>Row two...</Row>
 		<Row>Row three...</Row>
 	</Form>;
+
+export const ActionButtonForm = (args) => {
+	const [text, setText] = React.useState('');
+
+	const submitForm = () => alert(`Sending "${text}`);
+
+	return (
+		<ActionButtonDropdown label='Submit something' style={{width: 'fit-content'}} >
+			<Form
+				title='Submit something'
+				submit={submitForm}
+			>
+				<Row>
+					Dropdown form
+				</Row>
+				<Row>
+					<Field label='Something:'>
+						<Input type='text'
+							size={24}
+							value={text}
+							onChange={e => setText(e.target.value)} 
+						/>
+					</Field>
+				</Row>
+			</Form>
+		</ActionButtonDropdown>
+	)
+}
