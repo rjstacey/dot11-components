@@ -8,7 +8,7 @@ import TableRow from './AppTableRow'
 import TableHeader from './AppTableHeader'
 import ColumnHeader from './TableColumnHeader'
 
-import {debounce, getScrollbarSize} from '../lib/utils'
+import {debounce, getScrollbarSize} from '../lib'
 
 import {getSelected, setSelected} from '../store/selected'
 import {getExpanded} from '../store/expanded'
@@ -36,7 +36,9 @@ const Table = styled.div`
 		align-items: stretch;
 		overflow: hidden;
 	}
-	.AppTable__headerContainer,
+	.AppTable__headerContainer {
+
+	}
 	.AppTable__headerRow {
 		background-color: #efefef;
 	}
@@ -72,25 +74,27 @@ class AppTableSized extends React.PureComponent {
 	constructor(props) {
 		super(props);
 
-		const {setDefaultTablesConfig, defaultTablesConfig, columns} = props;
+		const {setDefaultTablesConfig, defaultTablesConfig, columns, fixed} = props;
 		if (!defaultTablesConfig) {
-			const config = {fixed: false, columns: {}};
-			for (const col of columns) {
+			const config = {fixed: fixed || false, columns: {}};
+			for (const col of columns)
 				config.columns[col.key] = {unselectable: true, shown: true, width: col.width || 100};
-			}
 			this.defaultTablesConfig = {default: config};
 		}
 		else {
 			this.defaultTablesConfig = {...defaultTablesConfig};
-			for (const col of columns) {
-				for (const [view, config] of Object.entries(this.defaultTablesConfig)) {
-					if (typeof config.columns !== 'object') {
-						console.warn(`defaultTableConfig['${view}'] does not include columns object`);
-						config.columns = {};
-					}
+			for (const [view, config] of Object.entries(this.defaultTablesConfig)) {
+				if (typeof config.fixed !== 'boolean') {
+					config.fixed = !!fixed || false;
+				}
+				if (typeof config.columns !== 'object') {
+					console.warn(`defaultTableConfig['${view}'] does not include columns object`);
+					config.columns = {};
+				}
+				for (const col of columns) {
 					if (!config.columns.hasOwnProperty(col.key)) {
 						console.warn(`defaultTableConfig['${view}'] does not include column with key '${col.key}'`);
-						config.columns[col.key] = {unselectable: true, shown: true, width: col.width || 100}
+						config.columns[col.key] = {unselectable: true, shown: true, width: col.width || 100};
 					}
 				}
 			}
@@ -143,7 +147,7 @@ class AppTableSized extends React.PureComponent {
 		if (!selected)
 			return;
 
-		const setAndMove = (i) => {
+		const selectAndScroll = (i) => {
 			setSelected([ids[i]]);
 			if (this.gridRef)
 				this.gridRef.scrollToItem({rowIndex: i});
@@ -156,17 +160,17 @@ class AppTableSized extends React.PureComponent {
 		}
 		else if (event.key === 'Home') {
 			if (ids.length)
-				setAndMove(0);
+				selectAndScroll(0);
 		}
 		else if (event.key === 'End') {
 			if (ids.length)
-				setAndMove(ids.length - 1);
+				selectAndScroll(ids.length - 1);
 		}
 		else if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
 
 			if (selected.length === 0) {
 				if (ids.length > 0)
-					setAndMove(0);
+					selectAndScroll(0);
 				return;
 			}
 
@@ -174,7 +178,7 @@ class AppTableSized extends React.PureComponent {
 			let i = ids.indexOf(id);
 			if (i === -1) {
 				if (ids.length > 0)
-					setAndMove(0);
+					selectAndScroll(0);
 				return;
 			}
 
@@ -191,7 +195,7 @@ class AppTableSized extends React.PureComponent {
 					i = i + 1;
 			}
 
-			setAndMove(i);
+			selectAndScroll(i);
 		}
 	}
 
@@ -308,7 +312,6 @@ class AppTableSized extends React.PureComponent {
 									rowIndex={rowIndex}
 									rowId={rowId}
 									rowData={rowData}
-									rowKey={props.rowKey}
 									isExpanded={isExpanded}
 									estimatedRowHeight={props.estimatedRowHeight}
 									onRowHeightChange={this.onRowHeightChange}
@@ -328,7 +331,6 @@ class AppTableSized extends React.PureComponent {
 					fixed={fixed}
 					columns={columns}
 					setColumnWidth={this.adjustColumnWidth}
-					rowKey={props.rowKey}
 					defaultHeaderCellRenderer={(p) => <ColumnHeader dataSet={props.dataSet} {...p}/>}
 				/>
 			</Table>
@@ -341,20 +343,21 @@ class AppTableSized extends React.PureComponent {
  */
 function _AppTable(props) {
 	return (
-		<AutoSizer>
+		<AutoSizer disableWidth={props.fitWidth} style={{maxWidth: '100vw'}} >
 			{({height, width}) => <AppTableSized height={height} width={width} {...props} />}
 		</AutoSizer>
 	)
 }
 
 _AppTable.propTypes = {
+	fitWidth: PropTypes.bool,
+	fixed: PropTypes.bool,
 	columns: PropTypes.array.isRequired,
 	dataSet: PropTypes.string.isRequired,
 	data: PropTypes.array.isRequired,
 	selected: PropTypes.array,
 	expanded: PropTypes.array,
 	rowGetter: PropTypes.func,
-	rowKey: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 	headerHeight: PropTypes.number.isRequired,
 	estimatedRowHeight: PropTypes.number.isRequired,
 	loading: PropTypes.bool.isRequired,
@@ -389,8 +392,9 @@ const AppTable = connect(
 AppTable.propTypes = {
 	dataSet: PropTypes.string.isRequired,
 	defaultTablesConfig: PropTypes.object,
+	fitWidth: PropTypes.bool,
+	fixed: PropTypes.bool,
 	columns: PropTypes.array.isRequired,
-	rowKey: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 	rowGetter: PropTypes.func,
 	headerHeight: PropTypes.number.isRequired,
 	estimatedRowHeight: PropTypes.number.isRequired,

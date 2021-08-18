@@ -3,7 +3,7 @@ import React from 'react'
 import styled from '@emotion/styled'
 import {connect} from 'react-redux'
 
-import {Button} from '../lib/icons'
+import {Button} from '../icons'
 import {ActionButtonDropdown} from '../general/Dropdown'
 import {toggleTableFixed, setTableColumnShown} from '../store/ui'
 

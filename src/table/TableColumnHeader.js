@@ -4,7 +4,7 @@ import {connect} from 'react-redux'
 import styled from '@emotion/styled'
 import {FixedSizeList as List} from 'react-window'
 
-import {Button, ActionButtonSort, Handle, IconSort, IconFilter} from '../lib/icons'
+import {Button, ActionButtonSort, Handle, IconSort, IconFilter} from '../icons'
 import {Checkbox, Input} from '../general/Form'
 import Dropdown from '../general/Dropdown'
 
@@ -364,6 +364,8 @@ function _TableColumnHeader({
 
 	return (
 		<Dropdown
+			className={className}
+			style={style}
 			selectRenderer={selectRenderer}
 			dropdownRenderer={dropdownRenderer}
 			portal

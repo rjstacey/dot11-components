@@ -1,6 +1,6 @@
 import React from 'react';
 
-import {availableIcons, Icon} from './icons';
+import {availableIcons, Icon} from '.';
 
 export default {
   title: 'Icon',

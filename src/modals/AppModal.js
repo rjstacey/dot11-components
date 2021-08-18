@@ -2,7 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import Modal from 'react-modal'
 
-import {ActionButton} from '../lib/icons'
+import {ActionButton} from '../icons'
 
 const defaultModalStyle = {
 	content: {
@@ -65,6 +65,7 @@ const ActionButtonModal = ({name, label, title, disabled, children, onRequestOpe
 			onRequestOpen();
 		setOpen(true);
 	}
+
 	const close = () => {
 		if (onRequestClose)
 			onRequestClose();
@@ -77,7 +78,7 @@ const ActionButtonModal = ({name, label, title, disabled, children, onRequestOpe
 				name={name}
 				label={label}
 				title={title}
-				disabled={disabled} 
+				disabled={disabled}
 				onClick={isOpen? close: open}
 			/>
 			<AppModal

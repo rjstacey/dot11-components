@@ -75,39 +75,3 @@ export const parseNumber = (value) => {
 	return !isNaN(unformatted)? unformatted: 0;
 };
 
-/* Format: 01-May-2021 */
-export const displayDate = d => {
-	const date = (typeof d === 'string')? new Date(d): d;
-	if (date instanceof Date)
-		return ('0' + date.getDate()).substr(-2) + '-' +
-			new Intl.DateTimeFormat('en-US', {month: 'short'}).format(date) + '-' +
-			date.getFullYear();
-	return '';
-}
-
-/* Format: HH:MM */
-export const displayTime = d => {
-	const date = (typeof d === 'string')? new Date(d): d;
-	if (date instanceof Date)
-		return ('0' + date.getHours()).substr(-2) + ':' + ('0' + date.getMinutes()).substr(-2)
-	return '';
-}
-
-/* Format: Monday */
-export const displayDay = d => {
-	const date = (typeof d === 'string')? new Date(d): d;
-	if (date instanceof Date)
-		return new Intl.DateTimeFormat('en-US', {weekday: 'long'}).format(date);
-	return '';
-}
-
-/* Format: Mon, 01-May-2021 */
-export const displayDayDate = d => {
-	const date = (typeof d === 'string')? new Date(d): d;
-	if (date instanceof Date)
-		return new Intl.DateTimeFormat('en-US', {weekday: 'short'}).format(date) + ', ' +
-			('0' + date.getDate()).substr(-2) + '-' +
-			new Intl.DateTimeFormat('en-US', {month: 'short'}).format(date) + '-' +
-			date.getFullYear();
-	return '';
-}

@@ -7,12 +7,16 @@ export const AccessLevel = {
 	WGAdmin: 3
 };
 
-export const AccessLevelOptions = [
-	{value: AccessLevel.Public,			label: 'Public'},
-	{value: AccessLevel.Member,			label: 'Member'},
-	{value: AccessLevel.SubgroupAdmin,	label: 'Subgroup Admin'},
-	{value: AccessLevel.WGAdmin,		label: 'WG Admin'}
-];
+export const AccessLevelLabels = {
+	[AccessLevel.Public]: 'Observer',
+	[AccessLevel.Member]: 'Member',
+	[AccessLevel.SubgroupAdmin]: 'Subgroup admin',
+	[AccessLevel.WGAdmin]: 'WG admin'
+};
+
+export const displayAccessLevel = (value) => AccessLevelLabels[value] || 'Unknown';
+
+export const AccessLevelOptions = Object.values(AccessLevel).map(value => ({value, label: AccessLevelLabels[value]}));
 
 const LOGIN_STORAGE = 'User';
 
@@ -26,6 +30,6 @@ export function userInit() {
 }
 
 export function logout() {
-	localStorage.removeItem('User');
+	localStorage.removeItem(LOGIN_STORAGE);
 	window.location = '/login?redirect=' + window.location.pathname;
 }

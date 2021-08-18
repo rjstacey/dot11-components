@@ -3,7 +3,7 @@ import React from 'react'
 import {connect} from 'react-redux'
 import styled from '@emotion/styled'
 
-import {Expander, DoubleExpander} from '../lib/icons'
+import {Expander, DoubleExpander} from '../icons'
 import {Checkbox} from '../general/Form'
 import Dropdown from '../general/Dropdown'
 

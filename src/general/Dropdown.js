@@ -2,8 +2,8 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import styled from '@emotion/styled'
-import useClickOutside from '../lib/useClickOutside'
-import {ActionButton, Handle} from '../lib/icons'
+import {useClickOutside} from '../lib'
+import {ActionButton, Handle} from '../icons'
 
 /***
  * There is potentially an issue here. If the dropdown opens and causes a scrollbar to appear in the parent due to

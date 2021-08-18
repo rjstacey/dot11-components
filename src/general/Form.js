@@ -2,7 +2,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from '@emotion/styled'
 import ReactDropdownSelect from 'react-dropdown-select'
-import {Spinner} from '../lib/icons'
+import {Spinner} from '../icons'
 
 const SelectContainer = styled.div`
 	.react-dropdown-select {
@@ -248,7 +248,7 @@ const ListItem = ({style, className, children}) =>
 		{children}
 	</ListItemContainer>
 
-const Form = ({style, className, title, busy, errorText, submit, submitLabel, cancel, cancelLabel, children}) => 
+const Form = ({style, className, title, busy, errorText, submit, submitLabel, cancel, close, cancelLabel, children}) => 
 	<Container
 		style={style}
 		className={className}
@@ -259,7 +259,7 @@ const Form = ({style, className, title, busy, errorText, submit, submitLabel, ca
 		{errorText !== undefined && <ErrMsg>{errorText || '\u00a0'}</ErrMsg>}
 		<ButtonRow>
 			<Button onClick={submit} >{submitLabel || 'OK'}</Button>
-			{cancel && <Button onClick={cancel} >{cancelLabel || 'Cancel'}</Button>}
+			{(cancel || close) && <Button onClick={cancel || close} >{cancelLabel || 'Cancel'}</Button>}
 		</ButtonRow>
 	</Container>
 

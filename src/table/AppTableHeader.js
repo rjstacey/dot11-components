@@ -41,7 +41,6 @@ const HeaderRow = styled.div`
 	fixed,
 	columns,
 	setColumnWidth,
-	rowKey,
 	defaultHeaderCellRenderer}, ref) => {
 
 	const anchorRef = React.useRef(null);
@@ -56,9 +55,9 @@ const HeaderRow = styled.div`
 				flexGrow: fixed? 0: flexGrow,
 				flexShrink: fixed? 0: flexShrink,
 				overflow: 'hidden'	// necessary so that the content does not affect size
-			}
-			const renderer = headerRenderer || defaultHeaderCellRenderer
-			const props = {anchorEl: anchorRef.current, dataKey, column, rowKey, ...colProps}
+			};
+			const renderer = headerRenderer || defaultHeaderCellRenderer;
+			const props = {anchorEl: anchorRef.current, dataKey, column, ...colProps};
 			return (
 				<HeaderCell
 					key={dataKey}
@@ -104,7 +103,6 @@ TableHeader.propTypes = {
 	fixed: PropTypes.bool,
 	columns: PropTypes.array.isRequired,
 	setColumnWidth: PropTypes.func.isRequired,
-	rowKey: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 	defaultHeaderCellRenderer: PropTypes.func,
 }
 

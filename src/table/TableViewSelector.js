@@ -2,7 +2,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import {connect} from 'react-redux'
 
-import {Button} from '../lib/icons'
+import {Button} from '../icons'
 import {setTableView} from '../store/ui'
 
 function _TableViewSelector({tablesConfig, tableView, setTableView}) {

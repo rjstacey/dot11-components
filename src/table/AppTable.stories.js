@@ -5,8 +5,8 @@ import { createLogger } from 'redux-logger'
 import thunk from 'redux-thunk'
 import { Provider, useDispatch } from 'react-redux'
 
-import {displayDate} from '../lib/utils'
-import {ButtonGroup, Button, ActionButton} from '../lib/icons'
+import {displayDate} from '../lib'
+import {ButtonGroup, Button, ActionButton} from '../icons'
 import {appTableCreateSlice} from '../store/appTableData'
 import {SortType} from '../store/sort'
 
@@ -21,8 +21,9 @@ import AppTable, {
 	ShowFilters,
 	IdSelector,
 	IdFilter,
+	SplitPanel,
+	Panel
 } from '.'
-import SplitPanel, {Panel} from './SplitPanel'
 
 const statusOptions = [
 	{value: 0, label: 'Good'},
@@ -36,7 +37,7 @@ const renderStatus = (v) => {
 }
 
 const fields = {
-	id: {label: 'ID'},
+	id: {label: 'ID', sortType: SortType.NUMERIC},
 	Name: {label: 'Name'},
 	Date: {
 		label: 'Date',
@@ -249,7 +250,6 @@ export const SplitTable = ({expandable, numberOfRows}) => {
 						headerHeight={46}
 						estimatedRowHeight={50}
 						dataSet={dataSet}
-						rowKey='id'
 					/>
 				</Panel>
 				<Panel>
@@ -276,7 +276,31 @@ export const NoDefaultTable = ({expandable, numberOfRows}) => {
 						headerHeight={46}
 						estimatedRowHeight={50}
 						dataSet={dataSet}
-						rowKey='id'
+					/>
+			</div>
+		</div>
+	)
+}
+
+export const FixedCenteredTable = ({expandable, numberOfRows}) => {
+
+	const columns = React.useMemo(() => tableColumnsWithControl(expandable), [expandable]);
+
+	return (
+		<div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '80vh'}}>
+			<div style={{display: 'flex', width: '100%', justifyContent: 'space-between'}}>
+				<LoaderButton numberOfRows={numberOfRows} />
+			</div>
+			<ShowFilters dataSet={dataSet} fields={fields} />
+			<div style={{flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center'}} >
+					<AppTable
+						fitWidth
+						fixed
+						columns={columns}
+						defaultTablesConfig={{'fixed': {}}}
+						headerHeight={46}
+						estimatedRowHeight={50}
+						dataSet={dataSet}
 					/>
 			</div>
 		</div>

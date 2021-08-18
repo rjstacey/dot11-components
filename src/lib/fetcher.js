@@ -1,4 +1,5 @@
 import {saveAs} from 'file-saver'
+import {logout} from './user'
 
 const methods = {};
 
@@ -8,6 +9,10 @@ methods.setJWT = (token) => jwtBearerToken = token;
 const apiBaseUrl = '';
 
 async function errHandler(res) {
+	if (res.status === 401) {	// Unauthorized
+		logout();
+		await new Promise(r => setTimeout(r, 1000));
+	}
 	if (res.status === 400 &&
 		res.headers.get('Content-Type').search('application/json') !== -1) {
 		const ret = await res.json();

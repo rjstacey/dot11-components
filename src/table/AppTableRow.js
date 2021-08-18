@@ -45,7 +45,6 @@ class TableRow extends React.Component {
 			rowIndex,
 			rowId,
 			rowData,
-			rowKey,
 			isExpanded,
 			estimatedRowHeight,
 			onRowHeightChange,
@@ -66,7 +65,7 @@ class TableRow extends React.Component {
 				(dataRenderer
 					? ({rowData, dataKey}) => dataRenderer(rowData[dataKey])
 					: ({rowData, dataKey}) => rowData[dataKey]);
-			const props = {rowIndex, rowId, rowData, rowKey, dataKey, ...colProps}
+			const props = {rowIndex, rowId, rowData, dataKey, ...colProps}
 			return (
 				<div
 					key={dataKey}
@@ -116,7 +115,6 @@ TableRow.propTypes = {
 	columns: PropTypes.array.isRequired,
 	rowIndex: PropTypes.number.isRequired,
 	rowData: PropTypes.oneOfType([PropTypes.object, PropTypes.func]).isRequired,
-	rowKey: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 	estimatedRowHeight: PropTypes.number,
 	onRowHeightChange: PropTypes.func.isRequired
 };

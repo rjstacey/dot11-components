@@ -1,10 +1,10 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from '@emotion/styled'
-import {Handle} from '../lib/icons'
+import {Handle} from '../icons'
 
 import Dropdown from './Dropdown'
-import {logout, AccessLevelOptions} from '../lib/user'
+import {logout, AccessLevelOptions} from '../lib'
 
 const AccountSummaryContainer = styled.div`
 	display: flex;
@@ -47,7 +47,7 @@ const Button = styled.button`
 `;
 
 const SignOutForm = ({user, close}) => {
-	
+
 	const submit = async () => {
 		await logout();
 		if (close)
