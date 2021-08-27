@@ -91,7 +91,6 @@ Sort.propTypes = {
 }
 
 function Filter({
-	rowKey,
 	dataKey,
 	sort,
 	filter,
@@ -102,7 +101,8 @@ function Filter({
 	availableValues,
 	selected,
 	dataRenderer,
-	customFilterElement
+	customFilterElement,
+	isId
 }) {
 	const [search, setSearch] = React.useState('');
 	const inputRef = React.useRef();
@@ -195,7 +195,7 @@ function Filter({
 		<>
 			<Row>
 				<label>Filter:</label>
-				{selected && dataKey === rowKey &&
+				{selected && isId &&
 					<Button
 						onClick={() => setFilter(selected)}
 						disabled={selected.length === 0}
@@ -250,7 +250,6 @@ function Filter({
 
 Filter.propTypes = {
 	dataKey: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-	rowKey: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 	sort: PropTypes.object,
 	filter: PropTypes.object.isRequired,
 	setFilter: PropTypes.func.isRequired,
@@ -261,6 +260,7 @@ Filter.propTypes = {
 	selected: PropTypes.array,
 	dataRenderer: PropTypes.func,
 	customFilterElement: PropTypes.element,
+	isId: PropTypes.bool,
 }
 
 const Header = styled.div`
@@ -291,23 +291,21 @@ function _TableColumnHeader({
 	className,
 	style,
 	label,
-	dropdownWidth,
-	rowKey,
 	dataKey,
+	dropdownWidth,
 	sort,
 	setSort,
 	filter,
 	setFilter,
 	addFilter,
 	removeFilter,
+	selected,
 	allValues,
 	availableValues,
-	dataSet,
-	selected,
 	dataRenderer,
-	column,
 	anchorEl,
-	customFilterElement
+	customFilterElement,
+	isId,
 }) {
 	const isFiltered = filter && filter.values.length > 0;
 	const isSorted = sort && sort.direction !== SortDirection.NONE;
@@ -344,7 +342,6 @@ function _TableColumnHeader({
 				/>}
 			{filter &&
 				<Filter
-					rowKey={rowKey}
 					dataKey={dataKey}
 					selected={selected}
 					sort={sort}
@@ -356,6 +353,7 @@ function _TableColumnHeader({
 					availableValues={availableValues}
 					dataRenderer={dataRenderer}
 					customFilterElement={customFilterElement}
+					isId={isId}
 				/>}
 		</>;
 
@@ -380,15 +378,15 @@ _TableColumnHeader.propTypes = {
 	selected: PropTypes.array.isRequired,
 	allValues: PropTypes.array.isRequired,
 	availableValues: PropTypes.array.isRequired,
+	setSort: PropTypes.func.isRequired,
 	setFilter: PropTypes.func.isRequired,
 	addFilter: PropTypes.func.isRequired,
 	removeFilter: PropTypes.func.isRequired,
-	setSort: PropTypes.func.isRequired,
 }
 
 const TableColumnHeader = connect(
 	(state, ownProps) => {
-		const {dataSet, dataKey} = ownProps
+		const {dataSet, dataKey} = ownProps;
 		return {
 			sort: getSort(state, dataSet, dataKey),
 			filter: getFilter(state, dataSet, dataKey),
@@ -398,23 +396,26 @@ const TableColumnHeader = connect(
 		}
 	},
 	(dispatch, ownProps) => {
-		const {dataSet, dataKey} = ownProps
+		const {dataSet, dataKey} = ownProps;
 		return {
+			setSort: (direction) => dispatch(sortSet(dataSet, dataKey, direction)),
 			setFilter: (values) => dispatch(setFilter(dataSet, dataKey, values)),
 			addFilter: (value, filterType) => dispatch(addFilter(dataSet, dataKey, value, filterType)),
 			removeFilter: (value, filterType) => dispatch(removeFilter(dataSet, dataKey, value, filterType)),
-			setSort: (direction) => dispatch(sortSet(dataSet, dataKey, direction)),
 		}
 	}
 )(_TableColumnHeader);
 
 TableColumnHeader.propTypes = {
-	dataSet: PropTypes.string.isRequired,
-	dataKey: PropTypes.string.isRequired,
-	label: PropTypes.string.isRequired,
+	dataSet: PropTypes.string.isRequired,	// Identifies the dataset in the store
+	dataKey: PropTypes.string.isRequired,	// Identifies the data element in the row object
+	label: PropTypes.string.isRequired,		// Column label
 	column: PropTypes.object.isRequired,
 	dropdownWidth: PropTypes.number,
+	dataRenderer: PropTypes.func,			// Optional function to render the data element
 	anchorEl: PropTypes.oneOfType([PropTypes.element, PropTypes.object]),
+	customFilterElement: PropTypes.func,	// Custom filter element for dropdown
+	isId: PropTypes.bool,					// Identifies the data table ID column; enables "filter selected"
 }
 
 export default TableColumnHeader

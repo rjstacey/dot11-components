@@ -22,7 +22,8 @@ import {
 	faAngleRight, faAngleLeft,
 } from '@fortawesome/free-solid-svg-icons'
 import {
-	faPlusSquare, faMinusSquare, faCopy
+	faPlusSquare, faMinusSquare, faCopy,
+	faCalendar,
 } from '@fortawesome/free-regular-svg-icons';
 
 export const availableIcons = {
@@ -50,6 +51,7 @@ export const availableIcons = {
 	'user-check': faUserCheck,
 	'angle-right': faAngleRight,
 	'angle-left': faAngleLeft,
+	'calendar': faCalendar,
 
 	/* editing: inline styles */
 	'bold': faBold,

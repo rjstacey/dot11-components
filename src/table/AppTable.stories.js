@@ -37,7 +37,7 @@ const renderStatus = (v) => {
 }
 
 const fields = {
-	id: {label: 'ID', sortType: SortType.NUMERIC},
+	id: {label: 'ID', isId: true, sortType: SortType.NUMERIC},
 	Name: {label: 'Name'},
 	Date: {
 		label: 'Date',
