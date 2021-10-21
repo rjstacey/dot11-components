@@ -1,9 +1,17 @@
 import React from 'react';
 
 import Dropdown, {ActionButtonDropdown} from './Dropdown';
+import {Select} from '../form';
+
+const options = [
+	{value: 1, label: 'One'},
+	{Value: 2, label: 'Two'},
+	{value: 3, label: 'Three'}
+];
 
 function Content() {
 	const [text, setText] = React.useState('');
+	const [value, setValue] = React.useState([]);
 	return (
 		<form style={{width: '200px'}}>
 			<label><input type='radio' id='1' />Fred</label><br />
@@ -13,6 +21,14 @@ function Content() {
 					size={24}
 					value={text}
 					onChange={e => setText(e.target.value)} 
+				/>
+			</label>
+			<label>Select:
+				<Select
+					value={value}
+					onChange={setValue}
+					options={options}
+					portal={document.querySelector('#root')}
 				/>
 			</label>
 		</form>

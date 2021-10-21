@@ -54,17 +54,18 @@ class TableRow extends React.Component {
 		/* eslint-enable no-unused-vars */
 
 		const cells = columns.map(column => {
-			const {headerRenderer, cellRenderer, dataRenderer, width, flexGrow, flexShrink, key: dataKey, ...colProps} = column;
+			const {headerRenderer, cellRenderer, dataRenderer, width, flexGrow, flexShrink, key: dataKey, getField, ...colProps} = column;
 			const style = {
 				flexBasis: width,
 				flexGrow: fixed? 0: flexGrow,
 				flexShrink: fixed? 0: flexShrink,
 				overflow: 'hidden'	// necessary to ensure that the content does not affect size
 			}
+			const cellData = getField? getField(rowData, dataKey): rowData[dataKey];
 			const renderer = cellRenderer ||
 				(dataRenderer
-					? ({rowData, dataKey}) => dataRenderer(rowData[dataKey])
-					: ({rowData, dataKey}) => rowData[dataKey]);
+					? ({rowData, dataKey}) => dataRenderer(cellData)
+					: ({rowData, dataKey}) => cellData);
 			const props = {rowIndex, rowId, rowData, dataKey, ...colProps}
 			return (
 				<div

@@ -5,7 +5,7 @@ import {connect} from 'react-redux'
 
 import {Button} from '../icons'
 import {ActionButtonDropdown} from '../general/Dropdown'
-import {toggleTableFixed, setTableColumnShown} from '../store/ui'
+import {toggleTableFixed, setTableColumnShown} from '../store/appTableData'
 
 const Row = styled.div`
 	margin: 5px 10px;

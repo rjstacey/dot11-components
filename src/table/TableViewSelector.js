@@ -3,7 +3,7 @@ import React from 'react'
 import {connect} from 'react-redux'
 
 import {Button} from '../icons'
-import {setTableView} from '../store/ui'
+import {setTableView} from '../store/appTableData'
 
 function _TableViewSelector({tablesConfig, tableView, setTableView}) {
 	const tableViews = Object.keys(tablesConfig);

@@ -3,8 +3,15 @@ import React from 'react'
 import {connect} from 'react-redux'
 import styled from '@emotion/styled'
 
-import {getIds, getSortedFilteredIds} from '../store/dataSelectors'
-import {getFilters, removeFilter, clearAllFilters} from '../store/filters'
+import {ActionIcon} from '../icons'
+
+import {
+	getFilters,
+	removeFilter,
+	clearAllFilters,
+	getIds,
+	getSortedFilteredIds
+} from '../store/appTableData'
 
 const ActiveFilterLabel = styled.label`
 	font-weight: bold;
@@ -33,18 +40,10 @@ const ActiveFilterItem = styled.span`
 	text-overflow: ellipsis;
 `;
 
-const ActiveFilterClose = styled.span`
-	cursor: pointer;
-	text-align: center;
-	margin: 0 5px;
-	:after {content: "×"}
-	:hover {color: tomato}
-`;
-
 const ActiveFilter = ({children, remove}) =>
 	<ActiveFilterContainer role='listitem' direction='ltr'>
 		{children && <ActiveFilterItem>{children}</ActiveFilterItem>}
-		<ActiveFilterClose onClick={remove} />
+		<ActionIcon type='clear' onClick={remove} />
 	</ActiveFilterContainer>
 
 function renderActiveFilters({fields, filters, removeFilter, clearAllFilters}) {
@@ -90,7 +89,6 @@ const FiltersContainer = styled.div`
 `;
 
 const FiltersLabel = styled.div`
-	flex: content;
 	margin-right: 5px;
 	& label {
 		font-weight: bold;
@@ -112,7 +110,7 @@ const FiltersContent = styled.div`
 	border-radius: 3px;
 `;
 
-function ShowFilters({
+function _ShowFilters({
 	style,
 	className,
 	totalRows,
@@ -141,7 +139,7 @@ function ShowFilters({
 	)
 }
 
-ShowFilters.propTypes = {
+_ShowFilters.propTypes = {
 	totalRows: PropTypes.number.isRequired,
 	shownRows: PropTypes.number.isRequired,
 	filters: PropTypes.object.isRequired,
@@ -149,9 +147,9 @@ ShowFilters.propTypes = {
 	clearAllFilters: PropTypes.func.isRequired
 }
 
-export default connect(
+const ShowFilters = connect(
 	(state, ownProps) => {
-		const {dataSet} = ownProps
+		const {dataSet} = ownProps;
 		return {
 			totalRows: getIds(state, dataSet).length,
 			shownRows: getSortedFilteredIds(state, dataSet).length,
@@ -159,10 +157,17 @@ export default connect(
 		}
 	},
 	(dispatch, ownProps) => {
-		const {dataSet} = ownProps
+		const {dataSet} = ownProps;
 		return {
 			removeFilter: (dataKey, value, filterType) => dispatch(removeFilter(dataSet, dataKey, value, filterType)),
 			clearAllFilters: () => dispatch(clearAllFilters(dataSet)),
 		}
 	}
-)(ShowFilters);
+)(_ShowFilters);
+
+ShowFilters.propTypes = {
+	dataSet: PropTypes.string.isRequired,
+	fields: PropTypes.object.isRequired
+}
+
+export default ShowFilters;

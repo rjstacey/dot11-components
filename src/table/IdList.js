@@ -4,10 +4,9 @@ import {connect} from 'react-redux'
 import styled from '@emotion/styled'
 import {Editor, EditorState, ContentState, CompositeDecorator} from 'draft-js'
 import 'draft-js/dist/Draft.css'
-import {Cross} from '../icons'
+import {ActionIcon} from '../icons'
 import {parseNumber} from '../lib'
-import {setSelected} from '../store/selected'
-import {setFilter} from '../store/filters'
+import {setSelected, setFilter} from '../store/appTableData'
 
 const Container = styled.div`
 	display: flex;
@@ -47,11 +46,11 @@ function IdList({
 
 	React.useEffect(() => {
 		if (!editorState.getSelection().hasFocus) {
-			let state = EditorState.push(editorState, ContentState.createFromText(ids.join(', ')), 'remove-range')
-			state = EditorState.moveSelectionToEnd(state)
-			setEditorState(state)
+			let state = EditorState.push(editorState, ContentState.createFromText(ids.join(', ')), 'remove-range');
+			state = EditorState.moveSelectionToEnd(state);
+			setEditorState(state);
 		}
-	}, [ids])
+	}, [ids]);
 
 	function initState() {
 		const decorator = new CompositeDecorator([
@@ -129,7 +128,7 @@ function IdList({
 				onBlur={() => emitChange(editorState)}
 				placeholder={'Enter list...'}
 			/>
-			{editorState.getCurrentContent().hasText() && <Cross onClick={clear} />}
+			{editorState.getCurrentContent().hasText() && <ActionIcon type='clear' onClick={clear} />}
 		</Container>
 	)
 }

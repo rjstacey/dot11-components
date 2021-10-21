@@ -1,6 +1,6 @@
 import React from 'react'
 import {connect} from 'react-redux'
-import {Form} from '../general/Form'
+import {Form} from '../form'
 import AppModal from './AppModal'
 
 import {clearError} from '../store/error'

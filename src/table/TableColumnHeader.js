@@ -1,17 +1,21 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import {connect} from 'react-redux'
+import {useDispatch, useSelector} from 'react-redux'
 import styled from '@emotion/styled'
 import {FixedSizeList as List} from 'react-window'
 
-import {Button, ActionButtonSort, Handle, IconSort, IconFilter} from '../icons'
+import {Button, Icon} from '../icons'
 import {Checkbox, Input} from '../general/Form'
 import Dropdown from '../general/Dropdown'
 
-import {getAllFieldValues, getAvailableFieldValues} from '../store/dataSelectors'
-import {getSort, sortSet, sortOptions, SortDirection, SortType} from '../store/sort'
-import {getFilter, setFilter, addFilter, removeFilter, FilterType} from '../store/filters'
-import {getSelected} from '../store/selected'
+import {
+	getEntities,
+	getIds,
+	getFilteredIds,
+	getSorts, getSort, sortSet, sortOptions, SortDirection, SortType,
+	getFilter, setFilter, addFilter, removeFilter, FilterType,
+	getSelected
+} from '../store/appTableData'
 
 const StyledCustomContainer = styled.div`
 	margin: 10px 10px 0;
@@ -59,92 +63,78 @@ const Row = styled.div`
 	align-items: center;
 `;
 
-function Sort({
-	sort,
-	setSort
-}) {
-	const {direction, type} = sort;
+function Sort({dataSet, dataKey}) {
+	const {direction, type} = useSelector(state => state[dataSet].sorts.settings[dataKey]);
+	const dispatch = useDispatch();
+	const setSort = React.useCallback((direction) => dispatch(sortSet(dataSet, dataKey, direction)), [dispatch, dataSet, dataKey]);
 	return (
 		<Row>
 			<label>Sort:</label>
 			<span>
-				<ActionButtonSort
+				<Button
 					onClick={e => setSort(direction === SortDirection.ASC? SortDirection.NONE: SortDirection.ASC)}
-					direction={SortDirection.ASC}
-					isAlpha={type !== SortType.NUMERIC}
 					isActive={direction === SortDirection.ASC}
-				/>
-				<ActionButtonSort
+				>
+					<Icon
+						type='sort'
+						direction={SortDirection.ASC}
+						isAlpha={type !== SortType.NUMERIC}
+					/>
+				</Button>
+				<Button
 					onClick={e => setSort(direction === SortDirection.DESC? SortDirection.NONE: SortDirection.DESC)}
-					direction={SortDirection.DESC}
-					isAlpha={type !== SortType.NUMERIC}
 					isActive={direction === SortDirection.DESC}
-				/>
+				>
+					<Icon
+						type='sort'
+						direction={SortDirection.DESC}
+						isAlpha={type !== SortType.NUMERIC}
+					/>
+				</Button>
 			</span>
 		</Row>
 	)
 }
 
-Sort.propTypes = {
-	sort: PropTypes.object.isRequired,
-	setSort: PropTypes.func.isRequired
-}
-
 function Filter({
+	dataSet,
 	dataKey,
-	sort,
-	filter,
-	setFilter,
-	addFilter,
-	removeFilter,
-	allValues,
-	availableValues,
-	selected,
 	dataRenderer,
 	customFilterElement,
 	isId
 }) {
 	const [search, setSearch] = React.useState('');
 	const inputRef = React.useRef();
+	const dispatch = useDispatch();
 
-	React.useEffect(() => {
-		if (search === '//')
-			inputRef.current.setSelectionRange(1, 1)
-	}, [search]);
+	const filter = useSelector(state => getFilter(state, dataSet, dataKey));
+	const sort = useSelector(state => getSort(state, dataSet, dataKey));
+	const selected = useSelector(state => getSelected(state, dataSet));
 
-	const onInputKey = e => {
-		if (e.key === 'Enter' && e.target.value)
-			toggleItemSelected(items[0])
-		if (e.key === '/' && !e.target.value) {
-			// If search is empty and / is pressed, then add // to search
-			// and position the cursor between the slashes (through useEffect on search change)
-			e.preventDefault();
-			setSearch('//');
+	const values = useSelector(state => {
+		const entities = getEntities(state, dataSet);
+		let ids = getIds(state, dataSet);
+		if (filter.values.length === 0)
+			ids = getFilteredIds(state, dataSet);
+		const getField = filter.getField? filter.getField: (dataRow, dataKey) => dataRow[dataKey];
+		return [...new Set(ids.map(id => getField(entities[id], dataKey)))];
+	});
+
+	const options = React.useMemo(() => {
+		if (filter.options)
+			return filter.options;
+
+		const renderLabel = v => {
+			let s = dataRenderer? dataRenderer(v): v;
+			if (s === '')
+				s = '(Blank)';
+			return s;
 		}
-	}
 
-	const isItemSelected = (item) => 
-		filter.values.find(v => v.value === item.value && v.filterType === item.type) !== undefined
+		return values.map(v => ({value: v, label: renderLabel(v)}));
 
-	const toggleItemSelected = (item) => {
-		setSearch('');
-		if (isItemSelected(item))
-			removeFilter(item.value, item.type)
-		else
-			addFilter(item.value, item.type)
-	}
+	}, [values, dataRenderer, filter]);
 
-
-	const values = filter.values.length > 0? allValues: availableValues;
-	const renderLabel = v => {
-		let s = dataRenderer? dataRenderer(v): v;
-		if (s === '')
-			s = '(Blank)'
-		return s;
-	}
-	const options = filter.options?
-		filter.options:
-		values.map(v => ({value: v, label: renderLabel(v)}));
 	let searchItems = filter.values
 		.filter(v => v.filterType !== FilterType.EXACT)
 		.map(v => ({
@@ -152,7 +142,9 @@ function Filter({
 			label: (v.filterType === FilterType.REGEX? 'Regex: ': 'Contains: ') + v.value.toString(),
 			type: v.filterType
 		}));
+
 	let exactItems = options.map(o => ({...o, type: FilterType.EXACT}));
+
 	if (search) {
 		let regexp;
 		const parts = search.split('/');
@@ -161,32 +153,67 @@ function Filter({
 			// If the regex doesn't validate then ignore it
 			try {regexp = new RegExp(parts[1], parts[2])} catch (err) {}
 			if (regexp) {
-				exactItems = exactItems.filter(item => regexp.test(item.label))
+				exactItems = exactItems.filter(item => regexp.test(item.label));
 				let item = {
 					label: 'Regex: ' + regexp.toString(),
 					value: regexp,
 					type: FilterType.REGEX
-				}
-				searchItems.unshift(item)
+				};
+				searchItems.unshift(item);
 			}
 		}
 		else {
 			regexp = new RegExp(search, 'i');
-			exactItems = exactItems.filter(item => regexp.test(item.label))
+			exactItems = exactItems.filter(item => regexp.test(item.label));
 			let item = {
 				label: 'Contains: ' + search,
 				value: search,
 				type: FilterType.CONTAINS
-			}
-			searchItems.unshift(item)
+			};
+			searchItems.unshift(item);
 		}
 	}
 
 	if (sort)
-		exactItems = sortOptions(sort, exactItems)
+		exactItems = sortOptions(sort, exactItems);
 
-	// Regex items at the top of the list
+	// "Contains:" and "Regex:" items at the top of the list
 	const items = searchItems.concat(exactItems);
+
+	React.useEffect(() => {
+		if (search === '//')
+			inputRef.current.setSelectionRange(1, 1);
+	}, [search]);
+
+	const isItemSelected = React.useCallback(
+		(item) => filter.values.find(v => v.value === item.value && v.filterType === item.type) !== undefined,
+		[filter]
+	);
+
+	const toggleItemSelected = React.useCallback(
+		(item) => {
+			setSearch('');
+			if (isItemSelected(item))
+				dispatch(removeFilter(dataSet, dataKey, item.value, item.type));
+			else
+				dispatch(addFilter(dataSet, dataKey, item.value, item.type));
+		},
+		[setSearch, isItemSelected, dispatch, dataSet, dataKey]
+	);
+
+	const onInputKey = React.useCallback(
+		(e) => {
+			if (e.key === 'Enter' && e.target.value)
+				toggleItemSelected(items[0]);
+			if (e.key === '/' && !e.target.value) {
+				// If search is empty and / is pressed, then add // to search
+				// and position the cursor between the slashes (through useEffect on search change)
+				e.preventDefault();
+				setSearch('//');
+			}
+		},
+		[setSearch, toggleItemSelected, items]
+	);
 
 	const itemHeight = 35;
 	const listHeight = Math.min(items.length * itemHeight, 200);
@@ -197,14 +224,14 @@ function Filter({
 				<label>Filter:</label>
 				{selected && isId &&
 					<Button
-						onClick={() => setFilter(selected)}
+						onClick={() => dispatch(setFilter(dataSet, dataKey, selected))}
 						disabled={selected.length === 0}
 						isActive={filter.values.map(v => v.value).join() === selected.join()}
 					>
 						Selected
 					</Button>}
 				<Button
-					onClick={() => setFilter([])}
+					onClick={() => dispatch(setFilter(dataSet, dataKey, []))}
 					isActive={filter.values.length === 0}
 				>
 					Clear
@@ -249,14 +276,9 @@ function Filter({
 }
 
 Filter.propTypes = {
+	dataSet: PropTypes.string.isRequired,
 	dataKey: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
 	sort: PropTypes.object,
-	filter: PropTypes.object.isRequired,
-	setFilter: PropTypes.func.isRequired,
-	addFilter: PropTypes.func.isRequired,
-	removeFilter: PropTypes.func.isRequired,
-	allValues: PropTypes.array.isRequired,
-	availableValues: PropTypes.array.isRequired,
 	selected: PropTypes.array,
 	dataRenderer: PropTypes.func,
 	customFilterElement: PropTypes.element,
@@ -287,28 +309,29 @@ const Label = styled.label`
 	font-weight: bold;
 `;
 
-function _TableColumnHeader({
+function TableColumnHeader({
 	className,
 	style,
+	dataSet,
 	label,
 	dataKey,
 	dropdownWidth,
-	sort,
-	setSort,
-	filter,
-	setFilter,
-	addFilter,
-	removeFilter,
 	selected,
-	allValues,
-	availableValues,
 	dataRenderer,
 	anchorEl,
 	customFilterElement,
 	isId,
 }) {
-	const isFiltered = filter && filter.values.length > 0;
-	const isSorted = sort && sort.direction !== SortDirection.NONE;
+	const {filter, isFiltered, sort, isSorted} = useSelector(state => {
+		const sorts = getSorts(state, dataSet);
+		const filter = getFilter(state, dataSet, dataKey);
+		return {
+			filter: filter,
+			isFiltered: filter && filter.values.length > 0,
+			sort: sorts.settings[dataKey],
+			isSorted: sorts.by.includes(dataKey),
+		}
+	});
 
 	if (!sort && !filter)
 		return <Header><Label>{label}</Label></Header>
@@ -320,16 +343,18 @@ function _TableColumnHeader({
 			<Label>{label}</Label>
 			<div className='handle'>
 				{isFiltered &&
-					<IconFilter
+					<Icon
+						type='filter'
 						style={{opacity: 0.2}}
 					/>}
 				{isSorted && 
-					<IconSort
+					<Icon
+						type='sort'
 						style={{opacity: 0.2, paddingRight: 4}}
 						direction={sort.direction}
 						isAlpha={sort.type !== SortType.NUMERIC}
 					/>}
-				<Handle />
+				<Icon type='handle' />
 			</div>
 		</Header>;
 
@@ -337,20 +362,13 @@ function _TableColumnHeader({
 		<>
 			{sort &&
 				<Sort
-					sort={sort}
-					setSort={setSort}
+					dataSet={dataSet}
+					dataKey={dataKey}
 				/>}
 			{filter &&
 				<Filter
+					dataSet={dataSet}
 					dataKey={dataKey}
-					selected={selected}
-					sort={sort}
-					filter={filter}
-					setFilter={setFilter}
-					addFilter={addFilter}
-					removeFilter={removeFilter}
-					allValues={allValues}
-					availableValues={availableValues}
 					dataRenderer={dataRenderer}
 					customFilterElement={customFilterElement}
 					isId={isId}
@@ -372,40 +390,6 @@ function _TableColumnHeader({
 	)
 }
 
-_TableColumnHeader.propTypes = {
-	sort: PropTypes.object,
-	filter: PropTypes.object,
-	selected: PropTypes.array.isRequired,
-	allValues: PropTypes.array.isRequired,
-	availableValues: PropTypes.array.isRequired,
-	setSort: PropTypes.func.isRequired,
-	setFilter: PropTypes.func.isRequired,
-	addFilter: PropTypes.func.isRequired,
-	removeFilter: PropTypes.func.isRequired,
-}
-
-const TableColumnHeader = connect(
-	(state, ownProps) => {
-		const {dataSet, dataKey} = ownProps;
-		return {
-			sort: getSort(state, dataSet, dataKey),
-			filter: getFilter(state, dataSet, dataKey),
-			selected: getSelected(state, dataSet),
-			allValues: getAllFieldValues(state, dataSet, dataKey),
-			availableValues: getAvailableFieldValues(state, dataSet, dataKey)
-		}
-	},
-	(dispatch, ownProps) => {
-		const {dataSet, dataKey} = ownProps;
-		return {
-			setSort: (direction) => dispatch(sortSet(dataSet, dataKey, direction)),
-			setFilter: (values) => dispatch(setFilter(dataSet, dataKey, values)),
-			addFilter: (value, filterType) => dispatch(addFilter(dataSet, dataKey, value, filterType)),
-			removeFilter: (value, filterType) => dispatch(removeFilter(dataSet, dataKey, value, filterType)),
-		}
-	}
-)(_TableColumnHeader);
-
 TableColumnHeader.propTypes = {
 	dataSet: PropTypes.string.isRequired,	// Identifies the dataset in the store
 	dataKey: PropTypes.string.isRequired,	// Identifies the data element in the row object
@@ -414,7 +398,7 @@ TableColumnHeader.propTypes = {
 	dropdownWidth: PropTypes.number,
 	dataRenderer: PropTypes.func,			// Optional function to render the data element
 	anchorEl: PropTypes.oneOfType([PropTypes.element, PropTypes.object]),
-	customFilterElement: PropTypes.func,	// Custom filter element for dropdown
+	customFilterElement: PropTypes.element,	// Custom filter element for dropdown
 	isId: PropTypes.bool,					// Identifies the data table ID column; enables "filter selected"
 }
 

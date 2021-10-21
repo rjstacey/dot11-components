@@ -3,13 +3,23 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import styled from '@emotion/styled'
 import {useClickOutside} from '../lib'
-import {ActionButton, Handle} from '../icons'
+import {Button, Icon} from '../icons'
 
 /***
  * There is potentially an issue here. If the dropdown opens and causes a scrollbar to appear in the parent due to
  * overflow, then the dropdown will close again on scroll event. In effect, the user will not see the dropdown
  * appear.
  */
+
+const Header = styled.div`
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	min-width: 1em;
+	min-height: 1em;
+	cursor: pointer;
+	:hover {color: tomato};
+`;
 
 const Wrapper = styled.div`
 	display: flex;
@@ -68,7 +78,7 @@ function DropdownContainer({
 			if (bounds.right > window.innerWidth)
 				setPosition(position => ({...position, left: position.left - (bounds.right - window.innerWidth)}));
 		}
-	}, []);
+	}, [alignLeft]);
 
 	const dropdownEl = <StyledDropdownContainer ref={ref} style={{...style, ...position}} {...rest} />
 
@@ -97,6 +107,8 @@ function Dropdown({
 	const anchorElement = portal? anchorEl: wrapperRef.current;
 
 	const open = () => {
+		if (disabled)
+			return;
 		if (onRequestOpen)
 			onRequestOpen();
 		setOpen(true);
@@ -110,9 +122,11 @@ function Dropdown({
 
 	const outsideClick = (e) => {
 		// ignore if not open or if event target is an element inside the dropdown
-		if (!isOpen || (anchorElement && anchorElement.lastChild.contains(e.target)))
+		if (!isOpen)
 			return;
-		close();
+		if (anchorElement && anchorElement.lastChild.contains(e.target))
+			return;
+ 		close();
 	}
 
 	useClickOutside(wrapperRef, outsideClick);
@@ -123,7 +137,7 @@ function Dropdown({
 			style={style}
 			ref={wrapperRef}
 		>
-			{selectRenderer({isOpen, open, close, label, title})}
+			{selectRenderer({isOpen, open, close, label, title, disabled})}
 			{isOpen && anchorElement &&
 				<DropdownContainer
 					className='dropdown-container'
@@ -153,15 +167,14 @@ Dropdown.propTypes = {
 Dropdown.defaultProps = {
 	alignLeft: false,
 	portal: false,
-	selectRenderer: ({isOpen, open, close, label, title}) =>
-		<div
-			style={{display: 'flex', justifyContent: 'center', alignItems: 'center', minWidth: 12, minHeight: 12}}
+	selectRenderer: ({isOpen, open, close, label, title, disabled}) =>
+		<Header
 			title={title}
-			onClick={isOpen? close: open}
+			onClick={disabled? undefined: (isOpen? close: open)}
 		>
 			{label && <label>{label}</label>}
-			<Handle />
-		</div>,
+			<Icon type='handle' />
+		</Header>,
 	dropdownRenderer: ({isOpen, close, children}) =>
 		React.Children.map(children,
 			child => React.isValidElement(child)? React.cloneElement(child, {isOpen, close}): child
@@ -171,14 +184,18 @@ Dropdown.defaultProps = {
 export const ActionButtonDropdown = ({name, label, title, disabled, ...rest}) =>
 	<Dropdown
 		selectRenderer={({isOpen, open, close}) =>
-			<ActionButton
-				name={name}
-				label={label}
+			<Button
 				title={title}
 				disabled={disabled} 
 				active={isOpen}
 				onClick={isOpen? close: open}
-			/>}
+			>
+				{label?
+					label:
+					<Icon
+						type={name}
+					/>}
+			</Button>}
 		{...rest}
 	/>
 

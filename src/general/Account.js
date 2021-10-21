@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from '@emotion/styled'
-import {Handle} from '../icons'
+import {Icon} from '../icons'
 
 import Dropdown from './Dropdown'
 import {logout, AccessLevelOptions} from '../lib'
@@ -22,7 +22,9 @@ const AccountSummary = ({user, isOpen, open, close}) =>
 		onClick={() => isOpen? close(): open()}
 	>
 		<span>{`${user.Name} (${user.SAPIN})`}</span>
-		<Handle open={isOpen} />
+		<Icon
+			type='handle'
+		/>
 	</AccountSummaryContainer>
 
 const Button = styled.button`

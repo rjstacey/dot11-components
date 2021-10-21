@@ -10,10 +10,14 @@ import ColumnHeader from './TableColumnHeader'
 
 import {debounce, getScrollbarSize} from '../lib'
 
-import {getSelected, setSelected} from '../store/selected'
-import {getExpanded} from '../store/expanded'
-import {setDefaultTablesConfig, adjustTableColumnWidth} from '../store/ui'
-import {getSortedFilteredIds, getSortedFilteredData} from '../store/dataSelectors'
+import {
+	getSelected,
+	setSelected,
+	getExpanded,
+	setDefaultTablesConfig,
+	adjustTableColumnWidth,
+	getSortedFilteredIds,
+} from '../store/appTableData';
 
 const scrollbarSize = getScrollbarSize();
 
@@ -289,7 +293,7 @@ class AppTableSized extends React.PureComponent {
 						{({rowIndex, style}) => {
 							const rowId = props.ids[rowIndex];
 							const rowData = props.rowGetter 
-								? props.rowGetter({rowIndex, rowId, ids: props.ids, entities: props.entities, data: props.data})
+								? props.rowGetter({rowIndex, rowId, ids: props.ids, entities: props.entities})
 								: props.entities[rowId];
 								
 							//console.log(rowData)
@@ -297,10 +301,10 @@ class AppTableSized extends React.PureComponent {
 							const isExpanded = props.expanded && props.expanded.includes(rowId);
 
 							// Add appropriate row classNames
-							let classNames = ['AppTable__dataRow']
-							classNames.push((rowIndex % 2 === 0)? 'AppTable__dataRow-even': 'AppTable__dataRow-odd')
+							let classNames = ['AppTable__dataRow'];
+							classNames.push((rowIndex % 2 === 0)? 'AppTable__dataRow-even': 'AppTable__dataRow-odd');
 							if (isSelected)
-								classNames.push('AppTable__dataRow-selected')
+								classNames.push('AppTable__dataRow-selected');
 
 							return (
 								<TableRow
@@ -321,7 +325,7 @@ class AppTableSized extends React.PureComponent {
 						}}
 					</Grid>:
 					<NoGrid style={{height: height - props.headerHeight, width}}>
-						{props.loading? 'Loading...': 'No Data'}
+						{props.loading? 'Loading...': 'Empty'}
 					</NoGrid>
 				}
 				<TableHeader
@@ -354,7 +358,6 @@ _AppTable.propTypes = {
 	fixed: PropTypes.bool,
 	columns: PropTypes.array.isRequired,
 	dataSet: PropTypes.string.isRequired,
-	data: PropTypes.array.isRequired,
 	selected: PropTypes.array,
 	expanded: PropTypes.array,
 	rowGetter: PropTypes.func,
@@ -374,7 +377,6 @@ const AppTable = connect(
 			loading: state[dataSet].loading,
 			entities: state[dataSet].entities,
 			ids: getSortedFilteredIds(state, dataSet),
-			data: getSortedFilteredData(state, dataSet),
 			tableView,
 			tableConfig,
 		}

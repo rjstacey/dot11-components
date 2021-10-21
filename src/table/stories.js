@@ -1,14 +1,13 @@
 import { LoremIpsum } from "lorem-ipsum";
 import React from 'react';
-import { configureStore, combineReducers, createEntityAdapter } from '@reduxjs/toolkit'
+import { configureStore, combineReducers } from '@reduxjs/toolkit'
 import { createLogger } from 'redux-logger'
 import thunk from 'redux-thunk'
 import { Provider, useDispatch } from 'react-redux'
 
 import {displayDate} from '../lib'
-import {ButtonGroup, Button, ActionButton} from '../icons'
-import {appTableCreateSlice} from '../store/appTableData'
-import {SortType} from '../store/sort'
+import {ButtonGroup, Button, ActionButton, ActionIcon} from '../icons'
+import {createAppTableDataSlice, SortType} from '../store/appTableData'
 
 import AppTable, {
 	SelectHeader, 
@@ -24,6 +23,21 @@ import AppTable, {
 	SplitPanel,
 	Panel
 } from '.'
+
+const story = {
+	title: 'Table',
+	component: AppTable,
+	args: {
+		expandable: false,
+		numberOfRows: 5,
+	},
+	decorators: [
+		(Story) =>
+			<Provider store={store}>
+				<Story />
+			</Provider>
+	]
+};
 
 const statusOptions = [
 	{value: 0, label: 'Good'},
@@ -60,34 +74,17 @@ const fields = {
 		dontSort: true,
 		dontFilter: true
 	},
+	Derived: {
+		label: 'Derived',
+		getField: o => o.Status,
+	}
 };
-
-const dataAdapter = createEntityAdapter({});
 
 const dataSet = 'data';
 
-const slice = appTableCreateSlice({
-	name: dataSet,
-	fields,
-	initialState: dataAdapter.getInitialState({
-		valid: false,
-		loading: false
-	}),
-	reducers: {
-		getPending(state, action) {
-			state.loading = true;
-		},
-		getSuccess(state, action) {
-			state.loading = false;
-			state.valid = true;
-			dataAdapter.setAll(state, action.payload);
-		},
-		getFailure(state, action) {
-			state.loading = false;
-		},
-	}
-});
+const slice = createAppTableDataSlice({name: dataSet,	fields, initialState: {}});
 
+const removeRow = slice.actions.removeOne;
 const store = configureStore({
   reducer: combineReducers({
   	[slice.name]: slice.reducer
@@ -124,6 +121,12 @@ const tableColumns = [
 	{key: 'Status',
 		...fields.Status,
 		width: 200, flexGrow: 1, flexShrink: 1},
+	{key: 'Derived',
+		...fields.Derived,
+		width: 200},
+	{key: 'Actions',
+		label: 'Actions',
+		width: 200}
 ];
 
 const randomDate = (start, end) =>
@@ -193,7 +196,7 @@ const LoaderButton= ({numberOfRows}) => {
 	)
 }
 
-function tableColumnsWithControl(expandable) {
+function tableColumnsWithControl(expandable, dispatch) {
 	const columns = tableColumns.slice();
 	let headerRenderer, cellRenderer;
 	if (expandable) {
@@ -215,13 +218,16 @@ function tableColumnsWithControl(expandable) {
 		cellRenderer = p => <SelectCell dataSet={dataSet} {...p} />;
 	}
 	columns[0] = {...columns[0], headerRenderer, cellRenderer};
+	cellRenderer = ({rowData}) => <ActionIcon type='delete' onClick={(e) => {e.stopPropagation(); dispatch(removeRow(rowData.id))}} />
+	columns[columns.length-1] = {...columns[columns.length-1], cellRenderer};
 	return columns;
 }
 
 export const SplitTable = ({expandable, numberOfRows}) => {
 
 	const [splitView, setSplitView] = React.useState(false);
-	const columns = React.useMemo(() => tableColumnsWithControl(expandable), [expandable]);
+	const dispatch = useDispatch();
+	const columns = React.useMemo(() => tableColumnsWithControl(expandable, dispatch), [expandable, dispatch]);
 
 	return (
 		<div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '80vh'}}>
@@ -262,7 +268,8 @@ export const SplitTable = ({expandable, numberOfRows}) => {
 
 export const NoDefaultTable = ({expandable, numberOfRows}) => {
 
-	const columns = React.useMemo(() => tableColumnsWithControl(expandable), [expandable]);
+	const dispatch = useDispatch();
+	const columns = React.useMemo(() => tableColumnsWithControl(expandable, dispatch), [expandable, dispatch]);
 
 	return (
 		<div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '80vh'}}>
@@ -284,7 +291,8 @@ export const NoDefaultTable = ({expandable, numberOfRows}) => {
 
 export const FixedCenteredTable = ({expandable, numberOfRows}) => {
 
-	const columns = React.useMemo(() => tableColumnsWithControl(expandable), [expandable]);
+	const dispatch = useDispatch();
+	const columns = React.useMemo(() => tableColumnsWithControl(expandable, dispatch), [expandable, dispatch]);
 
 	return (
 		<div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '80vh'}}>
@@ -307,22 +315,4 @@ export const FixedCenteredTable = ({expandable, numberOfRows}) => {
 	)
 }
 
-export default {
-	title: 'Table',
-	component: AppTable,
-	argTypes: {
-		expandable: {
-			type: {name: 'boolean'},
-		},
-		numberOfRows: {
-			type: {name: 'number'},
-			defaultValue: 5,
-		}
-	},
-	decorators: [
-		(Story) =>
-			<Provider store={store}>
-				<Story />
-			</Provider>
-	]
-};
+export default story;

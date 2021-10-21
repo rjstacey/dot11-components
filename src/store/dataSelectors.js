@@ -1,5 +1,5 @@
 import {createCachedSelector} from 're-reselect'
-import {getSorts, sortData} from './sort'
+import {getSorts, sortData} from './sorts'
 import {getFilters, filterData} from './filters'
 
 export const getEntities = (state, dataSet) => state[dataSet].entities
@@ -18,15 +18,27 @@ export const getData = createCachedSelector(
 )
 
 /*
+ * getFilteredIds(state, dataSet) selector
+ * returns array of filtered ids
+ */
+export const getFilteredIds = createCachedSelector(
+	getEntities,
+	getIds,
+	getFilters,
+	(entities, ids, filters) => filterData(filters, entities, ids)
+)(
+	(state, dataSet) => dataSet
+);
+
+/*
  * getSortedFilteredIds(state, dataSet) selector
  * returns array of sorted and filtered ids
  */
 export const getSortedFilteredIds = createCachedSelector(
 	getEntities,
-	getIds,
+	getFilteredIds,
 	getSorts,
-	getFilters,
-	(entities, ids, sort, filters) => sortData(sort, entities, filterData(filters, entities, ids))
+	(entities, ids, sorts) => sortData(sorts, entities, ids)
 )(
 	(state, dataSet) => dataSet
 );

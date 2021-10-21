@@ -3,19 +3,26 @@ import React from 'react'
 import {connect} from 'react-redux'
 import styled from '@emotion/styled'
 
-import {Expander, DoubleExpander} from '../icons'
+import {ActionIcon} from '../icons'
 import {Checkbox} from '../general/Form'
 import Dropdown from '../general/Dropdown'
 
-import {getSelected, setSelected, toggleSelected} from '../store/selected'
-import {getExpanded, setExpanded, toggleExpanded} from '../store/expanded'
-import {getSortedFilteredIds} from '../store/dataSelectors'
+import {
+	getSelected,
+	setSelected,
+	toggleSelected,
+	getExpanded,
+	setExpanded,
+	toggleExpanded,
+	getSortedFilteredIds
+} from '../store/appTableData'
 
 const Selector = styled.div`
 	display: flex;
 	flex-direction: row;
 	border-radius: 3px;
 	align-items: center;
+	:hover {color: tomato};
 	:hover,
 	:focus-within {
 		background-color: #ddd;
@@ -80,8 +87,9 @@ function _ControlHeader({
 					/>}
 			</Selector>
 			{expanded &&
-				<DoubleExpander
-					title="Expand All"
+				<ActionIcon
+					type='double-expander'
+					title="Expand all"
 					open={allExpanded}
 					onClick={toggleAllExpanded}
 				/>
@@ -139,7 +147,8 @@ function _ControlCell({
 				onChange={() => toggleSelected(rowId)}
 			/>
 			{expanded && 
-				<Expander
+				<ActionIcon
+					type='expander'
 					title="Expand row"
 					open={expanded.includes(rowId)}
 					onClick={() => toggleExpanded(rowId)}

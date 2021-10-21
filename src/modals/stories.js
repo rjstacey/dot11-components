@@ -8,15 +8,15 @@ import { Provider, connect } from 'react-redux'
 import {AppModal, ActionButtonModal, ErrorModal, ConfirmModal} from '.'
 import errMsg, {setError} from '../store/error'
 
+const story = {
+  title: 'Modals',
+};
+
 const store = configureStore({
   reducer: combineReducers({errMsg}),
   middleware: [thunk, createLogger({collapsed: true})],
   devTools: true
 });
-
-export default {
-  title: 'Modals',
-};
 
 const Content = () => 
     <form style={{width: '200px'}}>
@@ -24,15 +24,16 @@ const Content = () =>
       <label><input type='radio' id='1' />Frog</label><br />
     </form>
 
-export const Basic = (args) =>
+const Basic = (args) =>
   <AppModal {...args} >
     <Content />
   </AppModal>
+
 Basic.args = {
   isOpen: true
 };
 
-export const BasicActionButtonModal = (args) => 
+const BasicActionButtonModal = (args) => 
   <ActionButtonModal
     name='add'
     title='I have a title'
@@ -59,7 +60,7 @@ function SendError({setError}) {
 
 const ConnectedSendError = connect(null, {setError})(SendError);
 
-export const Error = () =>
+const Error = () =>
   <Provider store={store}>
     <ConnectedSendError />
     <ErrorModal />
@@ -69,8 +70,7 @@ Error.parameters = {
   controls: { hideNoControlsWarning: true },
 };
 
-
-export const Confirm = () => {
+const Confirm = () => {
   const [action, setAction] = React.useState('');
   const check = async () => {
     const ok = await ConfirmModal.show('Are you sure?');
@@ -84,6 +84,10 @@ export const Confirm = () => {
     </>
   )
 }
+
 Confirm.parameters = {
   controls: { hideNoControlsWarning: true },
 };
+
+export {Basic, BasicActionButtonModal, Error, Confirm};
+export default story;
