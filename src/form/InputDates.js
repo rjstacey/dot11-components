@@ -6,7 +6,7 @@ import Calendar from '../calendar'
 import TextArea from './TextArea'
 import Dropdown from '../general/Dropdown'
 
-const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 const Wrapper = styled.div`
 	display: flex;
@@ -57,20 +57,23 @@ const Wrapper = styled.div`
 	}
 `;
 
+const toISODate = (d) => '' + d.getFullYear() + '-' + ('0' + (d.getMonth()+1)).substr(-2) + '-' + ('0' + d.getDate()).substr(-2);
+
 function toDatesStr(dates) {
-	const now = new Date();
-	let currentMonth = now.getMonth();
+	let currentMonth;
 	const list = [];
 	for (const date of dates) {
-		let s = '';
-		const month = Intl.DateTimeFormat('en-US', {month: 'short'}).format(date);
-		if (month !== currentMonth) {
-			s += month;
-			currentMonth = month;
+		const m = date.match(/(\d{4})-(\d{2})-(\d{2})/);
+		if (m) {
+			const month = m[2];
+			const day = m[3];
+			let s = '' + parseInt(day, 10);
+			if (month !== currentMonth) {
+				s = months[parseInt(month, 10)-1] + ' ' + s;
+				currentMonth = month;
+			}
+			list.push(s);
 		}
-		const day = date.getDate();
-		s += ' ' + day;
-		list.push(s);
 	}
 	return list.join(', ');
 }
@@ -87,22 +90,25 @@ function InputDates({
 	placeholder,
 }) {
 	const [uncontrolledValue, setUncontrolledValue] = React.useState([]);
-	const selectedDates = value || uncontrolledValue;
-	const setSelectedDates = onChange || setUncontrolledValue;
-	const [datesStr, setDatesStr] = React.useState(toDatesStr(selectedDates));
+	const dates = value || uncontrolledValue;
+	const setDates = onChange || setUncontrolledValue;
+	const [datesStr, setDatesStr] = React.useState(toDatesStr(dates));
 	const [textareaHasFocus, setTextareaHasFocus] = React.useState(false);
 
 	React.useEffect(() => {
 		if (!textareaHasFocus) {
-			const str = toDatesStr(selectedDates);
+			const str = toDatesStr(dates);
 			if (str !== datesStr)
 				setDatesStr(str);
 		}
-	}, [textareaHasFocus, selectedDates, datesStr]);
+	}, [textareaHasFocus, dates, datesStr]);
 
-	const today = new Date();
-	const minDate = new Date(today.getFullYear(), today.getMonth(), 1);
-	const maxDate = new Date(today.getFullYear() + 1, today.getMonth(), 0);
+	const {minDate, maxDate} = React.useMemo(() => {
+		const today = new Date();
+		const minDate = toISODate(new Date(today.getFullYear(), today.getMonth(), 1));
+		const maxDate = toISODate(new Date(today.getFullYear() + 1, today.getMonth(), 0));
+		return {minDate, maxDate};
+	}, []);
 
 	placeholder = placeholder || (multi? 'Month dd, dd, etc.': 'Month dd');
 
@@ -117,30 +123,29 @@ function InputDates({
 		for (let s of strArray) {
 			let date = null;
 			s = s.trim();
-			const matches = s.match(/([a-z]*)\s*([\d]+)/i);
+			const matches = s.match(/([A-Za-z]*)\s*([\d]+)/i);
 			if (matches) {
 				const monthStr = matches[1];
 				const dayStr = matches[2];
 				if (monthStr) {
-					currentMonth = months.indexOf(monthStr.substr(0,3).toLowerCase());
+					currentMonth = months.findIndex(m => m.toLowerCase() === monthStr.substr(0,3).toLowerCase());
 					if (currentMonth < now.getMonth())
 						currentYear = now.getFullYear() + 1;
 				}
 				if (currentMonth >= 0 && dayStr)
-					date = new Date(currentYear, currentMonth, dayStr);
+					date = toISODate(new Date(currentYear, currentMonth, dayStr));
 			}
 			if (date)
 				dates.push(date);
 		}
-		dates.sort((a, b) => a - b);
-		setSelectedDates(dates);
+		dates.sort();
+		setDates(dates);
 		setDatesStr(str);
 	}
 
 	function changeDatesArray(dates) {
-		dates = dates.slice().sort((a, b) => a - b);
 		setDatesStr(toDatesStr(dates));
-		setSelectedDates(dates);
+		setDates(dates);
 	}
 
 	return (
@@ -150,7 +155,7 @@ function InputDates({
 			disabled={disabled}
 		>
 			<TextArea
-				className={'textarea' + (selectedDates.length === 0? ' invalid': '')}
+				className={'textarea' + (dates.length === 0? ' invalid': '')}
 				value={datesStr}
 				onChange={(e) => changeDatesStr(e.target.value)}
 				placeholder={placeholder}
@@ -181,7 +186,7 @@ function InputDates({
 						disablePast={disablePast}
 						minDate={minDate}
 						maxDate={maxDate}
-						value={selectedDates}
+						value={dates}
 						onChange={changeDatesArray}
 					/>
 				}
@@ -190,8 +195,14 @@ function InputDates({
 	);
 }
 
+function validateISODate(props, propName, componentName) {
+  const value = props[propName];
+  if (value && /%d{4}-%d{2}-%d{2}/.test(value))
+    return new Error(`Invalid prop ${propName} supplied to ${componentName}. Expect string in form 'YYYY-MM-DD'.`);
+}
+
 InputDates.propTypes = {
-	value: PropTypes.array,
+	value: PropTypes.arrayOf(validateISODate),
 	onChange: PropTypes.func,
 	disabled: PropTypes.bool,
 	multi: PropTypes.bool,

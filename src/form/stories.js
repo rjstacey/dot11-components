@@ -43,7 +43,7 @@ const options = [{label: 'One', value: 1}, {label: 'Two', value: 2}];
 export const TwoColsForm = (args) => {
 	const {disabled, ...otherArgs} = args;
 	const [dates, setDates] = React.useState([]);
-	const [time, setTime] = React.useState(null);
+	const [time, setTime] = React.useState('');
 	const [checkbox, setCheckbox] = React.useState(false);
 	const [select, setSelect] = React.useState([]);
 

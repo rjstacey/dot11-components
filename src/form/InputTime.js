@@ -1,13 +1,8 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import Input from './Input'
-import {parseNumber} from '../lib'
 
-function toTimeStr(time) {
-	if (!time)
-		return '';
-	return ('0' + time.HH).substr(-2) + ':' + ('0' + time.MM).substr(-2);
-}
+const toTimeStr = (hour, min) => ('0' + hour).substr(-2) + ':' + ('0' + min).substr(-2);
 
 function InputTime({
 	style,
@@ -16,43 +11,39 @@ function InputTime({
 	placeholder,
 	...otherProps
 }) {
-	const [valueAsStr, setValueAsStr] = React.useState(toTimeStr(value));
+	const [rawValue, setRawValue] = React.useState(value);
 	const [valid, setValid] = React.useState(true);
 	const [hasFocus, setHasFocus] = React.useState(false);
 
 	React.useEffect(() => {
-		if (!hasFocus) {
-			const str = toTimeStr(value);
-			if (str !== valueAsStr)
-				setValueAsStr(str);
-		}
-	}, [hasFocus, value, valueAsStr]);
+		if (!hasFocus && value !== rawValue)
+			setRawValue(value);
+	}, [hasFocus, value, rawValue]);
 
 	placeholder = placeholder || 'HH:MM';
 
 	const handleChange = (e) => {
-		const {value} = e.target;
-		const [hourStr, minStr] = value.split(':');
-
+		const rawValue = e.target.value;
 		let isValid = false;
-		let time = null;
-		if (hourStr && minStr) {
-			time = {
-				HH: parseNumber(hourStr),
-				MM: parseNumber(minStr)
-			};
-			if (time.HH >= 0 && time.HH < 24 && time.MM >= 0 && time.MM < 60)
+		let value = '';
+		const m = rawValue.match(/(\d{1,2}):(\d{2})$/);
+		if (m) {
+			const hour = parseInt(m[1], 10);
+			const min = parseInt(m[2], 10);
+			if (hour >= 0 && hour < 24 && min >= 0 && min < 60) {
 				isValid = true;
+				value = toTimeStr(hour, min);
+			}
 		}
-		else if (!hourStr && !minStr) {
+		else if (rawValue === '') {
 			isValid = true;
 		}
 
 		setValid(isValid);
-		setValueAsStr(value);
+		setRawValue(rawValue);
 
 		if (onChange)
-			onChange(isValid? time: null);
+			onChange(value);
 	}
 
 	const newStyle = {...style, color: valid? 'inherit': 'red'};
@@ -60,7 +51,7 @@ function InputTime({
 		<Input
 			style={newStyle}
 			type='search'
-			value={valueAsStr}
+			value={rawValue}
 			onChange={handleChange}
 			placeholder={placeholder}
 			onFocus={() => setHasFocus(true)}
@@ -70,8 +61,27 @@ function InputTime({
 	)
 }
 
+function isValidTime(value) {
+	if (value === '')
+		return true;
+	const m = value.match(/(\d{1,2}):(\d{2})$/);
+	if (m) {
+		const hour = parseInt(m[1], 10);
+		const min = parseInt(m[2], 10);
+		if (hour >= 0 && hour < 24 && min >= 0 && min < 60)
+			return true;
+	}
+	return false;
+}
+
+function validateTime(props, propName, componentName) {
+  const value = props[propName];
+  if (value && typeof value === 'string' && !isValidTime(value))
+    return new Error(`Invalid prop ${propName} supplied to ${componentName}. Expect empty string or string in form 'HH:MM'.`);
+}
+
 InputTime.propTypes = {
-	value: PropTypes.object,
+	value: validateTime,
 	onChange: PropTypes.func,
 	placeholder: PropTypes.string,
 }
