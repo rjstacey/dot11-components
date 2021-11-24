@@ -52,16 +52,6 @@ export function strComp(a, b) {
 	return 0;
 }
 
-export function shallowDiff(originalObj, modifiedObj) {
-	let changed = {};
-	for (let k in modifiedObj) {
-		if (/*modifiedObj.hasOwnProperty(k) && */modifiedObj[k] !== originalObj[k]) {
-			changed[k] = modifiedObj[k]
-		}
-	}
-	return changed;
-}
-
 export const parseNumber = (value) => {
 	// Return the value as-is if it's already a number
 	if (typeof value === 'number')

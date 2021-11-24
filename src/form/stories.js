@@ -76,6 +76,7 @@ export const TwoColsForm = (args) => {
 						<ListItem><Field label='Checkbox:'><Checkbox value={checkbox} onChange={setCheckbox} /></Field></ListItem>
 						<ListItem><Field label={'Search:'}><Input type='search' disabled={disabled} /></Field></ListItem>
 						<ListItem><Field label={'Select:'}><Select disabled={disabled} options={options} value={select} onChange={setSelect} /></Field></ListItem>
+						<ListItem><Field label={'Select (portal):'}><Select disabled={disabled} options={options} value={select} onChange={setSelect} portal={document.querySelector('#root')} /></Field></ListItem>
 					</List>
 				</Col>
 				<Col>
