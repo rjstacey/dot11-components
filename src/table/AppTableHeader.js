@@ -1,8 +1,8 @@
-import PropTypes from 'prop-types'
-import React from 'react'
-import styled from '@emotion/styled'
+import PropTypes from 'prop-types';
+import React from 'react';
+import styled from '@emotion/styled';
 
-import ColumnResizer from './ColumnResizer'
+import ColumnResizer from './ColumnResizer';
 
 const HeaderCell = styled.div`
 	display: flex;

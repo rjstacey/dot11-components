@@ -1,38 +1,30 @@
-import PropTypes from 'prop-types'
-import React from 'react'
-import {connect} from 'react-redux'
+import PropTypes from 'prop-types';
+import React from 'react';
+import {useDispatch, useSelector} from 'react-redux';
 
-import {Button} from '../icons'
-import {setTableView} from '../store/appTableData'
+import {Button} from '../icons';
+import {setTableView} from '../store/appTableData';
 
-function _TableViewSelector({tablesConfig, tableView, setTableView}) {
-	const tableViews = Object.keys(tablesConfig);
+function TableViewSelector({dataSet}) {
+	const dispatch = useDispatch();
+
+	const selectInfo = React.useCallback(state => {
+		const {tableView, tablesConfig} = state[dataSet].ui;
+		const tableViews = Object.keys(tablesConfig);
+		return {tableView, tableViews};
+	}, [dataSet]);
+	const {tableView, tableViews} = useSelector(selectInfo);
+
 	return tableViews.map(view => 
 		<Button
 			key={view}
 			isActive={tableView === view}
-			onClick={() => setTableView(view)}
+			onClick={() => dispatch(setTableView(dataSet, view))}
 		>
 			{view}
 		</Button>
 	)
 }
-
-const TableViewSelector = connect(
-	(state, ownProps) => {
-		const {dataSet} = ownProps;
-		return {
-			tableView: state[dataSet].ui.tableView,
-			tablesConfig: state[dataSet].ui.tablesConfig
-		}
-	},
-	(dispatch, ownProps) => {
-		const {dataSet} = ownProps;
-		return {
-			setTableView: (view) => dispatch(setTableView(dataSet, view))
-		}
-	}
-)(_TableViewSelector);
 
 TableViewSelector.propTypes = {
 	dataSet: PropTypes.string.isRequired,

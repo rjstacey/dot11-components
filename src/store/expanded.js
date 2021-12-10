@@ -35,5 +35,5 @@ export const setExpanded = (dataSet, ids) => ({type: dataSet + '/setExpanded', p
 export const toggleExpanded = (dataSet, ids) => ({type: dataSet + '/toggleExpanded', payload: ids});
 
 /* Selectors */
-export const getExpanded = (state, dataSet) => state[dataSet][name];
+export const selectExpanded = (state, dataSet) => state[dataSet][name];
  

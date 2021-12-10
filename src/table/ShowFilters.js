@@ -1,17 +1,17 @@
-import PropTypes from 'prop-types'
-import React from 'react'
-import {connect} from 'react-redux'
-import styled from '@emotion/styled'
+import PropTypes from 'prop-types';
+import React from 'react';
+import {useDispatch, useSelector} from 'react-redux';
+import styled from '@emotion/styled';
 
-import {ActionIcon} from '../icons'
+import {ActionIcon} from '../icons';
 
 import {
-	getFilters,
 	removeFilter,
 	clearAllFilters,
-	getIds,
-	getSortedFilteredIds
-} from '../store/appTableData'
+	selectFilters,
+	selectIds,
+	selectSortedFilteredIds
+} from '../store/appTableData';
 
 const ActiveFilterLabel = styled.label`
 	font-weight: bold;
@@ -110,18 +110,28 @@ const FiltersContent = styled.div`
 	border-radius: 3px;
 `;
 
-function _ShowFilters({
+function ShowFilters({
 	style,
 	className,
-	totalRows,
-	shownRows,
 	fields,
-	filters,
-	removeFilter,
-	clearAllFilters,
-	...otherProps
+	dataSet
 }) {
-	const activeFilterElements = renderActiveFilters({fields, filters, removeFilter, clearAllFilters})
+	const dispatch = useDispatch();
+
+	const selectfiltersInfo = React.useCallback((state) => ({
+		totalRows: selectIds(state, dataSet).length,
+		shownRows: selectSortedFilteredIds(state, dataSet).length,
+		filters: selectFilters(state, dataSet)
+	}), [dataSet]);
+
+	const {filters, totalRows, shownRows} = useSelector(selectfiltersInfo);
+
+	const activeFilterElements = React.useMemo(() => {
+		const dispatchRemoveFilter = (dataKey, value, filterType) => dispatch(removeFilter(dataSet, dataKey, value, filterType));
+		const dispatchClearAllFilters = () => dispatch(clearAllFilters(dataSet));
+
+		return renderActiveFilters({fields, filters, removeFilter: dispatchRemoveFilter, clearAllFilters: dispatchClearAllFilters});
+	}, [dataSet, fields, filters, dispatch]);
 
 	return (
 		<FiltersContainer
@@ -138,32 +148,6 @@ function _ShowFilters({
 		</FiltersContainer>
 	)
 }
-
-_ShowFilters.propTypes = {
-	totalRows: PropTypes.number.isRequired,
-	shownRows: PropTypes.number.isRequired,
-	filters: PropTypes.object.isRequired,
-	removeFilter: PropTypes.func.isRequired,
-	clearAllFilters: PropTypes.func.isRequired
-}
-
-const ShowFilters = connect(
-	(state, ownProps) => {
-		const {dataSet} = ownProps;
-		return {
-			totalRows: getIds(state, dataSet).length,
-			shownRows: getSortedFilteredIds(state, dataSet).length,
-			filters: getFilters(state, dataSet)
-		}
-	},
-	(dispatch, ownProps) => {
-		const {dataSet} = ownProps;
-		return {
-			removeFilter: (dataKey, value, filterType) => dispatch(removeFilter(dataSet, dataKey, value, filterType)),
-			clearAllFilters: () => dispatch(clearAllFilters(dataSet)),
-		}
-	}
-)(_ShowFilters);
 
 ShowFilters.propTypes = {
 	dataSet: PropTypes.string.isRequired,

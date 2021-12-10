@@ -1,7 +1,7 @@
-import PropTypes from 'prop-types'
-import React from 'react'
-import {DraggableCore} from 'react-draggable'
-import styled from '@emotion/styled'
+import PropTypes from 'prop-types';
+import React from 'react';
+import {DraggableCore} from 'react-draggable';
+import styled from '@emotion/styled';
 
 const ResizeHandle = styled.div`
 	height: 100%;

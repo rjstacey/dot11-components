@@ -1,20 +1,20 @@
-import PropTypes from 'prop-types'
-import React from 'react'
-import {connect} from 'react-redux'
-import styled from '@emotion/styled'
+import PropTypes from 'prop-types';
+import React from 'react';
+import {useDispatch, useSelector} from 'react-redux';
+import styled from '@emotion/styled';
 
-import {ActionIcon} from '../icons'
-import {Checkbox} from '../general/Form'
-import Dropdown from '../general/Dropdown'
+import {ActionIcon} from '../icons';
+import {Checkbox} from '../form';
+import Dropdown from '../general/Dropdown';
 
 import {
-	getSelected,
+	selectSelected,
 	setSelected,
 	toggleSelected,
-	getExpanded,
+	selectExpanded,
 	setExpanded,
 	toggleExpanded,
-	getSortedFilteredIds
+	selectSortedFilteredIds
 } from '../store/appTableData'
 
 const Selector = styled.div`
@@ -35,15 +35,21 @@ const Container = styled.div`
 	align-items: center;
 `;
 
-function _ControlHeader({
-	shownIds,
-	selected,
-	setSelected,
-	expanded,
-	setExpanded,
+function ControlHeader({
+	dataSet,
 	anchorEl,
-	customSelectorElement
+	customSelectorElement,
+	showExpanded
 }) {
+	const dispatch = useDispatch();
+
+	const selectInfo = React.useCallback(state => ({
+		selected: selectSelected(state, dataSet),
+		expanded: selectExpanded(state, dataSet),
+		shownIds: selectSortedFilteredIds(state, dataSet)
+	}), [dataSet]);
+
+	const {selected, expanded, shownIds} = useSelector(selectInfo);
 
 	const allSelected = React.useMemo(() => (
 			shownIds.length > 0 &&	// not if list is empty
@@ -62,8 +68,8 @@ function _ControlHeader({
 		[shownIds, expanded]
 	);
 
-	const toggleAllSelected = () => setSelected(selected.length? []: shownIds);
-	const toggleAllExpanded = () => setExpanded(expanded.length? []: shownIds);
+	const toggleSelect = React.useCallback(() => dispatch(setSelected(dataSet, selected.length? []: shownIds)), [dispatch, dataSet, selected, shownIds]);
+	const toggleExpand = React.useCallback(() => dispatch(setExpanded(dataSet, expanded.length? []: shownIds)), [dispatch, dataSet, expanded, shownIds]);
 
 	if (!anchorEl)
 		return null;
@@ -75,7 +81,7 @@ function _ControlHeader({
 					title={allSelected? "Clear all": isIndeterminate? "Clear selected": "Select all"}
 					checked={allSelected}
 					indeterminate={isIndeterminate}
-					onChange={toggleAllSelected}
+					onChange={toggleSelect}
 				/>
 				{customSelectorElement &&
 					<Dropdown
@@ -86,113 +92,70 @@ function _ControlHeader({
 						dropdownRenderer={() => customSelectorElement}
 					/>}
 			</Selector>
-			{expanded &&
+			{showExpanded &&
 				<ActionIcon
 					type='double-expander'
 					title="Expand all"
 					open={allExpanded}
-					onClick={toggleAllExpanded}
+					onClick={toggleExpand}
 				/>
 			}
 		</Container>
 	)
 }
 
-const SelectExpandHeader = connect(
-	(state, ownProps) => ({
-		selected: getSelected(state, ownProps.dataSet),
-		expanded: getExpanded(state, ownProps.dataSet),
-		shownIds: getSortedFilteredIds(state, ownProps.dataSet)
-	}),
-	(dispatch, ownProps) => ({
-		setSelected: ids => dispatch(setSelected(ownProps.dataSet, ids)),
-		setExpanded: ids => dispatch(setExpanded(ownProps.dataSet, ids))
-	})
-)(_ControlHeader);
-
-SelectExpandHeader.propTypes = {
+ControlHeader.propTypes = {
 	dataSet: PropTypes.string.isRequired,
 	anchorEl: PropTypes.oneOfType([PropTypes.element, PropTypes.object]),
 	customSelectorElement: PropTypes.element,
+	showExpanded: PropTypes.bool,
 }
 
-const SelectHeader = connect(
-	(state, ownProps) => ({
-		selected: getSelected(state, ownProps.dataSet),
-		shownIds: getSortedFilteredIds(state, ownProps.dataSet)
-	}),
-	(dispatch, ownProps) => ({
-		setSelected: ids => dispatch(setSelected(ownProps.dataSet, ids))
-	})
-)(_ControlHeader);
+const SelectExpandHeader = props => <ControlHeader showExpanded {...props}/>
+const SelectHeader = props => <ControlHeader {...props}/>
 
-SelectHeader.propTypes = {
-	dataSet: PropTypes.string.isRequired,
-	anchorEl: PropTypes.oneOfType([PropTypes.element, PropTypes.object]),
-	customSelectorElement: PropTypes.element,
-}
-
-function _ControlCell({
+function ControlCell({
+	dataSet,
 	rowId,
-	selected,
-	toggleSelected,
-	expanded,
-	toggleExpanded
+	showExpanded
 }) {
+	const dispatch = useDispatch();
+	const toggleSelect = React.useCallback(() => dispatch(toggleSelected(dataSet, [rowId])), [dispatch, dataSet, rowId]);
+	const toggleExpand = React.useCallback(() => dispatch(toggleExpanded(dataSet, [rowId])), [dispatch, dataSet, rowId]);
+
+	const selectInfo = React.useCallback(state => ({
+		selected: selectSelected(state, dataSet),
+		expanded: selectExpanded(state, dataSet),
+	}), [dataSet]);
+
+	const {selected, expanded} = useSelector(selectInfo);
+
 	return (
 		<Container onClick={e => e.stopPropagation()} >
 			<Checkbox
 				title="Select row"
 				checked={selected.includes(rowId)}
-				onChange={() => toggleSelected(rowId)}
+				onChange={toggleSelect}
 			/>
-			{expanded && 
+			{showExpanded && 
 				<ActionIcon
 					type='expander'
 					title="Expand row"
 					open={expanded.includes(rowId)}
-					onClick={() => toggleExpanded(rowId)}
+					onClick={toggleExpand}
 				/>
 			}
 		</Container>
 	)
 }
 
-_ControlCell.propTypes = {
-	selected: PropTypes.array.isRequired,
-	toggleSelected: PropTypes.func.isRequired,
-	expanded: PropTypes.array,
-	toggleExpanded: PropTypes.func,
-}
-
-const SelectExpandCell = connect(
-	(state, ownProps) => ({
-		selected: getSelected(state, ownProps.dataSet),
-		expanded: getExpanded(state, ownProps.dataSet)
-	}),
-	(dispatch, ownProps) => ({
-		toggleSelected: id => dispatch(toggleSelected(ownProps.dataSet, [id])),
-		toggleExpanded: id => dispatch(toggleExpanded(ownProps.dataSet, [id]))
-	})
-)(_ControlCell);
-
-SelectExpandCell.propTypes = {
+ControlCell.propTypes = {
 	dataSet: PropTypes.string.isRequired,
-	rowId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired
+	rowId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+	showExpanded: PropTypes.bool
 }
 
-const SelectCell = connect(
-	(state, ownProps) => ({
-		selected: getSelected(state, ownProps.dataSet)
-	}),
-	(dispatch, ownProps) => ({
-		toggleSelected: id => dispatch(toggleSelected(ownProps.dataSet, [id])),
-	})
-)(_ControlCell);
-
-SelectCell.propTypes = {
-	dataSet: PropTypes.string.isRequired,
-	rowId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired
-}
+const SelectExpandCell = props => <ControlCell showExpanded {...props} />
+const SelectCell = props => <ControlCell {...props} />
 
 export {SelectHeader, SelectCell, SelectExpandHeader, SelectExpandCell};

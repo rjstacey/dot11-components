@@ -1,11 +1,11 @@
-import PropTypes from 'prop-types'
-import React from 'react'
-import styled from '@emotion/styled'
-import {connect} from 'react-redux'
+import PropTypes from 'prop-types';
+import React from 'react';
+import styled from '@emotion/styled';
+import {useDispatch, useSelector} from 'react-redux';
 
-import {Button} from '../icons'
-import {ActionButtonDropdown} from '../general/Dropdown'
-import {toggleTableFixed, setTableColumnShown} from '../store/appTableData'
+import {Button} from '../icons';
+import {ActionButtonDropdown} from '../general/Dropdown';
+import {toggleTableFixed, setTableColumnShown} from '../store/appTableData';
 
 const Row = styled.div`
 	margin: 5px 10px;
@@ -35,13 +35,19 @@ const Item = styled.div`
 	}
 `;
 
-function _ColumnSelectorDropdown({
-	tableView,
-	tableConfig,
-	columns,
-	toggleTableFixed,
-	setTableColumnShown
-}) {
+function ColumnSelectorDropdown({dataSet, columns}) {
+	
+	const dispatch = useDispatch();
+
+	const selectInfo = React.useCallback(state => {
+		const tableView = state[dataSet].ui.tableView;
+		return {
+			tableView,
+			tableConfig: state[dataSet].ui.tablesConfig[tableView]
+		}
+	}, [dataSet]);
+
+	const {tableView, tableConfig} = useSelector(selectInfo);
 
 	/* Build an array of 'selectable' column config that includes a column label */
 	const selectableColumns = [];
@@ -65,7 +71,7 @@ function _ColumnSelectorDropdown({
 			<Row>
 				<label>Fixed width:</label>
 				<Button
-					onClick={() => toggleTableFixed(tableView)}
+					onClick={() => dispatch(toggleTableFixed(dataSet, tableView))}
 					isActive={tableConfig.fixed}
 				>
 					On
@@ -80,7 +86,7 @@ function _ColumnSelectorDropdown({
 						<input
 							type='checkbox'
 							checked={col.shown}
-							onChange={() => setTableColumnShown(tableView, col.key, !col.shown)}
+							onChange={() => dispatch(setTableColumnShown(dataSet, tableView, col.key, !col.shown))}
 						/>
 						<span>{col.label}</span>
 					</Item>
@@ -89,33 +95,6 @@ function _ColumnSelectorDropdown({
 		</>
 	)
 }
-
-_ColumnSelectorDropdown.propTypes = {
-	tableView: PropTypes.string.isRequired,
-	tableConfig: PropTypes.object,
-	columns: PropTypes.array.isRequired,
-	toggleTableFixed: PropTypes.func.isRequired,
-	setTableColumnShown: PropTypes.func.isRequired,
-}
-
-const ColumnSelectorDropdown = connect(
-	(state, ownProps) => {
-		const {dataSet} = ownProps;
-		const tableView = state[dataSet].ui.tableView;
-		const tableConfig = state[dataSet].ui.tablesConfig[tableView];
-		return {
-			tableView,
-			tableConfig
-		}
-	},
-	(dispatch, ownProps) => {
-		const {dataSet} = ownProps;
-		return {
-			toggleTableFixed: (tableView) => dispatch(toggleTableFixed(dataSet, tableView)),
-			setTableColumnShown: (tableView, key, shown) => dispatch(setTableColumnShown(dataSet, tableView, key, shown))
-		}
-	}
-)(_ColumnSelectorDropdown);
 
 const ColumnSelector = (props) =>
 	<ActionButtonDropdown

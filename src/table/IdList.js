@@ -1,12 +1,13 @@
-import PropTypes from 'prop-types'
-import React from 'react'
-import {connect} from 'react-redux'
-import styled from '@emotion/styled'
-import {Editor, EditorState, ContentState, CompositeDecorator} from 'draft-js'
-import 'draft-js/dist/Draft.css'
-import {ActionIcon} from '../icons'
-import {parseNumber} from '../lib'
-import {setSelected, setFilter} from '../store/appTableData'
+import PropTypes from 'prop-types';
+import React from 'react';
+import {useDispatch, useSelector} from 'react-redux';
+import styled from '@emotion/styled';
+import {Editor, EditorState, ContentState, CompositeDecorator} from 'draft-js';
+import 'draft-js/dist/Draft.css';
+
+import {ActionIcon} from '../icons';
+import {parseNumber} from '../lib';
+import {setSelected, setFilter} from '../store/appTableData';
 
 const Container = styled.div`
 	display: flex;
@@ -133,46 +134,68 @@ function IdList({
 	)
 }
 
-const IdFilter = connect(
-	(state, ownProps) => {
-		const {dataSet, dataKey} = ownProps;
+function IdFilter(props) {
+	const {dataSet, dataKey} = props;
+
+	const dispatch = useDispatch();
+
+	const selectInfo = React.useCallback(state => {
 		const {ids, filters} = state[dataSet];
 		return {
 			ids: filters[dataKey].values.map(v => v.value) || [],
-			isValid: (id) => ids.includes(id),
+			isValid: id => ids.includes(id),
 			isNumber: ids.length && typeof ids[0] === 'number'
 		}
-	},
-	(dispatch, ownProps) => {
-		const {dataSet, dataKey} = ownProps;
-		return {
-			onChange: ids => dispatch(setFilter(dataSet, dataKey, ids))
-		}
-	}
-)(IdList)
+	}, [dataSet, dataKey]);
+
+	const {ids, isValid, isNumber} = useSelector(selectInfo);
+
+	const onChange = React.useCallback(ids => dispatch(setFilter(dataSet, dataKey, ids)), [dispatch, dataSet, dataKey]);
+
+	return (
+		<IdList
+			ids={ids}
+			onChange={onChange}
+			isValid={isValid}
+			isNumber={isNumber}
+			{...props} 
+		/>
+	)
+}
 
 IdFilter.propTypes = {
 	dataSet: PropTypes.string.isRequired,
 	dataKey: PropTypes.string.isRequired
 }
 
-const IdSelector = connect(
-	(state, ownProps) => {
-		const {dataSet} = ownProps;
+function IdSelector(props) {
+	const {dataSet} = props;
+
+	const dispatch = useDispatch();
+
+	const selectInfo = React.useCallback(state => {
 		const {ids, selected} = state[dataSet];
 		return {
 			ids: selected,
-			isValid: (id) => ids.includes(id),
+			isValid: id => ids.includes(id),
 			isNumber: ids.length && typeof ids[0] === 'number'
 		}
-	},
-	(dispatch, ownProps) => {
-		const {dataSet} = ownProps;
-		return {
-			onChange: ids => dispatch(setSelected(dataSet, ids))
-		}
-	}
-)(IdList)
+	}, [dataSet]);
+
+	const {ids, isValid, isNumber} = useSelector(selectInfo);
+
+	const onChange = React.useCallback(ids => dispatch(setSelected(dataSet, ids)), [dispatch, dataSet]);
+
+	return (
+		<IdList
+			ids={ids}
+			onChange={onChange}
+			isValid={isValid}
+			isNumber={isNumber}
+			{...props} 
+		/>
+	)
+}
 
 IdSelector.propTypes = {
 	dataSet: PropTypes.string.isRequired

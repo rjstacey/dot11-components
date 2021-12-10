@@ -30,19 +30,17 @@ const parseNumber = (value) => {
  * Applies the column filters in turn to the data.
  * Returns a list of ids that meet the filter requirements.
  */
-export function filterData(filters, entities, ids) {
-	// create a 1:1 map of data
-	let filtIds = ids.slice();
+export function filterData(filters, getField, entities, ids) {
+	let filteredIds = ids.slice();
 	for (const [dataKey, filter] of Object.entries(filters)) {
 		const values = filter.values;
-		const getField = filter.getField? filter.getField: (dataRow, dataKey) => dataRow[dataKey];
 		if (values.length) {
-			filtIds = filtIds.filter(id =>
+			filteredIds = filteredIds.filter(id =>
 				values.reduce((result, value) => result || (value.valid && value.compFunc(getField(entities[id], dataKey))), false)
 			);
 		}
 	}
-	return filtIds;
+	return filteredIds;
 }
 
 /* Exact match
@@ -155,6 +153,6 @@ export const clearFilter = (dataSet, dataKey) => ({type: dataSet + '/clearFilter
 export const clearAllFilters = (dataSet) => ({type: dataSet + '/clearAllFilters'});
 
 /* Selectors */
- export const getFilters = (state, dataSet) => state[dataSet][name]
- export const getFilter = (state, dataSet, dataKey) => state[dataSet][name][dataKey]
+ export const selectFilters = (state, dataSet) => state[dataSet][name];
+ export const selectFilter = (state, dataSet, dataKey) => state[dataSet][name][dataKey];
  

@@ -1,21 +1,22 @@
-import PropTypes from 'prop-types'
-import React from 'react'
-import {useDispatch, useSelector} from 'react-redux'
-import styled from '@emotion/styled'
-import {FixedSizeList as List} from 'react-window'
+import PropTypes from 'prop-types';
+import React from 'react';
+import {useDispatch, useSelector} from 'react-redux';
+import styled from '@emotion/styled';
+import {FixedSizeList as List} from 'react-window';
 
-import {Button, Icon} from '../icons'
-import {Checkbox, Input} from '../general/Form'
+import {Button, Icon} from '../icons';
+import {Checkbox, Input} from '../form';
 import Dropdown from '../general/Dropdown'
 
 import {
-	getEntities,
-	getIds,
-	getFilteredIds,
-	getSorts, getSort, sortSet, sortOptions, SortDirection, SortType,
-	getFilter, setFilter, addFilter, removeFilter, FilterType,
-	getSelected
-} from '../store/appTableData'
+	selectGetField,
+	selectEntities,
+	selectIds,
+	selectFilteredIds,
+	selectSorts, selectSort, sortSet, sortOptions, SortDirection, SortType,
+	selectFilter, setFilter, addFilter, removeFilter, FilterType,
+	selectSelected
+} from '../store/appTableData';
 
 const StyledCustomContainer = styled.div`
 	margin: 10px 10px 0;
@@ -101,24 +102,32 @@ function Filter({
 	dataKey,
 	dataRenderer,
 	customFilterElement,
-	isId
+	isId,
 }) {
 	const [search, setSearch] = React.useState('');
 	const inputRef = React.useRef();
+
 	const dispatch = useDispatch();
 
-	const filter = useSelector(state => getFilter(state, dataSet, dataKey));
-	const sort = useSelector(state => getSort(state, dataSet, dataKey));
-	const selected = useSelector(state => getSelected(state, dataSet));
+	const selectSortFilterSelected = React.useCallback(state => ({
+		sort: selectSort(state, dataSet, dataKey),
+		filter: selectFilter(state, dataSet, dataKey),
+		selected: selectSelected(state, dataSet),
+	}), [dataSet, dataKey]);
 
-	const values = useSelector(state => {
-		const entities = getEntities(state, dataSet);
-		let ids = getIds(state, dataSet);
+	const {sort, filter, selected} = useSelector(selectSortFilterSelected);
+
+	const selectValues = React.useCallback(state => {
+		const filter = selectFilter(state, dataSet, dataKey);
+		let ids = selectIds(state, dataSet);
 		if (filter.values.length === 0)
-			ids = getFilteredIds(state, dataSet);
-		const getField = filter.getField? filter.getField: (dataRow, dataKey) => dataRow[dataKey];
+			ids = selectFilteredIds(state, dataSet);
+		const getField = selectGetField(state, dataSet);
+		const entities = selectEntities(state, dataSet);
 		return [...new Set(ids.map(id => getField(entities[id], dataKey)))];
-	});
+	}, [dataSet, dataKey]);
+
+	const values = useSelector(selectValues);
 
 	const options = React.useMemo(() => {
 		if (filter.options)
@@ -279,7 +288,7 @@ Filter.propTypes = {
 	dataSet: PropTypes.string.isRequired,
 	dataKey: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
 	sort: PropTypes.object,
-	selected: PropTypes.array,
+	entities: PropTypes.object,
 	dataRenderer: PropTypes.func,
 	customFilterElement: PropTypes.element,
 	isId: PropTypes.bool,
@@ -315,23 +324,24 @@ function TableColumnHeader({
 	dataSet,
 	label,
 	dataKey,
-	dropdownWidth,
-	selected,
 	dataRenderer,
+	dropdownWidth,
 	anchorEl,
 	customFilterElement,
 	isId,
 }) {
-	const {filter, isFiltered, sort, isSorted} = useSelector(state => {
-		const sorts = getSorts(state, dataSet);
-		const filter = getFilter(state, dataSet, dataKey);
+	const selectInfo = React.useCallback((state) => {
+		const sorts = selectSorts(state, dataSet);
+		const filter = selectFilter(state, dataSet, dataKey);
 		return {
-			filter: filter,
-			isFiltered: filter && filter.values.length > 0,
 			sort: sorts.settings[dataKey],
 			isSorted: sorts.by.includes(dataKey),
+			filter: filter,
+			isFiltered: filter && filter.values.length > 0,
 		}
-	});
+	}, [dataSet, dataKey]);
+
+	const {sort, isSorted, filter, isFiltered} = useSelector(selectInfo);
 
 	if (!sort && !filter)
 		return <Header><Label>{label}</Label></Header>
@@ -394,7 +404,6 @@ TableColumnHeader.propTypes = {
 	dataSet: PropTypes.string.isRequired,	// Identifies the dataset in the store
 	dataKey: PropTypes.string.isRequired,	// Identifies the data element in the row object
 	label: PropTypes.string.isRequired,		// Column label
-	column: PropTypes.object.isRequired,
 	dropdownWidth: PropTypes.number,
 	dataRenderer: PropTypes.func,			// Optional function to render the data element
 	anchorEl: PropTypes.oneOfType([PropTypes.element, PropTypes.object]),

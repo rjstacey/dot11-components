@@ -1,123 +1,141 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {shouldComponentUpdate} from 'react-window';
+import {areEqual} from 'react-window';
+import styled from '@emotion/styled';
 
-import styled from '@emotion/styled'
+const OuterRow = styled.div`
+	overflow: hidden;
+	box-sizing: border-box;
+`;
 
-const BodyRow = styled.div`
+const InnerRow = styled.div`
 	display: flex;
 	position: relative;
-	box-sizing: border-box;
+	box-sizing: unset;
+	width: 100%;
+	height: fit-content;
 `;
 
 /**
  * TableRow component for AppTable
  */
-class TableRow extends React.Component {
-	constructor(props) {
-		super(props);
-		this.state = {measured: false};
-		this.rowRef = null;
-	}
+function PureTableRow({
+	style,
+	gutterSize,
+	rowIndex,
+	rowId,
+	rowData,
+	isSelected,
+	isExpanded,
+	fixed,
+	columns,
+	getField,
+	estimatedRowHeight,
+	onRowHeightChange,
+	onClick,
+}) {
+	const rowRef = React.useRef();
 
-	/* This function knows to compare individual style props and ignore the wrapper object in order
-	 * to avoid unnecessarily re-rendering when cached style objects are reset. */
-	shouldComponentUpdate = shouldComponentUpdate.bind(this);
+	React.useEffect(() => {
+		if (!rowRef.current)
+			return;
+		const height = isExpanded? rowRef.current.getBoundingClientRect().height: estimatedRowHeight;
+		if (style.height !== height)
+			onRowHeightChange(rowIndex, height);
+	}, [rowIndex, isExpanded, estimatedRowHeight, columns, fixed, onRowHeightChange]);
 
-	componentDidMount() {
-		this._measureHeight(true);
-	}
-
-	componentDidUpdate(prevProps, prevState) {
-		if (this.state.measured && prevState.measured) {
-			this.setState({measured: false}, () => this._measureHeight());
+	const cells = React.useMemo(() => columns.map(column => {
+		const {headerRenderer, cellRenderer, dataRenderer, width, flexGrow, flexShrink, key: dataKey, ...colProps} = column;
+		const style = {
+			flexBasis: width,
+			flexGrow: fixed? 0: flexGrow,
+			flexShrink: fixed? 0: flexShrink,
+			//overflow: 'hidden'	// necessary to ensure that the content does not affect size
 		}
-	}
+		const cellData = getField(rowData, dataKey);
+		const renderer = cellRenderer ||
+			(dataRenderer
+				? ({rowData, dataKey}) => dataRenderer(cellData)
+				: ({rowData, dataKey}) => cellData);
+		const props = {rowIndex, rowId, rowData, dataKey, ...colProps}
+		return (
+			<div
+				key={dataKey}
+				className='AppTable__dataCell'
+				style={style}
+			>
+				{renderer(props)}
+			</div>
+		)
+	}), [columns, fixed, rowIndex, rowId, rowData, getField]);
 
-	render() {
-		/* eslint-disable no-unused-vars */
-		const {
-			isScrolling,
-			fixed,
-			style,
-			className,
-			columns,
-			rowIndex,
-			rowId,
-			rowData,
-			isExpanded,
-			estimatedRowHeight,
-			onRowHeightChange,
-			onRowClick,
-			...otherProps
-		} = this.props;
-		/* eslint-enable no-unused-vars */
+	// Add appropriate row classNames
+	let classNames = ['AppTable__dataRow'];
+	classNames.push((rowIndex % 2 === 0)? 'AppTable__dataRow-even': 'AppTable__dataRow-odd');
+	if (isSelected)
+		classNames.push('AppTable__dataRow-selected');
 
-		const cells = columns.map(column => {
-			const {headerRenderer, cellRenderer, dataRenderer, width, flexGrow, flexShrink, key: dataKey, getField, ...colProps} = column;
-			const style = {
-				flexBasis: width,
-				flexGrow: fixed? 0: flexGrow,
-				flexShrink: fixed? 0: flexShrink,
-				overflow: 'hidden'	// necessary to ensure that the content does not affect size
-			}
-			const cellData = getField? getField(rowData, dataKey): rowData[dataKey];
-			const renderer = cellRenderer ||
-				(dataRenderer
-					? ({rowData, dataKey}) => dataRenderer(cellData)
-					: ({rowData, dataKey}) => cellData);
-			const props = {rowIndex, rowId, rowData, dataKey, ...colProps}
-			return (
-				<div
-					key={dataKey}
-					className='AppTable__dataCell'
-					style={style}
-				>
-					{renderer(props)}
-				</div>
-			)
-		})
-
-		let rowStyle = {...style}
-		if (!this.state.measured && isExpanded)
-			delete rowStyle.height
-
-		const onClick = onRowClick? event => onRowClick({event, rowIndex}): undefined
-
-	  	return (
-			<BodyRow
-				{...otherProps}
-				ref={ref => this.rowRef = ref}
-				className={className}
-				style={rowStyle}
-				onClick={onClick}
+	return (
+		<OuterRow
+			style={{...style, top: style.top + gutterSize, height: style.height - gutterSize}}	// Adjust style for gutter
+			className={classNames.join(' ')}
+			onClick={onClick}
+		>
+			<InnerRow
+				ref={rowRef}
 			>
 				{cells}
-			</BodyRow>
-		)
-	}
-
-	_measureHeight(initialMeasure) {
-		if (!this.rowRef) return;
-
-		const {style, onRowHeightChange, rowIndex, estimatedRowHeight, isExpanded} = this.props;
-		const height = isExpanded? this.rowRef.getBoundingClientRect().height: estimatedRowHeight;
-		this.setState({measured: true}, () => {
-			if (initialMeasure || height !== style.height)
-				onRowHeightChange(rowIndex, height);
-		});
-	}
+			</InnerRow>
+		</OuterRow>
+	)
 }
 
-TableRow.propTypes = {
-	className: PropTypes.string,
-	style: PropTypes.object,
-	fixed: PropTypes.bool,
-	columns: PropTypes.array.isRequired,
+PureTableRow.propTypes = {
+	style: PropTypes.object.isRequired,
 	rowIndex: PropTypes.number.isRequired,
-	rowData: PropTypes.oneOfType([PropTypes.object, PropTypes.func]).isRequired,
-	estimatedRowHeight: PropTypes.number,
-	onRowHeightChange: PropTypes.func.isRequired
+	rowId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+	rowData: PropTypes.object.isRequired,
+	isSelected: PropTypes.bool.isRequired,
+	isExpanded: PropTypes.bool.isRequired,
+	fixed: PropTypes.bool.isRequired,
+	columns: PropTypes.array.isRequired,
+	getField: PropTypes.func.isRequired,
+	estimatedRowHeight: PropTypes.number.isRequired,
+	onRowHeightChange: PropTypes.func.isRequired,
+	onClick: PropTypes.func
 };
 
-export default TableRow;
+// Memoize so that a row is only re-rendered if the row specific data changes
+const TableRow = React.memo(PureTableRow, areEqual);
+
+function AppTableRow({rowIndex, style, data}) {
+
+	// Extract context from data prop and isolate the row specific data
+	const {entities, ids, selected, expanded, getRowData, onRowClick, ...otherProps} = data;
+
+	const rowId = ids[rowIndex];
+	const rowData = getRowData 
+		? getRowData({rowIndex, rowId, ids, entities})
+		: entities[rowId];
+		
+	const isSelected = selected && selected.includes(rowId);
+	const isExpanded = expanded && expanded.includes(rowId);
+
+	const onClick = React.useMemo(() => onRowClick? event => onRowClick({event, rowIndex}): undefined, [onRowClick, rowIndex]);
+
+	return (
+		<TableRow
+			key={rowId}
+			style={style}
+			rowIndex={rowIndex}
+			rowId={rowId}
+			rowData={rowData}
+			isSelected={isSelected}
+			isExpanded={isExpanded}
+			onClick={onClick}
+			{...otherProps}
+		/>
+	)
+}
+
+export default AppTableRow;

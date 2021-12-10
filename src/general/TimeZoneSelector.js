@@ -59,7 +59,7 @@ function TimeZoneSelector({
 	React.useEffect(() => {
 		if (!valid && !loading)
 			dispatch(loadTimeZones());
-	}, [valid, loading, dispatch]);
+	}, []);
 
 	const options = React.useMemo(() => timeZones.map(tz => ({value: tz, label: tz})), [timeZones]);
 

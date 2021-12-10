@@ -1,13 +1,13 @@
 import { LoremIpsum } from "lorem-ipsum";
 import React from 'react';
-import { configureStore, combineReducers } from '@reduxjs/toolkit'
-import { createLogger } from 'redux-logger'
-import thunk from 'redux-thunk'
-import { Provider, useDispatch } from 'react-redux'
+import { configureStore, combineReducers } from '@reduxjs/toolkit';
+import { createLogger } from 'redux-logger';
+import thunk from 'redux-thunk';
+import { Provider, useDispatch } from 'react-redux';
 
-import {displayDate} from '../lib'
-import {ButtonGroup, Button, ActionButton, ActionIcon} from '../icons'
-import {createAppTableDataSlice, SortType} from '../store/appTableData'
+import {displayDate} from '../lib';
+import {ButtonGroup, Button, ActionButton, ActionIcon} from '../icons';
+import {createAppTableDataSlice, SortType} from '../store/appTableData';
 
 import AppTable, {
 	SelectHeader, 
@@ -75,14 +75,19 @@ const fields = {
 		dontFilter: true
 	},
 	Derived: {
-		label: 'Derived',
-		getField: o => o.Status,
-	}
+		label: 'Derived'
+	},
 };
 
 const dataSet = 'data';
 
-const slice = createAppTableDataSlice({name: dataSet,	fields, initialState: {}});
+const selectField = (data, dataKey) => {
+	if (dataKey === 'Derived')
+		return data.Status + '-es';
+	return data[dataKey];
+}
+
+const slice = createAppTableDataSlice({name: dataSet,	fields, initialState: {}, selectField});
 
 const removeRow = slice.actions.removeOne;
 const store = configureStore({
@@ -171,7 +176,8 @@ const defaultTablesConfig = {
 			Text: {shown: true,	width: 200},
 			Date: {shown: true,	width: 200},
 			Number: {shown: true,	width: 200},
-			Status: {shown: true,	width: 200}
+			Status: {shown: true,	width: 200},
+			Derived2: {shown: true, width: 200}
 		}
 	},
 	'2': {
@@ -183,7 +189,8 @@ const defaultTablesConfig = {
 			Text: {shown: true,	width: 200},
 			Date: {shown: true,	width: 200},
 			Number: {shown: true,	width: 200},
-			Status: {shown: true,	width: 200}
+			Status: {shown: true,	width: 200},
+			Derived2: {shown: true, width: 200}
 		}
 	}
 }
@@ -266,7 +273,7 @@ export const SplitTable = ({expandable, numberOfRows}) => {
 	)
 }
 
-export const NoDefaultTable = ({expandable, numberOfRows}) => {
+export const NoDefaultTable = ({fixed, expandable, numberOfRows}) => {
 
 	const dispatch = useDispatch();
 	const columns = React.useMemo(() => tableColumnsWithControl(expandable, dispatch), [expandable, dispatch]);
@@ -279,6 +286,7 @@ export const NoDefaultTable = ({expandable, numberOfRows}) => {
 			<ShowFilters dataSet={dataSet} fields={fields} />
 			<div style={{flex: 1, width: '100%'}} >
 					<AppTable
+						fixed={fixed}
 						columns={columns}
 						headerHeight={46}
 						estimatedRowHeight={50}
@@ -305,7 +313,7 @@ export const FixedCenteredTable = ({expandable, numberOfRows}) => {
 						fitWidth
 						fixed
 						columns={columns}
-						defaultTablesConfig={{'fixed': {}}}
+						//defaultTablesConfig={{'fixed': {}}}
 						headerHeight={46}
 						estimatedRowHeight={50}
 						dataSet={dataSet}

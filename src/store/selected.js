@@ -31,8 +31,8 @@ export const createSelectedSubslice = (dataSet) => ({
 });
 
 /* Actions */
-export const setSelected = (dataSet, ids) => ({type: dataSet + '/setSelected', payload: ids})
-export const toggleSelected = (dataSet, ids) => ({type: dataSet + '/toggleSelected', payload: ids})
+export const setSelected = (dataSet, ids) => ({type: dataSet + '/setSelected', payload: ids});
+export const toggleSelected = (dataSet, ids) => ({type: dataSet + '/toggleSelected', payload: ids});
 
 /* Selectors */
-export const getSelected = (state, dataSet) => state[dataSet][name]
+export const selectSelected = (state, dataSet) => state[dataSet][name];

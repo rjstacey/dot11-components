@@ -9,11 +9,11 @@ const options = [
 	{value: 3, label: 'Three'}
 ];
 
-function Content() {
+function Content({close}) {
 	const [text, setText] = React.useState('');
 	const [value, setValue] = React.useState([]);
 	return (
-		<form style={{width: '200px'}}>
+		<form style={{width: '200px'}} onSubmit={(e) => e.preventDefault()}>
 			<label><input type='radio' id='1' />Fred</label><br />
 			<label><input type='radio' id='1' />Frog</label><br />
 			<label>Text:
@@ -31,17 +31,11 @@ function Content() {
 					portal={document.querySelector('#root')}
 				/>
 			</label>
+			<button onClick={() => alert('ok')}>OK</button>
+			<button onClick={close}>Cancel</button>
 		</form>
 	)
 }
-
-export default {
-  title: 'Dropdown',
-  component: ActionButtonDropdown,
-  argTypes: {
-  	alignLeft: {type: 'boolean'}
-  }
-};
 
 export const IconButton = (args) =>
 	<div style={{display: 'flex', justifyContent: 'space-between'}}>
@@ -58,7 +52,7 @@ export const IconButton = (args) =>
 
 IconButton.args = {
   name: 'add',
-  title: 'Add something',
+  title: 'Icon button',
 };
 
 export const LabelButton = (args) =>
@@ -76,7 +70,7 @@ export const LabelButton = (args) =>
 
 LabelButton.args = {
   label: 'Click Me',
-  title: 'Add something',
+  title: 'Label button',
 };
 
 export const Default = (args) =>
@@ -91,7 +85,18 @@ export const Default = (args) =>
 			<Content />
 		</Dropdown>
 	</div>
+
 Default.args = {
   label: 'Label',
   title: 'Add something',
+};
+
+export default {
+  title: 'Dropdown',
+  component: ActionButtonDropdown,
+  argTypes: {
+  	alignLeft: {type: 'boolean'},
+  	disabled: {type: 'boolean'},
+  	name: {type: 'text', options: ['add', 'import', 'export', 'calendar']}
+  },
 };
