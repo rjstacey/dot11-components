@@ -1,5 +1,5 @@
-import {saveAs} from 'file-saver'
-import {logout} from './user'
+import {saveAs} from 'file-saver';
+import {logout} from './user';
 
 const methods = {};
 

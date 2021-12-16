@@ -9,7 +9,7 @@ import AppTableRow from './AppTableRow';
 import TableHeader from './AppTableHeader';
 import ColumnHeader from './TableColumnHeader';
 
-import {debounce, getScrollbarSize, shallowDiff} from '../lib';
+import {debounce, getScrollbarSize} from '../lib';
 
 import {
 	setSelected,
@@ -130,7 +130,7 @@ const useKeyDown = (dataSet, selected, ids, dispatch, gridRef) =>
 
 			selectAndScroll(i);
 		}
-	}, [dispatch, ids, selected, gridRef]);
+	}, [dataSet, selected, ids, dispatch, gridRef]);
 
 const useRowClick = (dataSet, selected, ids, dispatch) => 
 	React.useCallback(({event, rowIndex}) => {
@@ -171,14 +171,14 @@ const useRowClick = (dataSet, selected, ids, dispatch) =>
 			newSelected = [id];
 		}
 		dispatch(setSelected(dataSet, newSelected));
-	}, [dispatch, dataSet, ids, selected]);
+	}, [dataSet, selected, ids, dispatch]);
 
 function AppTableSized({
 	width,
 	height,
 	gutterSize,
-	dataSet,
 	estimatedRowHeight,
+	dataSet,
 	...props
 }) {
 	const gridRef = React.useRef();
@@ -293,7 +293,7 @@ function AppTableSized({
 	if (!width)
 		width = totalWidth + scrollbarSize;
 
-	// If the container size changes, the re-render rows
+	// If the container size changes, then re-render rows
 	React.useEffect(() => {
 		if (gridRef.current)
 			gridRef.current.resetAfterColumnIndex(0, true)

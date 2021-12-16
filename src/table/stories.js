@@ -1,6 +1,6 @@
 import { LoremIpsum } from "lorem-ipsum";
 import React from 'react';
-import { configureStore, combineReducers } from '@reduxjs/toolkit';
+import { configureStore, combineReducers, createSelector } from '@reduxjs/toolkit';
 import { createLogger } from 'redux-logger';
 import thunk from 'redux-thunk';
 import { Provider, useDispatch } from 'react-redux';
@@ -22,22 +22,19 @@ import AppTable, {
 	IdFilter,
 	SplitPanel,
 	Panel
-} from '.'
+} from '.';
 
-const story = {
-	title: 'Table',
-	component: AppTable,
-	args: {
-		expandable: false,
-		numberOfRows: 5,
-	},
-	decorators: [
-		(Story) =>
-			<Provider store={store}>
-				<Story />
-			</Provider>
-	]
+
+/*
+ * Slice 2 maps an id to a name
+ */
+const fields2 = {
+	id: {label: 'id'},
+	Name: {label: 'Name'},
 };
+
+const slice2 = createAppTableDataSlice({name: 'names', fields: fields2, initialState: {}});
+//console.log('done slice2')
 
 const statusOptions = [
 	{value: 0, label: 'Good'},
@@ -87,16 +84,34 @@ const selectField = (data, dataKey) => {
 	return data[dataKey];
 }
 
-const slice = createAppTableDataSlice({name: dataSet,	fields, initialState: {}, selectField});
+/* A selector that returns the entities with name_id mapped to Name */
+const selectEntities = createSelector(
+	state => state['names'].entities,
+	state => state[dataSet].entities,
+	(nameEntities, entities) => {
+		const transformedEntities = {};
+		for (const [id, entity] of Object.entries(entities)) {
+			const nameEntity = nameEntities[entity.name_id];
+			const Name = nameEntity? nameEntity.Name: '';
+			transformedEntities[id] = {...entity, Name};
+		}
+		return transformedEntities;
+	}
+);
 
-const removeRow = slice.actions.removeOne;
+const slice = createAppTableDataSlice({name: dataSet,	fields, initialState: {}, selectField, selectEntities});
+//console.log('done slice')
+
 const store = configureStore({
-  reducer: combineReducers({
-  	[slice.name]: slice.reducer
-  }),
-  middleware: [thunk, createLogger({collapsed: true})],
-  devTools: true
+	reducer: combineReducers({
+		[slice2.name]: slice2.reducer,
+		[slice.name]: slice.reducer,
+	}),
+	middleware: [thunk, createLogger({collapsed: true})],
+	devTools: true
 });
+
+//console.log('done store')
 
 const tableColumns = [
 	{key: '__ctrl__',
@@ -137,34 +152,47 @@ const tableColumns = [
 const randomDate = (start, end) =>
 	new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
 
-const randomStatus = () => Math.round(Math.random() * 2);
+const randomStatus = () => Math.round(Math.random() * (statusOptions.length - 1));
 
 const lorem = new LoremIpsum({
   sentencesPerParagraph: {max: 8, min: 4},
   wordsPerSentence: {max: 16, min: 4}
 });
 
+const MaxNames = 4;
+
 const genData = (n) =>
 	new Array(n)
 		.fill(true)
 		.map((r, i) => ({
 			id: i,
-			Name: Math.random().toString(36).slice(2),
+			name_id: Math.floor(Math.random() * MaxNames),
 			Date: randomDate(new Date(2010, 0, 1), new Date()),
 			Number: Math.round(Math.random() * 5),
 			Text: lorem.generateSentences(3),
 			Status: randomStatus()
 		}));
 
+const genData2 = () =>
+	new Array(MaxNames)
+		.fill(true)
+		.map((r, i) => ({
+			id: i,
+			Name: Math.random().toString(36).slice(2),
+		}));
+
 const loadData = (n = 1000) =>
-	async (dispatch, getState) => {
+	(dispatch, getState) => {
+		const data2 = genData2();
+		dispatch(slice2.actions.getSuccess(data2));
+
 		const {getPending, getSuccess} = slice.actions;
-		if (getState()[dataSet].loading)
-			return;
 		dispatch(getPending());
 		const data = genData(n);
-		setTimeout(() => dispatch(getSuccess(data)), 1000)
+		setTimeout(() => dispatch(getSuccess(data)), 1000);
 	}
+
+const removeRow = slice.actions.removeOne;
 
 const defaultTablesConfig = {
 	'1': {
@@ -177,7 +205,8 @@ const defaultTablesConfig = {
 			Date: {shown: true,	width: 200},
 			Number: {shown: true,	width: 200},
 			Status: {shown: true,	width: 200},
-			Derived2: {shown: true, width: 200}
+			Derived: {shown: true, width: 200},
+			Actions: {shown: true, width: 200}
 		}
 	},
 	'2': {
@@ -190,7 +219,8 @@ const defaultTablesConfig = {
 			Date: {shown: true,	width: 200},
 			Number: {shown: true,	width: 200},
 			Status: {shown: true,	width: 200},
-			Derived2: {shown: true, width: 200}
+			Derived: {shown: true, width: 200},
+			Actions: {shown: true, width: 200}
 		}
 	}
 }
@@ -261,7 +291,7 @@ export const SplitTable = ({expandable, numberOfRows}) => {
 						defaultTablesConfig={defaultTablesConfig}
 						columns={columns}
 						headerHeight={46}
-						estimatedRowHeight={50}
+						estimatedRowHeight={56}
 						dataSet={dataSet}
 					/>
 				</Panel>
@@ -289,7 +319,7 @@ export const NoDefaultTable = ({fixed, expandable, numberOfRows}) => {
 						fixed={fixed}
 						columns={columns}
 						headerHeight={46}
-						estimatedRowHeight={50}
+						estimatedRowHeight={56}
 						dataSet={dataSet}
 					/>
 			</div>
@@ -315,12 +345,27 @@ export const FixedCenteredTable = ({expandable, numberOfRows}) => {
 						columns={columns}
 						//defaultTablesConfig={{'fixed': {}}}
 						headerHeight={46}
-						estimatedRowHeight={50}
+						estimatedRowHeight={56}
 						dataSet={dataSet}
 					/>
 			</div>
 		</div>
 	)
 }
+
+const story = {
+	title: 'Table',
+	component: AppTable,
+	args: {
+		expandable: false,
+		numberOfRows: 5,
+	},
+	decorators: [
+		(Story) =>
+			<Provider store={store}>
+				<Story />
+			</Provider>
+	]
+};
 
 export default story;

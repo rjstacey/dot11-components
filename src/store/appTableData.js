@@ -14,24 +14,25 @@ export * from './filters';
 export * from './sorts';
 export * from './ui';
 
-const appTableDataSelectors =  {};
+const selectors =  {};
 
-export const getAppTableDataSelectors = (dataSet) => appTableDataSelectors[dataSet];
+export const getAppTableDataSelectors = (dataSet) => selectors[dataSet];
 
 /*
  * Create a redux slice suitible for AppTable rendering.
  *
  * Data entries are managed through the redux toolkit dataAdapter.
  *
- * The selected subslice manages an array of ids representing 'selected' data rows
- * The expanded subslice manages an array of ids representing 'expanded' data rows (row height depends on content vs fixed row height)
+ * The selected subslice manages an array of ids representing selected data rows
+ * The expanded subslice manages an array of ids representing expanded data rows (row height depends on content vs fixed row height)
  * The filters subslice manages the column filters
  * The sorts subslice manages the column sorts
  * The ui subslice manages the table settings (fixed, column widths, column shown/hidden, etc.)
  *
+ * The transformEntities() function allows new entities to be derived from slice combinations or other state manipulation.
  * Field values may be derived from other fields by supplying a selectField() function. This allows derived values to be sorted.
  */
-export const createAppTableDataSlice = ({
+export function createAppTableDataSlice({
 	name,
 	fields,
 	selectId,
@@ -39,12 +40,16 @@ export const createAppTableDataSlice = ({
 	initialState,
 	reducers,
 	extraReducers,
-	selectField
-}) => {
+	selectField,
+	selectEntities
+}) {
 
 	const dataAdapter = createEntityAdapter(Object.assign({}, selectId? {selectId}: {}, sortComparer? {sortComparer}: {}));
-	appTableDataSelectors[name] = dataAdapter.getSelectors();
-	appTableDataSelectors[name].getField = selectField? selectField: (entity, dataKey) => entity[dataKey];
+
+	//selectors[name] = dataAdapter.getSelectors();
+	selectors[name].getField = selectField? selectField: (entity, dataKey) => entity[dataKey];
+	selectors[name].selectIds = state => state[name].ids;
+	selectors[name].selectEntities = selectEntities || (state => state[name].entities);
 
 	const selectedSubslice = createSelectedSubslice(name);
 	const expandedSubslice = createExpandedSubslice(name);
@@ -113,10 +118,9 @@ export const createAppTableDataSlice = ({
 	return slice;
 }
 
-
-export const selectEntities = (state, dataSet) => appTableDataSelectors[dataSet].selectEntities(state[dataSet]);
-export const selectIds = (state, dataSet) => appTableDataSelectors[dataSet].selectIds(state[dataSet]);
-export const selectGetField = (state, dataSet) => appTableDataSelectors[dataSet].getField;
+export const selectEntities = (state, dataSet) => selectors[dataSet].selectEntities(state);
+export const selectIds = (state, dataSet) => selectors[dataSet].selectIds(state);
+export const selectGetField = (state, dataSet) => selectors[dataSet].getField;
 const selectDataKey = (state, dataSet, dataKey) => dataKey;
 
 /*

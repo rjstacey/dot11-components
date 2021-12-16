@@ -37,12 +37,12 @@ function PureTableRow({
 	const rowRef = React.useRef();
 
 	React.useEffect(() => {
-		if (!rowRef.current)
-			return;
+		//if (!rowRef.current)
+		//	return;
 		const height = isExpanded? rowRef.current.getBoundingClientRect().height: estimatedRowHeight;
 		if (style.height !== height)
 			onRowHeightChange(rowIndex, height);
-	}, [rowIndex, isExpanded, estimatedRowHeight, columns, fixed, onRowHeightChange]);
+	}, [rowIndex, isExpanded, estimatedRowHeight, columns, fixed, onRowHeightChange, style.height, style.width]);
 
 	const cells = React.useMemo(() => columns.map(column => {
 		const {headerRenderer, cellRenderer, dataRenderer, width, flexGrow, flexShrink, key: dataKey, ...colProps} = column;
@@ -50,7 +50,7 @@ function PureTableRow({
 			flexBasis: width,
 			flexGrow: fixed? 0: flexGrow,
 			flexShrink: fixed? 0: flexShrink,
-			//overflow: 'hidden'	// necessary to ensure that the content does not affect size
+			overflow: 'hidden'	// necessary to ensure that the content does not affect width
 		}
 		const cellData = getField(rowData, dataKey);
 		const renderer = cellRenderer ||
