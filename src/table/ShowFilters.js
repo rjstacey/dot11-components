@@ -43,29 +43,29 @@ const ActiveFilterItem = styled.span`
 const ActiveFilter = ({children, remove}) =>
 	<ActiveFilterContainer role='listitem' direction='ltr'>
 		{children && <ActiveFilterItem>{children}</ActiveFilterItem>}
-		<ActionIcon type='clear' onClick={remove} />
+		<ActionIcon style={{minWidth: 16}} type='clear' onClick={remove} />
 	</ActiveFilterContainer>
 
 function renderActiveFilters({fields, filters, removeFilter, clearAllFilters}) {
 	let elements = [];
 	for (const [dataKey, filter] of Object.entries(filters)) {
 		const {label, dataRenderer} = fields[dataKey];
-		const {values, options} = filter;
-		if (values.length > 0) {
+		const {comps, options} = filter;
+		if (comps.length > 0) {
 			elements.push(
 				<ActiveFilterLabel key={dataKey}>
 					{label + ':'}
 				</ActiveFilterLabel>
 			);
-			for (let v of values) {
-				const o = options && options.find(o => o.value === v.value);
-				let s = o? o.label: (dataRenderer? dataRenderer(v.value): v.value);
+			for (let comp of comps) {
+				const o = options && options.find(o => o.value === comp.value);
+				let s = o? o.label: (dataRenderer? dataRenderer(comp.value): comp.value);
 				if (s === '')
 					s = '(Blank)'
 				elements.push(
 					<ActiveFilter 
-						key={`${dataKey}_${v.value}`}
-						remove={() => removeFilter(dataKey, v.value, v.filterType)}
+						key={`${dataKey}_${comp.value}`}
+						remove={() => removeFilter(dataKey, comp.value, comp.filterType)}
 					>
 						{s}
 					</ActiveFilter>

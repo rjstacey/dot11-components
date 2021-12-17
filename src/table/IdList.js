@@ -7,7 +7,7 @@ import 'draft-js/dist/Draft.css';
 
 import {ActionIcon} from '../icons';
 import {parseNumber} from '../lib';
-import {setSelected, setFilter} from '../store/appTableData';
+import {setSelected, setFilter, selectIds, selectEntities, selectFilters, selectGetField} from '../store/appTableData';
 
 const Container = styled.div`
 	display: flex;
@@ -134,61 +134,85 @@ function IdList({
 	)
 }
 
-function IdFilter(props) {
-	const {dataSet, dataKey} = props;
+function IdFilter({dataSet, dataKey, ...props}) {
+	if (!dataKey)
+		dataKey = 'id';
 
 	const dispatch = useDispatch();
 
 	const selectInfo = React.useCallback(state => {
-		const {ids, filters} = state[dataSet];
+		const ids = selectIds(state, dataSet);
+		const entities = selectEntities(state, dataSet);
+		const filters = selectFilters(state, dataSet);
+		const getField = selectGetField(state, dataSet);
 		return {
-			ids: filters[dataKey].values.map(v => v.value) || [],
-			isValid: id => ids.includes(id),
-			isNumber: ids.length && typeof ids[0] === 'number'
+			values: filters[dataKey].values.map(v => v.value) || [],
+			isNumber: ids.length && typeof getField(entities[ids[0]], dataKey) === 'number',
+			ids,
+			entities,
+			getField,
 		}
 	}, [dataSet, dataKey]);
 
-	const {ids, isValid, isNumber} = useSelector(selectInfo);
+	const {values, isNumber, ids, entities, getField} = useSelector(selectInfo);
 
-	const onChange = React.useCallback(ids => dispatch(setFilter(dataSet, dataKey, ids)), [dispatch, dataSet, dataKey]);
+	const isValid = React.useCallback(value => ids.findIndex(id => getField(entities[id], dataKey) === value) !== -1, [ids, entities, dataKey, getField]);
+
+	const onChange = React.useCallback(values => dispatch(setFilter(dataSet, dataKey, values)), [dispatch, dataSet, dataKey]);
 
 	return (
 		<IdList
-			ids={ids}
+			ids={values}
 			onChange={onChange}
 			isValid={isValid}
 			isNumber={isNumber}
-			{...props} 
+			{...props}
 		/>
 	)
 }
 
 IdFilter.propTypes = {
 	dataSet: PropTypes.string.isRequired,
-	dataKey: PropTypes.string.isRequired
+	dataKey: PropTypes.string
 }
 
-function IdSelector(props) {
-	const {dataSet} = props;
+function IdSelector({dataSet, dataKey, ...props}) {
+	if (!dataKey)
+		dataKey = 'id';
 
 	const dispatch = useDispatch();
 
 	const selectInfo = React.useCallback(state => {
-		const {ids, selected} = state[dataSet];
+		const ids = selectIds(state, dataSet);
+		const entities = selectEntities(state, dataSet);
+		const selected = state[dataSet].selected;
+		const getField = selectGetField(state, dataSet);
 		return {
-			ids: selected,
-			isValid: id => ids.includes(id),
-			isNumber: ids.length && typeof ids[0] === 'number'
+			values: selected.map(id => getField(entities[id], dataKey)),
+			isNumber: ids.length && typeof getField(entities[ids[0]], dataKey) === 'number',
+			ids,
+			entities,
+			getField,
 		}
-	}, [dataSet]);
+	}, [dataSet, dataKey]);
 
-	const {ids, isValid, isNumber} = useSelector(selectInfo);
+	const {values, isNumber, ids, entities, getField} = useSelector(selectInfo);
 
-	const onChange = React.useCallback(ids => dispatch(setSelected(dataSet, ids)), [dispatch, dataSet]);
+	const isValid = React.useCallback(value => ids.findIndex(id => getField(entities[id], dataKey) === value) !== -1, [ids, entities, dataKey, getField]);
+
+	const onChange = React.useCallback(values => {
+		const selected = values.reduce((selected, value) => {
+			const i = ids.findIndex(id => getField(entities[id], dataKey) === value);
+			if (i !== -1)
+				selected.push(ids[i]);
+			return selected;
+		}, []);
+		dispatch(setSelected(dataSet, selected));
+	}, [dispatch, dataSet, dataKey, ids, entities, getField]);
 
 	return (
 		<IdList
-			ids={ids}
+			ids={values}
 			onChange={onChange}
 			isValid={isValid}
 			isNumber={isNumber}
@@ -198,7 +222,8 @@ function IdSelector(props) {
 }
 
 IdSelector.propTypes = {
-	dataSet: PropTypes.string.isRequired
+	dataSet: PropTypes.string.isRequired,
+	dataKey: PropTypes.string
 }
 
 export {IdFilter, IdSelector}

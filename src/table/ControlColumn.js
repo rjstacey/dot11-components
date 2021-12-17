@@ -15,7 +15,7 @@ import {
 	setExpanded,
 	toggleExpanded,
 	selectSortedFilteredIds
-} from '../store/appTableData'
+} from '../store/appTableData';
 
 const Selector = styled.div`
 	display: flex;

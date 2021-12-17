@@ -57,7 +57,6 @@ const fields = {
 	},
 	Text: {
 		label: 'Text',
-		dontFilter: true
 	},
 	Number: {
 		label: 'Number',
@@ -240,7 +239,7 @@ function tableColumnsWithControl(expandable, dispatch) {
 		headerRenderer = p =>
 			<SelectExpandHeader
 				dataSet={dataSet}
-				customSelectorElement=<IdSelector style={{width: '200px'}} dataSet={dataSet} focusOnMount />
+				customSelectorElement=<IdSelector style={{width: '200px'}} dataSet={dataSet} dataKey={'id'} focusOnMount />
 				{...p}
 			/>;
 		cellRenderer = p => <SelectExpandCell dataSet={dataSet} {...p} />;
@@ -249,7 +248,7 @@ function tableColumnsWithControl(expandable, dispatch) {
 		headerRenderer = p =>
 			<SelectHeader
 				dataSet={dataSet}
-				customSelectorElement=<IdSelector style={{width: '200px'}} dataSet={dataSet} focusOnMount />
+				customSelectorElement=<IdSelector style={{width: '200px'}} dataSet={dataSet} dataKey={'id'} focusOnMount />
 				{...p}
 			/>;
 		cellRenderer = p => <SelectCell dataSet={dataSet} {...p} />;

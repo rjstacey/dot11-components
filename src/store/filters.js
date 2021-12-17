@@ -26,22 +26,6 @@ const parseNumber = (value) => {
 	return !isNaN(unformatted)? unformatted: 0;
 };
 
-/*
- * Applies the column filters in turn to the data.
- * Returns a list of ids that meet the filter requirements.
- */
-export function filterData(filters, getField, entities, ids) {
-	let filteredIds = ids.slice();
-	for (const [dataKey, filter] of Object.entries(filters)) {
-		const values = filter.values;
-		if (values.length) {
-			filteredIds = filteredIds.filter(id =>
-				values.reduce((result, value) => result || (value.valid && value.compFunc(getField(entities[id], dataKey))), false)
-			);
-		}
-	}
-	return filteredIds;
-}
 
 /* Exact match
  * Exact if truthy true, but any truthy false will match
@@ -68,37 +52,53 @@ const cmpPage = (d, val) => {
 
 const cmpRegex = (d, regex) => regex.test(d)
 
-function filterNewValue(value, filterType) {
-	let compFunc, regex
+function cmpValue(comp, d) {
+	const {value, filterType} = comp;
+	let regex, parts;
 
 	switch (filterType) {
 		case FilterType.EXACT:
-			compFunc = d => cmpExact(d, value);
-			break;
+			return cmpExact(d, value);
 		case FilterType.REGEX:
-			compFunc = d => cmpRegex(d, value);
-			break;
+			parts = value.split('/');
+			if (value[0] === '/' && parts.length > 2) {
+				try {regex = new RegExp(parts[1], parts[2])} 
+				catch (err) {console.error(err)}
+			}
+			return regex? cmpRegex(d, regex): false;
 		case FilterType.CONTAINS:
-			regex = new RegExp(value, 'i');
-			compFunc = d => cmpRegex(d, regex);
-			break;
+			try {regex = new RegExp(value, 'i')} catch (err) {console.error(err)}
+			return regex? cmpRegex(d, regex): false;
 		case FilterType.CLAUSE:
-			compFunc = d => cmpClause(d, value);
-			break;
+			return cmpClause(d, value);
 		case FilterType.PAGE:
-			compFunc = d => cmpPage(d, value);
-			break;
+			return cmpPage(d, value);
 		default:
-			throw TypeError(`Unexpected filter type ${filterType}`);
+			console.error(`Unexpected filter type ${filterType}`);
+			return false;
 	}
-
-	return {value, valid: compFunc !== undefined, filterType, compFunc}
 }
 
-const filterCreate = ({options, getField}) => ({
+/*
+ * Applies the column filters in turn to the data.
+ * Returns a list of ids that meet the filter requirements.
+ */
+export function filterData(filters, getField, entities, ids) {
+	let filteredIds = ids.slice();
+	for (const [dataKey, filter] of Object.entries(filters)) {
+		const comps = filter.comps;
+		if (comps.length) {
+			filteredIds = filteredIds.filter(id =>
+				comps.reduce((result, comp) => result || cmpValue(comp, getField(entities[id], dataKey)), false)
+			);
+		}
+	}
+	return filteredIds;
+}
+
+const filterCreate = ({options}) => ({
 	options,	// Array of {label, value} objects
-	getField,	// Function to derive field value
-	values: [],	// Array of filter value objects where a filter value object is {value, valid, FilterType, compFunc}
+	comps: [],	// Array of compare objects where a compare object {value, FilterType}
 })
 
 function filtersInit(fields) {
@@ -121,18 +121,18 @@ export const createFiltersSubslice = (dataSet, fields) => ({
 			const {dataKey, values} = action.payload;
 			const filter = filterCreate(filters[dataKey]);
 			for (let value of values)
-				filter.values.push(filterNewValue(value, FilterType.EXACT));
+				filter.comps.push({value, filterType: FilterType.EXACT});
 			filters[dataKey] = filter;
 		},
 		addFilter(state, action) {
 			const filters = state[name];
 			const {dataKey, value, filterType} = action.payload;
-			filters[dataKey].values.push(filterNewValue(value, filterType));
+			filters[dataKey].comps.push({value, filterType});
 		},
 		removeFilter(state, action) {
 			const filters = state[name];
 			const {dataKey, value, filterType} = action.payload;
-			filters[dataKey].values = filters[dataKey].values.filter(v => v.value !== value || v.filterType !== filterType)
+			filters[dataKey].comps = filters[dataKey].comps.filter(comp => comp.value !== value || comp.filterType !== filterType)
 		},
 		clearFilter(state, action) {
 			const filters = state[name];

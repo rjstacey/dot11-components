@@ -109,18 +109,20 @@ function Filter({
 
 	const dispatch = useDispatch();
 
-	const selectSortFilterSelected = React.useCallback(state => ({
+	const selectInfo = React.useCallback(state => ({
 		sort: selectSort(state, dataSet, dataKey),
 		filter: selectFilter(state, dataSet, dataKey),
 		selected: selectSelected(state, dataSet),
+		entities: selectEntities(state, dataSet),
+		getField: selectGetField(state, dataSet)
 	}), [dataSet, dataKey]);
 
-	const {sort, filter, selected} = useSelector(selectSortFilterSelected);
+	const {sort, filter, selected, entities, getField} = useSelector(selectInfo);
 
 	const selectValues = React.useCallback(state => {
 		const filter = selectFilter(state, dataSet, dataKey);
 		let ids = selectIds(state, dataSet);
-		if (filter.values.length === 0)
+		if (filter.comps.length === 0)
 			ids = selectFilteredIds(state, dataSet);
 		const getField = selectGetField(state, dataSet);
 		const entities = selectEntities(state, dataSet);
@@ -128,6 +130,16 @@ function Filter({
 	}, [dataSet, dataKey]);
 
 	const values = useSelector(selectValues);
+
+	const filterSelected = React.useCallback(() => {
+		const list = selected.map(id => getField(entities[id], dataKey));
+		dispatch(setFilter(dataSet, dataKey, list));
+	}, [dispatch, dataSet, dataKey, selected, entities, getField]);
+
+	const isFilterSelected = React.useMemo(() => {
+		const list = selected.map(id => getField(entities[id], dataKey));
+		return filter.comps.map(comp => comp.value).join() === list.join();
+	}, [filter, dataKey, selected, entities, getField]);
 
 	const options = React.useMemo(() => {
 		if (filter.options)
@@ -144,12 +156,12 @@ function Filter({
 
 	}, [values, dataRenderer, filter]);
 
-	let searchItems = filter.values
-		.filter(v => v.filterType !== FilterType.EXACT)
-		.map(v => ({
-			value: v.value,
-			label: (v.filterType === FilterType.REGEX? 'Regex: ': 'Contains: ') + v.value.toString(),
-			type: v.filterType
+	let searchItems = filter.comps
+		.filter(comp => comp.filterType !== FilterType.EXACT)
+		.map(comp => ({
+			value: comp.value,
+			label: (comp.filterType === FilterType.REGEX? 'Regex: ': 'Contains: ') + comp.value,
+			type: comp.filterType
 		}));
 
 	let exactItems = options.map(o => ({...o, type: FilterType.EXACT}));
@@ -165,7 +177,7 @@ function Filter({
 				exactItems = exactItems.filter(item => regexp.test(item.label));
 				let item = {
 					label: 'Regex: ' + regexp.toString(),
-					value: regexp,
+					value: search,
 					type: FilterType.REGEX
 				};
 				searchItems.unshift(item);
@@ -195,7 +207,7 @@ function Filter({
 	}, [search]);
 
 	const isItemSelected = React.useCallback(
-		(item) => filter.values.find(v => v.value === item.value && v.filterType === item.type) !== undefined,
+		(item) => filter.comps.find(comp => comp.value === item.value && comp.filterType === item.type) !== undefined,
 		[filter]
 	);
 
@@ -231,17 +243,16 @@ function Filter({
 		<>
 			<Row>
 				<label>Filter:</label>
-				{selected && isId &&
-					<Button
-						onClick={() => dispatch(setFilter(dataSet, dataKey, selected))}
-						disabled={selected.length === 0}
-						isActive={filter.values.map(v => v.value).join() === selected.join()}
-					>
-						Selected
-					</Button>}
+				<Button
+					onClick={filterSelected}
+					disabled={selected.length === 0}
+					isActive={isFilterSelected}
+				>
+					Selected
+				</Button>
 				<Button
 					onClick={() => dispatch(setFilter(dataSet, dataKey, []))}
-					isActive={filter.values.length === 0}
+					isActive={filter.comps.length === 0}
 				>
 					Clear
 				</Button>
@@ -337,7 +348,7 @@ function TableColumnHeader({
 			sort: sorts.settings[dataKey],
 			isSorted: sorts.by.includes(dataKey),
 			filter: filter,
-			isFiltered: filter && filter.values.length > 0,
+			isFiltered: filter && filter.comps.length > 0,
 		}
 	}, [dataSet, dataKey]);
 
