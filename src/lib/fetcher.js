@@ -1,31 +1,53 @@
 import {saveAs} from 'file-saver';
-import {logout} from './user';
 
 const methods = {};
 
-let jwtBearerToken;
-methods.setJWT = (token) => jwtBearerToken = token;
-
 const apiBaseUrl = '';
+let jwtBearerToken;
+let onUnauthorized;
 
-async function errHandler(res) {
-	if (res.status === 401) {	// Unauthorized
-		logout();
-		await new Promise(r => setTimeout(r, 1000));
-	}
-	if (res.status === 400 &&
-		res.headers.get('Content-Type').search('application/json') !== -1) {
-		const ret = await res.json();
-		return Promise.reject(ret.message);
-	}
-	let error = await res.text();
-	if (!error)
-		error = new Error(res.statusText);
-	//console.log(detail)
-	return Promise.reject(error);
+methods.setAuth = (token, onUnauthorizedFunc) => {
+	jwtBearerToken = token;
+	onUnauthorized = onUnauthorizedFunc;
 }
 
-async function _jsonMethod(method, url, params) {
+export function NetworkError(response, status) {
+	this.name = 'NetworkError';
+	this.status = status;
+	this.response = response;
+}
+NetworkError.prototype = Error.prototype;
+
+function tryParseJSON(json) {
+	if (!json)
+		return null;
+	try {
+		return JSON.parse(json);
+	} catch (e) {
+		throw new Error(`Failed to parse an expected JSON response: ${json}`);
+	}
+}
+
+function getResponseBody(res) {
+	const contentType = res.headers.get('content-type');
+	if (contentType && contentType.indexOf('json') >= 0)
+		return res.text().then(tryParseJSON);
+	return res.text();
+}
+
+async function errHandler(res) {
+
+	// Unauthorized
+	if (res.status === 401 && onUnauthorized) {
+		return onUnauthorized();
+	}
+
+	const body = await getResponseBody(res);
+
+	throw new NetworkError(body || '', res.status);
+}
+
+methods.fetch = async (method, url, params) => {
 	url = apiBaseUrl + url;
 
 	const options = {method};
@@ -47,11 +69,11 @@ async function _jsonMethod(method, url, params) {
 
 	const res = await fetch(url, options);
 
-	return res.ok? res.json(): errHandler(res);
+	return res.ok? getResponseBody(res): errHandler(res);
 }
 
 ["GET", "POST", "PUT", "DELETE", "PATCH"]
-	.forEach(m => methods[m.toLowerCase()] = (...args) => _jsonMethod(m, ...args));
+	.forEach(m => methods[m.toLowerCase()] = (...args) => methods.fetch(m, ...args));
 
 methods.getFile = async (url, params) => {
 	url = apiBaseUrl + url + '?' + new URLSearchParams(params);
