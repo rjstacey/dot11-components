@@ -1,6 +1,6 @@
 import React from 'react';
-import AppModal from './AppModal';
 import {Form} from '../form'
+import {AppModal} from '.';
 
 let resolve;
 

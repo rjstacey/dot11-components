@@ -4,9 +4,9 @@ import {useDispatch, useSelector} from 'react-redux';
 import styled from '@emotion/styled';
 import {FixedSizeList as List} from 'react-window';
 
-import {Button, Icon} from '../icons';
-import {Checkbox, Input} from '../form';
-import Dropdown from '../general/Dropdown'
+import {Icon} from '../icons';
+import {Button, Checkbox, Input} from '../form';
+import {Dropdown} from '../general';
 
 import {
 	selectGetField,

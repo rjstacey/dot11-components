@@ -1,22 +1,12 @@
-import {createSlice} from '@reduxjs/toolkit'
+import {createSlice} from '@reduxjs/toolkit';
+import {NetworkError} from '../lib/fetcher';
 
 const slice = createSlice({
 	name: 'errMsg',
 	initialState: [],
 	reducers: {
-		setError: {
-			reducer: (state, action) => {
-				const {summary, error} = action.payload;
-				console.warn(summary, error)
-				const detail = 
-					(typeof error === 'string')
-						? error
-						: error.hasOwnProperty('detail')
-							? error.detail
-							: error.toString();
-				state.push({summary, detail})
-			},
-			prepare: (summary, error) => ({payload: {summary, error}})
+		setError(state, action) {
+			state.push(action.payload)
 		},
 		clearError(state, action) {
 			if (state.length)
@@ -25,6 +15,26 @@ const slice = createSlice({
 	}
 });
 
-export const {setError, clearError} = slice.actions;
+export const {clearError} = slice.actions;
+
+export function setError(summary, error) {
+	let detail;
+	if (error instanceof NetworkError) {
+		const {status, response} = error;
+		if (typeof response === 'object' && response.hasOwnProperty('message'))
+			detail = response.message;
+		else if (typeof response === 'string')
+			detail = response;
+		else
+			detail = JSON.stringify(response);
+	}
+	else if (typeof error === 'string') {
+		detail = error;
+	}
+	else {
+		detail = error.toString();
+	}
+	return slice.actions.setError({summary, detail});
+}
 
 export default slice.reducer;

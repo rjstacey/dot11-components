@@ -4,7 +4,8 @@ import ReactDOM from 'react-dom';
 import styled from '@emotion/styled';
 
 import {useClickOutside} from '../lib';
-import {Button, Icon} from '../icons';
+import {Icon} from '../icons';
+import {Button} from '../form';
 
 /***
  * There is potentially an issue here. If the dropdown opens and causes a scrollbar to appear in the parent due to

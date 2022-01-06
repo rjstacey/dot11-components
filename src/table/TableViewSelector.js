@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 
-import {Button} from '../icons';
+import {Button} from '../form';
 import {setTableView} from '../store/appTableData';
 
 function TableViewSelector({dataSet}) {

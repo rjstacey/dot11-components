@@ -3,8 +3,8 @@ import React from 'react';
 import styled from '@emotion/styled';
 import {useDispatch, useSelector} from 'react-redux';
 
-import {Button} from '../icons';
-import {ActionButtonDropdown} from '../general/Dropdown';
+import {Button} from '../form';
+import {ActionButtonDropdown} from '../general';
 import {toggleTableFixed, setTableColumnShown} from '../store/appTableData';
 
 const Row = styled.div`

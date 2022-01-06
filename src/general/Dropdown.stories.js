@@ -1,6 +1,6 @@
 import React from 'react';
 
-import Dropdown, {ActionButtonDropdown} from './Dropdown';
+import {Dropdown, ActionButtonDropdown} from '.';
 import {Select} from '../form';
 
 const options = [

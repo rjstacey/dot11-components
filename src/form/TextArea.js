@@ -1,5 +1,5 @@
-import styled from '@emotion/styled'
-import ExpandingTextArea from 'react-expanding-textarea'
+import styled from '@emotion/styled';
+import ExpandingTextArea from 'react-expanding-textarea';
 
 const TextArea = styled(ExpandingTextArea)`
 	font-family: inherit;

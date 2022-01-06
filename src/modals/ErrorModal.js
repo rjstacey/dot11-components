@@ -1,9 +1,9 @@
-import React from 'react'
-import {connect} from 'react-redux'
-import {Form} from '../form'
-import AppModal from './AppModal'
+import React from 'react';
+import {connect} from 'react-redux';
+import {Form} from '../form';
+import {AppModal} from '.';
 
-import {clearError} from '../store/error'
+import {clearError} from '../store/error';
 
 function strToHtml(s) {
 	return s

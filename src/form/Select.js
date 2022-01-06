@@ -1,6 +1,6 @@
-import React from 'react'
-import styled from '@emotion/styled'
-import ReactDropdownSelect from 'react-dropdown-select'
+import React from 'react';
+import styled from '@emotion/styled';
+import ReactDropdownSelect from 'react-dropdown-select';
 
 const Container = styled.div`
 	.react-dropdown-select {

@@ -6,7 +6,8 @@ import thunk from 'redux-thunk';
 import { Provider, useDispatch } from 'react-redux';
 
 import {displayDate} from '../lib';
-import {ButtonGroup, Button, ActionButton, ActionIcon} from '../icons';
+import {ActionIcon} from '../icons';
+import {ButtonGroup, Button, ActionButton} from '../form';
 import {createAppTableDataSlice, SortType} from '../store/appTableData';
 
 import AppTable, {
@@ -270,7 +271,7 @@ export const SplitTable = ({expandable, numberOfRows}) => {
 			<div style={{display: 'flex', width: '100%', justifyContent: 'space-between'}}>
 				<LoaderButton numberOfRows={numberOfRows} />
 				<ButtonGroup>
-					<div style={{textAlign: 'center'}}>Table view</div>
+					<div>Table view</div>
 					<div style={{display: 'flex', justifyContent: 'center'}}>
 						<TableViewSelector dataSet={dataSet} />
 						<TableColumnSelector dataSet={dataSet} columns={columns} />

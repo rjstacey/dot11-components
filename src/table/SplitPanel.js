@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 
-import ColumnResizer from './ColumnResizer'
+import ColumnResizer from './ColumnResizer';
 
 export const Panel = ({children, ...otherProps}) =>
 	<div {...otherProps} >

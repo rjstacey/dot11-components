@@ -1,12 +1,12 @@
 import React from 'react';
 
-import { configureStore, combineReducers } from '@reduxjs/toolkit'
-import { createLogger } from 'redux-logger'
-import thunk from 'redux-thunk'
-import { Provider, connect } from 'react-redux'
+import { configureStore, combineReducers } from '@reduxjs/toolkit';
+import { createLogger } from 'redux-logger';
+import thunk from 'redux-thunk';
+import { Provider, connect } from 'react-redux';
 
-import {AppModal, ActionButtonModal, ErrorModal, ConfirmModal} from '.'
-import errMsg, {setError} from '../store/error'
+import {AppModal, ActionButtonModal, ErrorModal, ConfirmModal} from '.';
+import errMsg, {setError} from '../store/error';
 
 const story = {
   title: 'Modals',

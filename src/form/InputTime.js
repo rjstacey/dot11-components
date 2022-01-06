@@ -1,6 +1,6 @@
-import PropTypes from 'prop-types'
-import React from 'react'
-import Input from './Input'
+import PropTypes from 'prop-types';
+import React from 'react';
+import Input from './Input';
 
 const toTimeStr = (hour, min) => ('0' + hour).substr(-2) + ':' + ('0' + min).substr(-2);
 

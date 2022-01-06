@@ -5,7 +5,7 @@ import styled from '@emotion/styled';
 
 import {ActionIcon} from '../icons';
 import {Checkbox} from '../form';
-import Dropdown from '../general/Dropdown';
+import {Dropdown} from '../general';
 
 import {
 	selectSelected,
