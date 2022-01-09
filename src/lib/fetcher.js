@@ -76,7 +76,9 @@ methods.fetch = async (method, url, params) => {
 	.forEach(m => methods[m.toLowerCase()] = (...args) => methods.fetch(m, ...args));
 
 methods.getFile = async (url, params) => {
-	url = apiBaseUrl + url + '?' + new URLSearchParams(params);
+	url = apiBaseUrl + url;
+	if (params)
+		url += '?' + new URLSearchParams(params);
 
 	const options = {method: 'GET'};
 	if (jwtBearerToken)

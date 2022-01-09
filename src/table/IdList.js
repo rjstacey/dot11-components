@@ -146,7 +146,7 @@ function IdFilter({dataSet, dataKey, ...props}) {
 		const filters = selectFilters(state, dataSet);
 		const getField = selectGetField(state, dataSet);
 		return {
-			values: filters[dataKey].values.map(v => v.value) || [],
+			values: filters[dataKey].comps.map(v => v.value) || [],
 			isNumber: ids.length && typeof getField(entities[ids[0]], dataKey) === 'number',
 			ids,
 			entities,

@@ -65,3 +65,4 @@ export const parseNumber = (value) => {
 	return !isNaN(unformatted)? unformatted: 0;
 };
 
+export const isObject = (val) => val != null && typeof val === 'object' && Array.isArray(val) === false;

@@ -12,7 +12,8 @@ import {
 	TextArea,
 	Checkbox,
 	InputDates,
-	InputTime
+	InputTime,
+	SliderSwitch
 } from '.';
 
 const story = {
@@ -46,6 +47,7 @@ export const TwoColsForm = (args) => {
 	const [time, setTime] = React.useState('');
 	const [checkbox, setCheckbox] = React.useState(false);
 	const [select, setSelect] = React.useState([]);
+	const [slider, setSlider] = React.useState(false);
 
 	return (
 		<Form {...otherArgs}>
@@ -74,6 +76,7 @@ export const TwoColsForm = (args) => {
 							/>
 						</Field></ListItem>
 						<ListItem><Field label='Checkbox:'><Checkbox value={checkbox} onChange={setCheckbox} /></Field></ListItem>
+						<ListItem><Field label='SliderSwitch:'><SliderSwitch value={slider} onChange={setSlider} /></Field></ListItem>
 						<ListItem><Field label={'Search:'}><Input type='search' disabled={disabled} /></Field></ListItem>
 						<ListItem><Field label={'Select:'}><Select disabled={disabled} options={options} value={select} onChange={setSelect} /></Field></ListItem>
 						<ListItem><Field label={'Select (portal):'}><Select disabled={disabled} options={options} value={select} onChange={setSelect} portal={document.querySelector('#root')} /></Field></ListItem>
