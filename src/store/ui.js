@@ -1,11 +1,20 @@
+import {deepMerge} from '../lib';
 
-const initialTableConfig = {fixed: false, columns: {}}
+const defaultTableView = 'default';
+const defaultTableConfig = {fixed: false, columns: {}}
+const defaultPanelConfig = {split: 0.5, isSplit: false};
 
 const name = 'ui';
 
 export const createUiSubslice = (dataSet) => ({
 	name,
-	initialState: {ui: {tableView: 'default', tablesConfig: {}}},
+	initialState: {
+		ui: {
+			tableView: defaultTableView,
+			tablesConfig: {[defaultTableView]: defaultTableConfig},
+			panelsConfig: {[defaultTableView]: defaultPanelConfig}
+		}
+	},
 	reducers: {
 		setProperty(state, action) {
 			const ui = state[name];
@@ -24,11 +33,16 @@ export const createUiSubslice = (dataSet) => ({
 			for (const tableView of Object.keys(ui.tablesConfig)) {
 				if (!tablesConfig[tableView])
 					delete ui.tablesConfig[tableView];
+				if (!tablesConfig[tableView])
+					delete ui.panelsConfig[tableView];
 			}
 			// Add default config if config not already present
 			for (const [tableView, tableConfig] of Object.entries(tablesConfig)) {
 				if (!ui.tablesConfig[tableView])
-					ui.tablesConfig[tableView] = tableConfig;
+					ui.tablesConfig[tableView] = defaultTableConfig;
+				ui.tablesConfig[tableView] = deepMerge(ui.tablesConfig[tableView], tableConfig);
+				if (!ui.panelsConfig[tableView])
+					ui.panelsConfig[tableView] = defaultPanelConfig;
 			}
 			// Set current table view if not set or points to removed config
 			if (!ui.tableView || !ui.tablesConfig[state.tableView]) {
@@ -46,7 +60,7 @@ export const createUiSubslice = (dataSet) => ({
 				tableView = ui.tableView;
 			let tableConfig = ui.tablesConfig[tableView];
 			if (tableConfig === undefined)
-				tableConfig = initialTableConfig; 
+				tableConfig = defaultTableConfig; 
 			for (const [key, column] of Object.entries(columns)) {
 				if (tableConfig.columns[key] === undefined)
 					tableConfig.columns[key] = {};
@@ -69,12 +83,56 @@ export const createUiSubslice = (dataSet) => ({
 				tableView = ui.tableView;
 			let tableConfig = ui.tablesConfig[tableView];
 			if (tableConfig === undefined)
-				tableConfig = initialTableConfig;
+				tableConfig = defaultTableConfig;
 			tableConfig.fixed = !ui.tablesConfig[tableView].fixed;
 			ui.tablesConfig[tableView] = tableConfig;
 		},
+		adjustPanelSplit(state, action) {
+			const ui = state[name];
+			let {tableView, delta} = action.payload;
+			if (!tableView)
+				tableView = ui.tableView;
+			const panelConfig = ui.panelsConfig[tableView];
+			panelConfig.split = panelConfig.split - delta;
+		},
+		setPanelIsSplit(state, action) {
+			const ui = state[name];
+			let {tableView, isSplit} = action.payload;
+			if (!tableView)
+				tableView = ui.tableView;
+			const panelConfig = ui.panelsConfig[tableView];
+			panelConfig.isSplit = isSplit;
+		},
 	}
 });
+
+/*
+ * Selectors
+ */
+export const selectCurrentView = (state, dataSet) => state[dataSet].ui.tableView;
+
+export const selectCurrentPanelConfig = (state, dataSet) => {
+	const {tableView, panelsConfig} = state[dataSet].ui;
+	if (panelsConfig) {
+		const panelConfig = panelsConfig[tableView];
+		if (panelConfig)
+			return panelConfig;
+	}
+	return defaultPanelConfig;
+}
+
+export const selectCurrentTableConfig = (state, dataSet) => {
+	const {tableView, tablesConfig} = state[dataSet].ui;
+	if (tablesConfig) {
+		const tableConfig = tablesConfig[tableView];
+		if (tableConfig)
+			return tableConfig;
+	}
+	return defaultTableConfig;
+}
+
+export const selectViews = (state, dataSet) => Object.keys(state[dataSet].ui.tablesConfig);
+
 
 /* Actions */
 export const setDefaultTablesConfig = (dataSet, tableView, tablesConfig) =>
@@ -91,6 +149,12 @@ export const setTableColumnShown = (dataSet, tableView, key, shown) =>
 	({type: dataSet + '/upsertTableColumns', payload: {tableView, columns: {[key]: {shown}}}});
 export const setTableColumnUnselectable = (dataSet, tableView, key, unselectable) => 
 	({type: dataSet + '/upsertTableColumns', payload: {tableView, columns: {[key]: {unselectable}}}});
+
+export const adjustPanelSplit = (dataSet, tableView, delta) => 
+	({type: dataSet + '/adjustPanelSplit', payload: {tableView, delta}});
+export const setPanelIsSplit = (dataSet, tableView, isSplit) => 
+	({type: dataSet + '/setPanelIsSplit', payload: {tableView, isSplit}});
+
 export const setProperty = (dataSet, property, value) => 
 	({type: dataSet + '/setProperty', payload: {property, value}});
 

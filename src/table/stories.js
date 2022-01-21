@@ -3,12 +3,12 @@ import React from 'react';
 import { configureStore, combineReducers, createSelector } from '@reduxjs/toolkit';
 import { createLogger } from 'redux-logger';
 import thunk from 'redux-thunk';
-import { Provider, useDispatch } from 'react-redux';
+import { Provider, useDispatch, useSelector } from 'react-redux';
 
 import {displayDate} from '../lib';
 import {ActionIcon} from '../icons';
 import {ButtonGroup, Button, ActionButton} from '../form';
-import {createAppTableDataSlice, SortType} from '../store/appTableData';
+import {createAppTableDataSlice, SortType, setPanelIsSplit, selectCurrentPanelConfig} from '../store/appTableData';
 
 import AppTable, {
 	SelectHeader, 
@@ -155,8 +155,8 @@ const randomDate = (start, end) =>
 const randomStatus = () => Math.round(Math.random() * (statusOptions.length - 1));
 
 const lorem = new LoremIpsum({
-  sentencesPerParagraph: {max: 8, min: 4},
-  wordsPerSentence: {max: 16, min: 4}
+	sentencesPerParagraph: {max: 8, min: 4},
+	wordsPerSentence: {max: 16, min: 4}
 });
 
 const MaxNames = 4;
@@ -262,8 +262,15 @@ function tableColumnsWithControl(expandable, dispatch) {
 
 export const SplitTable = ({expandable, numberOfRows}) => {
 
-	const [splitView, setSplitView] = React.useState(false);
 	const dispatch = useDispatch();
+
+	const isSplit = useSelector(state => {
+		const panelConfig = selectCurrentPanelConfig(state, dataSet);
+		return panelConfig.isSplit;
+	});
+
+	const setIsSplit = (isSplit) => dispatch(setPanelIsSplit(dataSet, undefined, isSplit));
+
 	const columns = React.useMemo(() => tableColumnsWithControl(expandable, dispatch), [expandable, dispatch]);
 
 	return (
@@ -278,14 +285,14 @@ export const SplitTable = ({expandable, numberOfRows}) => {
 						<ActionButton
 							name='book-open'
 							title='Show detail'
-							isActive={splitView} 
-							onClick={() => setSplitView(!splitView)} 
+							isActive={isSplit} 
+							onClick={() => setIsSplit(!isSplit)}
 						/>
 					</div>
 				</ButtonGroup>
 			</div>
 			<ShowFilters dataSet={dataSet} fields={fields} />
-			<SplitPanel splitView={splitView} >
+			<SplitPanel dataSet={dataSet} >
 				<Panel>
 					<AppTable
 						defaultTablesConfig={defaultTablesConfig}

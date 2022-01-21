@@ -20,7 +20,7 @@ export const {clearError} = slice.actions;
 export function setError(summary, error) {
 	let detail;
 	if (error instanceof NetworkError) {
-		const {status, response} = error;
+		const {response} = error;
 		if (typeof response === 'object' && response.hasOwnProperty('message'))
 			detail = response.message;
 		else if (typeof response === 'string')

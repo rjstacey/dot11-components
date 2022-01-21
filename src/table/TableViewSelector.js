@@ -3,25 +3,25 @@ import React from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 
 import {Button} from '../form';
-import {setTableView} from '../store/appTableData';
+import {setTableView, selectCurrentView, selectViews} from '../store/appTableData';
 
 function TableViewSelector({dataSet}) {
 	const dispatch = useDispatch();
 
-	const selectInfo = React.useCallback(state => {
-		const {tableView, tablesConfig} = state[dataSet].ui;
-		const tableViews = Object.keys(tablesConfig);
-		return {tableView, tableViews};
-	}, [dataSet]);
-	const {tableView, tableViews} = useSelector(selectInfo);
+	const selectInfo = React.useCallback(state => ({
+		currentView: selectCurrentView(state, dataSet),
+		allViews: selectViews(state, dataSet)
+	}), [dataSet]);
 
-	return tableViews.map(view => 
+	const {currentView, allViews} = useSelector(selectInfo);
+
+	return allViews.map(v => 
 		<Button
-			key={view}
-			isActive={tableView === view}
-			onClick={() => dispatch(setTableView(dataSet, view))}
+			key={v}
+			isActive={currentView === v}
+			onClick={() => dispatch(setTableView(dataSet, v))}
 		>
-			{view}
+			{v}
 		</Button>
 	)
 }

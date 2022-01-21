@@ -5,7 +5,7 @@ import {useDispatch, useSelector} from 'react-redux';
 
 import {Button} from '../form';
 import {ActionButtonDropdown} from '../general';
-import {toggleTableFixed, setTableColumnShown} from '../store/appTableData';
+import {toggleTableFixed, setTableColumnShown, selectCurrentView, selectCurrentTableConfig} from '../store/appTableData';
 
 const Row = styled.div`
 	margin: 5px 10px;
@@ -36,18 +36,15 @@ const Item = styled.div`
 `;
 
 function ColumnSelectorDropdown({dataSet, columns}) {
-	
+
 	const dispatch = useDispatch();
 
-	const selectInfo = React.useCallback(state => {
-		const tableView = state[dataSet].ui.tableView;
-		return {
-			tableView,
-			tableConfig: state[dataSet].ui.tablesConfig[tableView]
-		}
-	}, [dataSet]);
+	const selectInfo = React.useCallback(state => ({
+		view: selectCurrentView(state, dataSet),
+		tableConfig: selectCurrentTableConfig(state, dataSet)
+	}), [dataSet]);
 
-	const {tableView, tableConfig} = useSelector(selectInfo);
+	const {view, tableConfig} = useSelector(selectInfo);
 
 	/* Build an array of 'selectable' column config that includes a column label */
 	const selectableColumns = [];
@@ -64,34 +61,34 @@ function ColumnSelectorDropdown({dataSet, columns}) {
 
 	return (
 		<>
-			<Row>
-				<label>Table view:</label>
-				<span>{tableView}</span>
-			</Row>
-			<Row>
-				<label>Fixed width:</label>
-				<Button
-					onClick={() => dispatch(toggleTableFixed(dataSet, tableView))}
-					isActive={tableConfig.fixed}
+		<Row>
+			<label>Table view:</label>
+			<span>{view}</span>
+		</Row>
+		<Row>
+			<label>Fixed width:</label>
+			<Button
+				onClick={() => dispatch(toggleTableFixed(dataSet, view))}
+				isActive={tableConfig.fixed}
+			>
+				On
+			</Button>
+		</Row>
+		<ItemList>
+			{selectableColumns.map((col) => 
+				<Item
+					key={col.key}
+					isSelected={col.shown}
 				>
-					On
-				</Button>
-			</Row>
-			<ItemList>
-				{selectableColumns.map((col) => 
-					<Item
-						key={col.key}
-						isSelected={col.shown}
-					>
-						<input
-							type='checkbox'
-							checked={col.shown}
-							onChange={() => dispatch(setTableColumnShown(dataSet, tableView, col.key, !col.shown))}
-						/>
-						<span>{col.label}</span>
-					</Item>
-				)}
-			</ItemList>
+					<input
+						type='checkbox'
+						checked={col.shown}
+						onChange={() => dispatch(setTableColumnShown(dataSet, view, col.key, !col.shown))}
+					/>
+					<span>{col.label}</span>
+				</Item>
+			)}
+		</ItemList>
 		</>
 	)
 }

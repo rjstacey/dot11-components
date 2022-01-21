@@ -313,7 +313,7 @@ function AppTableSized({
 		estimatedRowHeight,
 		onRowHeightChange,
 		onRowClick
-	}), [props.rowGetter, entities, ids, selected, expanded, fixed, columns, estimatedRowHeight, getField, onRowHeightChange, onRowClick]);
+	}), [props.rowGetter, gutterSize, entities, ids, selected, expanded, fixed, columns, estimatedRowHeight, getField, onRowHeightChange, onRowClick]);
 
 	// put header after body and reverse the display order via css to prevent header's shadow being covered by body
 	return (
