@@ -18,6 +18,7 @@
     "@fortawesome/free-regular-svg-icons": "^5.15.3",
     "@fortawesome/free-solid-svg-icons": "^5.15.3",
     "@fortawesome/react-fontawesome": "^0.1.14",
+    "bootstrap-icons": "^1.8.0",
     "draft-js": "^0.11.7",
     "file-saver": "^2.0.5",
     "jest": "^26.6.0",
@@ -25,6 +26,7 @@
     "react-dropdown-select": "^4.8.0",
     "react-expanding-textarea": "^2.3.2",
     "react-modal": "^3.14.4",
+    "react-resize-detector": "^7.0.0",
     "react-virtualized-auto-sizer": "^1.0.5",
     "react-window": "^1.8.6",
     "web-vitals": "^1.1.2"

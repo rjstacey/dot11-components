@@ -1,6 +1,6 @@
-import React from 'react'
-import styled from '@emotion/styled'
-import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
+import React from 'react';
+import styled from '@emotion/styled';
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {
 	faFileUpload, faFileDownload, faFileExport, faFileImport,
 	faHighlighter, faBold, faItalic, faStrikethrough, faUnderline,
@@ -20,12 +20,13 @@ import {
 	faUserSlash, faUserCheck,
 	faBookOpen,
 	faAngleRight, faAngleLeft,
-} from '@fortawesome/free-solid-svg-icons'
+} from '@fortawesome/free-solid-svg-icons';
 import {
 	faPlusSquare, faMinusSquare, faCopy,
 	faCalendar,
 } from '@fortawesome/free-regular-svg-icons';
 
+import 'bootstrap-icons/font/bootstrap-icons.css';
 
 export function IconSort({direction, isAlpha, ...props}) {
 	const icon = direction === 'ASC'
@@ -34,57 +35,9 @@ export function IconSort({direction, isAlpha, ...props}) {
 	return <FontAwesomeIcon icon={icon} {...props} />;
 }
 
-/*
-export const IconFilter = (props) =>
-	<svg width='1em' height='0.875em' role='img' viewBox="0 0 971.986 971.986" {...props} >
-		<path fill='currentColor' d="M370.216,459.3c10.2,11.1,15.8,25.6,15.8,40.6v442c0,26.601,32.1,40.101,51.1,21.4l123.3-141.3   c16.5-19.8,25.6-29.601,25.6-49.2V500c0-15,5.7-29.5,15.8-40.601L955.615,75.5c26.5-28.8,6.101-75.5-33.1-75.5h-873   c-39.2,0-59.7,46.6-33.1,75.5L370.216,459.3z"/>
-	</svg>
-*/
-
 export const IconFilter = (props) => <FontAwesomeIcon icon={faFilter} {...props} />
 
 export const IconCollapse = ({isCollapsed, ...props}) => <FontAwesomeIcon icon={isCollapsed? faPlusSquare: faMinusSquare} {...props} />
-
-
-
-/*
-const IconContainer = styled.div`
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	width: 16px;
-	height: 16px;
-`;
-*/
-/** <Handle
- *	  open = {true|false} indicates that the window is open or closed
- *  />
- */
-/*export const Handle = ({open, ...otherProps}) => {
-	return (
-		<IconContainer {...otherProps}>
-			<svg style={!open? {transform: 'rotate(180deg)'}: {}} fill="none" viewBox="0 0 40 40">
-				<path d="M 10 25 L 20 15 L 30 25" stroke="currentColor" strokeWidth="3" />
-			</svg>
-		</IconContainer>
-	)
-}
-
-const TriangleDown = styled.div`
-    width: 0;
-    height: 0;
-    border-top-style: solid;
-    border-top-width: 6px;
-    border-right: 6px solid transparent;
-    border-bottom: 0 solid transparent;
-    border-left: 6px solid transparent;
-`;
-
-export const Handle = (props) =>
-	<IconContainer {...props} >
-		<TriangleDown />
-	</IconContainer>
-*/
 
 const IconHandle = styled.div`
     display: inline-block;
@@ -115,37 +68,25 @@ const IconDoubleExpander = ({open, style, ...otherProps}) =>
 		<path d="M 10 10 L 10 30 L 20 20 Z M 20 10 L 20 30 L 30 20 Z" stroke="currentColor" strokeWidth="4" />
 	</IconSVG>
 
-const IconVoteYes = (props) =>
-	<IconSVG {...props} viewBox="0 0 600 600">
-		<defs id="defs1373">
-			<linearGradient id="linearGradient2250">
-				<stop style={{stopColor: '#008700', stopOpacity: 1}} offset="0" id="stop2252"/>
-				<stop style={{stopColor: '#006f00', stopOpacity: 1}} offset="1" id="stop2254"/>
-			</linearGradient>
-		</defs>
+const IconVoteYes = ({style, ...otherProps}) =>
+	<IconSVG style={{...style, transform: 'translate(0, 3px)'}} {...otherProps} viewBox="0 0 600 600">
 		<path
 			d="M 7.6885391,404.6142 C 7.6885391,404.6142 122.85389,534.30185 145.88696,587.27791 L 244.92916,587.27791 C 286.38869,460.59602 447.62018,158.16034 585.8186,52.208207 C 614.45182,15.394067 542.5208,0.19798715 484.4731,24.568517 C 396.98668,61.298507 231.98485,341.73657 201.16633,409.22081 C 157.4035,420.73735 111.33735,335.51499 111.33735,335.51499 L 7.6885391,404.6142 z "
-			style={{fill:'#00bb00', fillOpacity:1, fillRule:'evenodd', stroke:'#000000', strokeWidth:2, strokeLinecap:'butt', strokeLinejoin:'miter', strokeMiterlimit:4, strokeDasharray:'none', strokeOpacity:1}}
+			style={{fill:'#00bb00'}}
 		/>
 	</IconSVG>
 
-const IconVoteNo = (props) =>
-	<IconSVG {...props} viewBox="0 0 525 600">
-		<defs id="defs5">
-			<linearGradient id="linearGradient2299">
-				<stop style={{stopColor: '#ff0000', stopOpacity: 1}} offset="0" id="stop2301"/>
-				<stop style={{stopColor: '#c70000', stopOpacity: 1}} offset="1" id="stop2303"/>
-			</linearGradient>
-			<radialGradient cx="262.5" cy="300" fx="262.5" fy="300" r="246.9456" gradientTransform="matrix(1,0,0,1.200021,0,-60.00638)" gradientUnits="userSpaceOnUse"/>
-		</defs>
+const IconVoteNo = ({style, ...otherProps}) =>
+	<IconSVG style={{...style, transform: 'translate(0, 3px)'}} {...otherProps} viewBox="0 0 525 600">
 		<path
 			d="M 15.554399,499.23617 C 15.554399,489.88388 49.262003,442.92493 90.460178,394.88295 C 131.65835,346.84096 171.36188,300.19332 178.69024,291.22150 C 186.01860,282.24967 178.40699,230.17136 161.77557,175.49190 C 127.32187,62.217924 124.18126,24.551078 147.96473,9.8520875 C 180.47155,-10.238240 225.08409,19.441293 262.53181,86.070496 L 300.46929,153.57113 L 371.71241,83.651323 C 418.55713,37.676699 451.99662,17.200896 469.35551,23.862122 C 503.70070,37.041618 523.52158,88.613119 497.56689,97.264679 C 468.10720,107.08456 346.17818,292.63354 346.40950,327.29275 C 346.51902,343.70450 363.84370,387.26650 384.90880,424.09720 C 399.76671,450.07512 419.73824,470.57451 411.81016,484.66521 L 369.43018,559.98778 C 361.21065,574.59648 330.85012,535.64770 294.88494,497.84045 L 232.14649,431.88864 L 162.59445,514.37325 C 124.34083,559.73979 88.627185,596.62407 83.230792,596.33832 C 77.834411,596.05256 15.554399,508.58848 15.554399,499.23617 z "
-			style={{fill:'#bb0000', fillOpacity:1, stroke:'none', strokeWidth:2, strokeLinejoin:'round', strokeMiterlimit:4, strokeDasharray:'none', strokeOpacity:1}}
+			style={{fill:'#bb0000'}}
 		/>
 	</IconSVG>
 
+
 export const faIcons = {
-	'refresh': faSync,
+	//'refresh': faSync,
 	'add': faPlus,
 	'delete': faTrashAlt,
 	'next': faArrowCircleRight,
@@ -194,6 +135,8 @@ export const otherIcons = {
 	'sort': IconSort,
 	'vote-yes': IconVoteYes,
 	'vote-no': IconVoteNo,
+	'add-item': <i className="bi-journal-plus" />,
+	'refresh': <i className="bi-arrow-repeat" />,
 }
 
 export const availableIcons = Object.keys(faIcons).concat(Object.keys(otherIcons));
@@ -269,3 +212,4 @@ export const Spinner = (props) =>
 	<SpinnerWrap {...props}>
 		<div></div><div></div><div></div><div></div>
 	</SpinnerWrap>
+	
