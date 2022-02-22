@@ -412,7 +412,7 @@ class Select extends React.Component {
 				aria-label="Dropdown select"
 				aria-expanded={state.isOpen}
 				onClick={onClick}
-				onFocus={() => !props.readOnly && this.inputRef.current && this.inputRef.current.focus()}
+				onFocus={() => this.inputRef.current && this.inputRef.current.focus()}
 				onKeyDown={this.handleKeyDown}
 				direction={props.direction}
 			>
@@ -467,11 +467,9 @@ Select.propTypes = {
 	sortBy: PropTypes.string,
 	valuesEqual: PropTypes.func,
 
-	direction: PropTypes.oneOf(['ltr', 'rtl']),
 	dropdownHandle: PropTypes.bool,
 	separator: PropTypes.bool,
 	noDataLabel: PropTypes.string,
-	createNewLabel: PropTypes.string,
 	dropdownGap: PropTypes.number,
 	dropdownHeight: PropTypes.number,
 	dropdownPosition: PropTypes.oneOf(['auto', 'bottom', 'top']),
@@ -482,16 +480,13 @@ Select.propTypes = {
 	dropdownClassName: PropTypes.string,
 
 	contentRenderer: PropTypes.func,
+	selectItemRenderer: PropTypes.func,
+	multiSelectItemRenderer: PropTypes.func,
+	inputRenderer: PropTypes.func,
+
 	dropdownRenderer: PropTypes.func,
 	itemRenderer: PropTypes.func,
-	newItemRenderer: PropTypes.func,
 	noDataRenderer: PropTypes.func,
-	optionRenderer: PropTypes.func,
-	inputRenderer: PropTypes.func,
-	loadingRenderer: PropTypes.func,
-	clearRenderer: PropTypes.func,
-	separatorRenderer: PropTypes.func,
-	dropdownHandleRenderer: PropTypes.func,
 }
 
 Select.defaultProps = {
@@ -520,12 +515,9 @@ Select.defaultProps = {
 	sortBy: null,
 	valuesEqual: (a, b) => a === b,
 
-	direction: 'ltr',
 	dropdownHandle: true,
 	separator: false,
 	noDataLabel: 'No data',
-	createNewLabel: 'add {search}',
-	color: '#0074D9',
 	dropdownGap: 5,
 	dropdownHeight: 300,
 	dropdownPosition: 'bottom',
@@ -533,6 +525,8 @@ Select.defaultProps = {
 
 	/* Select children */
 	contentRenderer: defaultContentRenderer,
+
+	/* Content children */
 	selectItemRenderer: (props) => <SelectItem {...props} />,
 	multiSelectItemRenderer: (props) => <MultiSelectItem {...props} />,
 	inputRenderer: (props) => <Input {...props} />,
@@ -546,4 +540,3 @@ Select.defaultProps = {
 };
 
 export default Select;
-export {Loading, Clear, Separator, DropdownHandle}

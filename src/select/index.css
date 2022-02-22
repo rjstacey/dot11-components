@@ -27,7 +27,6 @@
 	border: 1px solid var(--select-border-color);
 	border-radius: 2px;
 	background-color: var(--select-background-color);
-	width: 100%;
 	padding: 2px 5px;
 	cursor: pointer;
 }
@@ -101,6 +100,9 @@
 	100% {transform: rotate(180deg);}
 }
 
+.select-loading {
+	padding: 0 5px;
+}
 .select-loading:after {
 	content: ' ';
 	display: block;
@@ -112,9 +114,12 @@
 	animation: select-dual-ring-spin 0.7s ease-in-out infinite;
 }
 
+.select-clear-all {
+}
+
 .select-clear-all:after {
 	content: '×';
-	margin: 0 5px;
+	padding: 0 5px;
 }
 
 .select-separator {
