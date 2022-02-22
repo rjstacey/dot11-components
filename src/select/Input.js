@@ -6,7 +6,7 @@ const Input = ({inputRef, value, onChange}) =>
 		ref={inputRef}
 		tabIndex="-1"
 		className='select-input'
-		style={{size: value.length + 1}}
+		style={{width: `${value.length + 1}ch`}}
 		value={value}
 		onChange={(event) => onChange(event.target.value)}
 	/>

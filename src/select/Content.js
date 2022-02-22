@@ -1,34 +1,23 @@
 import React from 'react';
-import styled from '@emotion/styled';
-import { LIB_NAME } from './constants';
-import {getByPath} from './util';
 
-const Content = ({ props, state, methods }) => {
-
-	const cn = `${LIB_NAME}-content ${LIB_NAME}-type-${props.multi? 'multi': 'single'}`;
+const Content = ({ inputRef, props, state, methods }) => {
+	const values = props.value;
 
 	return (
-		<ContentComponent
-			className={cn}
+		<div
+			className='select-content'
 		>
-			{state.values &&
-				props.multi?
-					state.values.map((item) => {
-						const key = `${getByPath(item, props.valueField)}${getByPath(item, props.labelField)}`;
-						const el = props.optionRenderer({item, props, state, methods});
-						return {...el, key}
-					}):
-					state.values.length > 0 && <span>{getByPath(state.values[0], props.labelField)}</span>
+			{props.multi?
+				values.map((item) => {
+					const key = '' + item[props.valueField] + item[props.labelField];
+					const el = props.multiSelectItemRenderer({item, props, state, methods});
+					return {...el, key}
+				}):
+				values.length > 0 && props.selectItemRenderer({item: values[0], props, state, methods})
 			}
-			{props.searchable && props.inputRenderer({props, state, methods})}
-		</ContentComponent>
+			{props.searchable && !props.readOnly && props.inputRenderer({inputRef, value: state.search, onChange: methods.setSearch})}
+		</div>
 	)
 }
-
-const ContentComponent = styled.div`
-	display: flex;
-	flex: 1;
-	flex-wrap: wrap;
-`;
 
 export default Content;

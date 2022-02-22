@@ -3,76 +3,47 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import styled from '@emotion/styled';
 
-import Content from './Content';
 import Dropdown from './Dropdown';
 import Item from './Item';
-import NoData from './NoData';
-import Option from './Option';
+import MultiSelectItem from './MultiSelectItem';
+import SelectItem from './SelectItem';
 import Input from './Input';
-import Loading from './Loading';
-import Clear from './Clear';
-import Separator from './Separator';
 import DropdownHandle from './DropdownHandle';
 
-import {
-	debounce,
-	hexToRGBA,
-	getByPath,
-	getProp,
-	valueExistInSelected,
-	isomorphicWindow
-} from './util';
-import { LIB_NAME } from './constants';
+import {debounce} from '../lib';
+
+import './index.css';
+
+const Content = (props) => <div className='select-content' {...props} />
+const Loading = (props) => <div className='select-loading' {...props} />
+const Clear = (props) => <div className='select-clear-all' {...props} />
+const Separator = (props) => <div className='select-separator' {...props} />
+const Placeholder = (props) => <div className='select-placeholder' {...props} />
+const NoData = ({props}) => <div className='select-dropdown-no-data'>{props.noDataLabel}</div>
+
+function defaultContentRenderer({props, state, methods}) {
+	const values = props.value;
+	if (props.multi) {
+		return values.map((item) => {
+				const key = '' + item[props.valueField] + item[props.labelField];
+				const el = props.multiSelectItemRenderer({item, props, state, methods});
+				return {...el, key}
+			});
+	}
+	else if (values.length > 0) {
+		const item = values[0];
+		return props.selectItemRenderer({item, props, state, methods});
+	}
+	return null;
+}
 
 class Select extends React.Component {
-	static propTypes = {
-		options: PropTypes.array.isRequired,
-		values: PropTypes.array,
-		onChange: PropTypes.func.isRequired,
-		onDropdownClose: PropTypes.func,
-		onDropdownOpen: PropTypes.func,
-		autoFocus: PropTypes.bool,
-		keepOpen: PropTypes.bool,
-		dropdownGap: PropTypes.number,
-		multi: PropTypes.bool,
-		create: PropTypes.bool,
-		placeholder: PropTypes.string,
-		addPlaceholder: PropTypes.string,
-		disabled: PropTypes.bool,
-		className: PropTypes.string,
-		dropdownClassName: PropTypes.string,
-		loading: PropTypes.bool,
-		clearable: PropTypes.bool,
-		searchable: PropTypes.bool,
-		separator: PropTypes.bool,
-		keepSelectedInList: PropTypes.bool,
-		dropdownHandle: PropTypes.bool,
-		searchBy: PropTypes.string,
-		sortBy: PropTypes.string,
-		closeOnScroll: PropTypes.bool,
-		style: PropTypes.object,
-		direction: PropTypes.string,
-		backspaceDelete: PropTypes.bool,
-		contentRenderer: PropTypes.func,
-		dropdownRenderer: PropTypes.func,
-		itemRenderer: PropTypes.func,
-		noDataRenderer: PropTypes.func,
-		optionRenderer: PropTypes.func,
-		inputRenderer: PropTypes.func,
-		loadingRenderer: PropTypes.func,
-		clearRenderer: PropTypes.func,
-		separatorRenderer: PropTypes.func,
-		dropdownHandleRenderer: PropTypes.func,
-		valuesEqual: PropTypes.func
-	}
-
 
 	constructor(props) {
 		super(props);
 
 		this.state = {
 			isOpen: false,
-			values: props.values,
 			search: '',
 			selectBounds: {},
 			cursor: null,
@@ -82,23 +53,19 @@ class Select extends React.Component {
 		this.methods = {
 			open: this.open,
 			close: this.close,
-			removeItem: this.removeItem,
 			addItem: this.addItem,
-			createNew: this.createNew,
+			removeItem: this.removeItem,
 			setSearch: this.setSearch,
 			getInputSize: this.getInputSize,
-			clearAll: this.clearAll,
 			isSelected: this.isSelected,
-			isActive: this.isActive,
 			isDisabled: this.isDisabled,
-			areAllSelected: this.areAllSelected,
-			handleKeyDown: this.handleKeyDown,
 			sort: this.sort,
-			searchFilter: this.searchFilter,
+			filter: this.filter,
 			searchResults: this.searchResults,
 		};
 
 		this.selectRef = React.createRef();
+		this.inputRef = React.createRef();
 		this.dropdownRef = React.createRef();
 
 		this.debouncedUpdateSelectBounds = debounce(this.updateSelectBounds);
@@ -107,14 +74,6 @@ class Select extends React.Component {
 
 	componentDidUpdate(prevProps, prevState) {
 		const {props, state} = this;
-
-		if (!props.valuesEqual(prevProps.values, props.values) &&
-			props.valuesEqual(prevProps.values, prevState.values)
-		) {
-			this.setState({values: this.props.values},
-				() => this.props.onChange(this.state.values)
-			);
-		}
 
 		if (prevProps.options !== props.options ||
 			prevProps.keepSelectedInList !== props.keepSelectedInList ||
@@ -126,13 +85,9 @@ class Select extends React.Component {
 			});
 		}
 
-		if (prevState.values !== state.values) {
-			props.onChange(state.values);
-		}
-
 		if (prevProps.multi !== props.multi ||
-			prevState.search !== state.search ||
-			prevState.values !== state.values
+			prevProps.value !== props.value ||
+			prevState.search !== state.search
 		) {
 			this.updateSelectBounds();
 		}
@@ -147,10 +102,13 @@ class Select extends React.Component {
 
 		const {target} = event;
 
-		// Ignore click in dropdown
+		// Click in dropdown
 		const dropdownEl = this.dropdownRef.current;
-		if (dropdownEl && (dropdownEl === target || dropdownEl.contains(target)))
+		if (dropdownEl && (dropdownEl === target || dropdownEl.contains(target))) {
+			// don't take focus from select
+			this.selectRef.current.focus();
 			return;
+		}
 		
 		// Ignore click in select
 		const selectEl = this.selectRef.current;
@@ -182,15 +140,15 @@ class Select extends React.Component {
 			return;
 
 		window.addEventListener('resize', this.debouncedUpdateSelectBounds);
-		window.addEventListener('scroll', this.debouncedOnScroll);
+		document.addEventListener('scroll', this.debouncedOnScroll);
 		document.addEventListener('click', this.onClick, true);
 
 		this.updateSelectBounds();
 
 		let cursor = null;
-		if (!props.multi && state.values.length > 0) {
+		if (!props.multi && props.value.length > 0) {
 			// Position cursor on selected value
-			const item = state.values[0];
+			const item = props.value[0];
 			cursor = state.searchResults.findIndex(o => props.valuesEqual(item, o));
 			if (cursor < 0)
 				cursor = null;
@@ -206,7 +164,7 @@ class Select extends React.Component {
 			return;
 
 		window.removeEventListener('resize', this.debouncedUpdateSelectBounds);
-		window.removeEventListener('scroll', this.debouncedOnScroll);
+		document.removeEventListener('scroll', this.debouncedOnScroll);
 		document.removeEventListener('click', this.onClick, true);
 
 		this.setState({
@@ -220,97 +178,91 @@ class Select extends React.Component {
 	}
 
 	addItem = (item) => {
-		const {props, state} = this;
+		const {props} = this;
 		let values;
 		if (props.multi) {
-			if (valueExistInSelected(getByPath(item, props.valueField), state.values, props))
-				return this.removeItem(item);
-
-			values = [...state.values, item];
+			values = [...props.value, item];
 		}
 		else {
 			values = [item];
 			this.close();
 		}
-		this.setState({values});
+
+		props.onChange(values);
 
 		if (props.clearOnSelect) {
 			this.setState({search: ''},
 				() => this.setState({searchResults: this.searchResults()})
 			);
 		}
-
-		return true;
-	};
+	}
 
 	removeItem = (item) => {
-		const {props, state} = this;
-		const values = state.values.filter((values) => getByPath(values, props.valueField) !== getByPath(item, props.valueField));
-		this.setState({values});
-	};
+		const {props} = this;
+		const newValues = props.value.filter((valueItem) => !props.valuesEqual(valueItem, item));
+		props.onChange(newValues);
+	}
+
+	clearAll = (e) => {
+		e.stopPropagation();
+		this.props.onChange([]);
+	}
 
 	setSearch = (search) => {
+		if (search && !this.state.isOpen)
+			this.open();
 		this.setState({search},
 			() => this.setState({
-				cursor: null,
+				cursor: 0,
 				searchResults: this.searchResults()
 			})
 		);
-	};
+	}
 
 	getInputSize = () => {
 		const {props, state} = this;
 		if (state.search)
 			return state.search.length;
-		if (state.values.length > 0)
+		if (props.value.length > 0)
 			return props.addPlaceholder.length;
 		return props.placeholder.length;
 	};
 
-	clearAll = () => this.setState({values: []});
-
 	isSelected = (item) => {
-		const {props, state} = this;
-		return !!state.values.find((value) => getByPath(value, props.valueField) === getByPath(item, props.valueField));
+		const {props} = this;
+		return !!props.value.find((selectedItem) => props.valuesEqual(selectedItem, item));
 	}
 
-	isActive = (item, index) => {
-		const {state} = this;
-		return state.cursor === index;
-	}
+	isDisabled = (item) => item.disabled;
 
-	isDisabled = (item) => {
-		return !!item.disabled;
-	}
-
-	areAllSelected = () => {
-		const {props, state} = this;
-		return state.values.length === props.options.filter((option) => !option.disabled).length;
-	}
-
-	sort = (options, sortBy) => {
+	sort = (options) => {
+		const {sortBy} = this.props;
 		if (!sortBy)
 			return options;
 
 		return options
 			.sort((a, b) => {
-				if (getProp(a, sortBy) < getProp(b, sortBy)) {
+				const a_v = a[sortBy];
+				const b_v = b[sortBy];
+				if (a_v < b_v)
 					return -1;
-				} else if (getProp(a, sortBy) > getProp(b, sortBy)) {
+				else if (a_v > b_v)
 					return 1;
-				} else {
+				else
 					return 0;
-				}
 			});
 	}
 
-	searchFilter = (options, search) => {
+	filter = (options) => {
+		const {search} = this.state;
+		const {searchBy} = this.props;
 		const safeString = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 		const regexp = new RegExp(safeString, 'i');
-
 		return options
 			.filter((item) =>
-				regexp.test(getByPath(item, this.props.searchBy) || getByPath(item, this.props.valueField))
+				Array.isArray(searchBy)?
+					searchBy.reduce((result, searchBy) => result || regexp.test(item[searchBy]), false):
+					regexp.test(item[searchBy])
 			);
 	}
 
@@ -320,10 +272,17 @@ class Select extends React.Component {
 		let {options} = props;
 		if (!props.keepSelectedInList)
 			options = options.filter(item => methods.isSelected(item));
-		options = methods.searchFilter(options, state.search);
-		options = methods.sort(options, props.sortBy);
+		options = methods.filter(options, state);
+		options = methods.sort(options, state);
+		if (props.create && state.search) {
+			const newItem = {
+				[props.valueField]: state.search,
+				[props.labelField]: state.search
+			}
+			options = [newItem, ...options];
+		}
 		return options;
-	};
+	}
 
 	handleKeyDown = (event) => {
 		const {props, state} = this;
@@ -336,8 +295,9 @@ class Select extends React.Component {
 		const tab = event.key === 'Tab' && !event.shiftKey;
 		const shiftTab = event.key === 'Tab' && event.shiftKey;
 
-		if (backspace && props.backspaceDelete && this.getInputSize() === 0) {
-			this.setState({values: state.values.slice(0, -1)});
+		if (backspace && props.backspaceDelete && !state.search && props.value.length > 0) {
+			const item = props.value[props.value.length - 1];
+			this.removeItem(item);
 		}
 
 		if (!state.isOpen) {
@@ -354,44 +314,43 @@ class Select extends React.Component {
 		}
 
 		if (enter) {
-			if (state.cursor === null) {
-				if (props.create &&
-					state.search &&
-					!valueExistInSelected(state.search, [...state.values, ...props.options], props)
-				) {
-					this.createNew(state.search);
-				}
-			}
-			else {
-				const currentItem = state.searchResults[state.cursor];
-				if (currentItem &&
-					!currentItem.disabled &&
-					!valueExistInSelected(state.search, state.values, props)
-				) {
-					this.addItem(currentItem);
-				}
+			const item = state.searchResults[state.cursor];
+			if (item && !item.disabled) {
+				if (!this.isSelected(item))
+					this.addItem(item);
+				else
+					this.removeItem(item);
 			}
 		}
 
 		if (arrowDown || arrowUp) {
 			let {cursor} = state;
-			if (cursor === null) {
-				cursor = 0;
-			}
-			else {
-				if (arrowDown) {
-					if (cursor === state.searchResults.length)
-						cursor = 0;
-					else 
-						cursor += 1;
+			let wrap = 0;
+			let item;
+			do {
+				if (cursor === null) {
+					cursor = 0;
 				}
-				else {	// arrowUp
-					if (cursor === 0)
-						cursor = state.searchResults.length - 1;
-					else
-						cursor -= 1;
+				else {
+					if (arrowDown) {
+						if (cursor === (state.searchResults.length - 1)) {
+							cursor = 0;
+							wrap++;
+						}
+						else 
+							cursor += 1;
+					}
+					else {	// arrowUp
+						if (cursor === 0) {
+							cursor = state.searchResults.length - 1;
+							wrap++;
+						}
+						else
+							cursor -= 1;
+					}
 				}
-			}
+				item = state.searchResults[cursor];
+			} while (item && item.disabled && wrap < 2)
 			this.setState({cursor});
 		}
 	}
@@ -404,7 +363,7 @@ class Select extends React.Component {
 		let position = props.dropdownPosition;
 		if (position === 'auto') {
 			const dropdownHeight = selectBounds.bottom + parseInt(props.dropdownHeight, 10) + parseInt(props.dropdownGap, 10);
-			if (dropdownHeight > isomorphicWindow().innerHeight && dropdownHeight > selectBounds.top)
+			if (dropdownHeight > window.innerHeight && dropdownHeight > selectBounds.top)
 				position = 'top';
 			else
 				position = 'bottom';
@@ -417,7 +376,7 @@ class Select extends React.Component {
 			if (position === 'bottom')
 				style.top = selectBounds.bottom + props.dropdownGap;
 			else 
-				style.bottom = isomorphicWindow().innerHeight - selectBounds.top + props.dropdownGap;
+				style.bottom = window.innerHeight - selectBounds.top + props.dropdownGap;
 		}
 		else {
 			style.position = 'absolute';
@@ -428,111 +387,155 @@ class Select extends React.Component {
 				style.bottom = selectBounds.height + 2 + props.dropdownGap;
 		}
 
-		const dropdownEl = props.dropdownRenderer({...dropdownProps, ref: this.dropdownRef, style, className: props.dropdownClassName});
+		const dropdownEl = props.dropdownRenderer({...dropdownProps, dropdownRef: this.dropdownRef, style, className: props.dropdownClassName});
 
 		return props.portal? ReactDOM.createPortal(dropdownEl, props.portal): dropdownEl;
-	}
-
-	createNew = (value) => {
-		const {props} = this;
-		const item = {
-			[props.labelField]: value,
-			[props.valueField]: value
-		};
-
-		this.addItem(item);
-		this.setState({search: ''});
 	}
 
 	render() {
 		const {props, state, methods} = this;
 
-		let cn = LIB_NAME;
-		if (props.disabled)
-			cn += ` ${LIB_NAME}-disabled`;
+		let cn = 'select';
+		if (props.readOnly)
+			cn += ` select-read-only`;
 		if (props.className)
 			cn += ` ${props.className}`;
 
+		const onClick = (props.readOnly || props.keepOpen)? undefined: (state.isOpen? this.close: this.open);
+
 		return (
-			<SelectContainer
+			<div
 				ref={this.selectRef}
 				style={props.style}
 				className={cn}
-				tabIndex={props.disabled ? '-1' : '0'}
+				tabIndex={props.readOnly ? '-1' : '0'}
 				aria-label="Dropdown select"
 				aria-expanded={state.isOpen}
-				onClick={(props.disabled || props.keepOpen)? undefined: (state.isOpen? this.close: this.open)}
+				onClick={onClick}
+				onFocus={() => !props.readOnly && this.inputRef.current && this.inputRef.current.focus()}
 				onKeyDown={this.handleKeyDown}
 				direction={props.direction}
-				{...props.additionalProps}
 			>
-				{props.contentRenderer({props, state, methods})}
+				<Content
+					style={{minWidth: props.placeholder? `${props.placeholder.length}ch`: undefined}}
+				>
+					{props.value.length === 0 && !state.search && <Placeholder >{props.placeholder}</Placeholder>}
+					{props.contentRenderer({props, state, methods})}
+					{props.searchable && !props.readOnly && props.inputRenderer({inputRef: this.inputRef, value: state.search, onChange: methods.setSearch})}
+				</Content>
 
-				{props.loading && props.loadingRenderer({props, state, methods})}
+				{props.loading && <Loading />}
 
-				{props.clearable && props.clearRenderer({props, state, methods})}
+				{props.clearable && !props.readOnly && <Clear onClick={this.clearAll} />}
 
-				{props.separator && props.separatorRenderer({props, state, methods})}
+				{props.separator && !props.readOnly && <Separator />}
 
-				{props.dropdownHandle && props.dropdownHandleRenderer({props, state, methods})}
+				{props.dropdownHandle && !props.readOnly && <DropdownHandle isOpen={state.isOpen} />}
 
-				{(state.isOpen || props.keepOpen) && !props.disabled && this.renderDropdown({props, state, methods})}
-			</SelectContainer>
+				{(state.isOpen || props.keepOpen) && !props.readOnly && this.renderDropdown({props, state, methods})}
+			</div>
 		)
 	}
 }
 
+Select.propTypes = {
+	value: PropTypes.array.isRequired,
+	onChange: PropTypes.func.isRequired,
+	options: PropTypes.array.isRequired,
+	onDropdownClose: PropTypes.func,
+	onDropdownOpen: PropTypes.func,
+	placeholder: PropTypes.string,
+	addPlaceholder: PropTypes.string,
+	loading: PropTypes.bool,
+	multi: PropTypes.bool,
+	create: PropTypes.bool,
+	clearable: PropTypes.bool,
+	searchable: PropTypes.bool,
+	backspaceDelete: PropTypes.bool,
+	readOnly: PropTypes.bool,
+	closeOnScroll: PropTypes.bool,
+	closeOnSelect: PropTypes.bool,
+	closeOnBlur: PropTypes.bool,
+	keepOpen: PropTypes.bool,
+	keepSelectedInList: PropTypes.bool,
+	autoFocus: PropTypes.bool,
+	portal: PropTypes.object,
+
+	labelField: PropTypes.string,
+	valueField: PropTypes.string,
+	searchBy: PropTypes.string,
+	sortBy: PropTypes.string,
+	valuesEqual: PropTypes.func,
+
+	direction: PropTypes.oneOf(['ltr', 'rtl']),
+	dropdownHandle: PropTypes.bool,
+	separator: PropTypes.bool,
+	noDataLabel: PropTypes.string,
+	createNewLabel: PropTypes.string,
+	dropdownGap: PropTypes.number,
+	dropdownHeight: PropTypes.number,
+	dropdownPosition: PropTypes.oneOf(['auto', 'bottom', 'top']),
+	estimatedItemHeight: PropTypes.number,
+
+	style: PropTypes.object,
+	className: PropTypes.string,
+	dropdownClassName: PropTypes.string,
+
+	contentRenderer: PropTypes.func,
+	dropdownRenderer: PropTypes.func,
+	itemRenderer: PropTypes.func,
+	newItemRenderer: PropTypes.func,
+	noDataRenderer: PropTypes.func,
+	optionRenderer: PropTypes.func,
+	inputRenderer: PropTypes.func,
+	loadingRenderer: PropTypes.func,
+	clearRenderer: PropTypes.func,
+	separatorRenderer: PropTypes.func,
+	dropdownHandleRenderer: PropTypes.func,
+}
+
 Select.defaultProps = {
-	addPlaceholder: '',
-	placeholder: 'Select...',
-	values: [],
-	options: [],
-	multi: false,
-	disabled: false,
-	searchBy: 'label',
-	sortBy: null,
-	clearable: false,
-	searchable: true,
-	dropdownHandle: true,
-	separator: false,
-	keepOpen: undefined,
-	noDataLabel: 'No data',
-	createNewLabel: 'add {search}',
-	disabledLabel: 'disabled',
-	dropdownGap: 5,
-	closeOnScroll: false,
-	loading: false,
-	labelField: 'label',
-	valueField: 'value',
-	color: '#0074D9',
-	keepSelectedInList: true,
-	closeOnSelect: false,
-	clearOnBlur: true,
-	clearOnSelect: true,
-	dropdownPosition: 'bottom',
-	dropdownHeight: '300px',
-	estimatedItemHeight: 29.67,
-	autoFocus: false,
-	portal: null,
-	create: false,
-	direction: 'ltr',
-	onChange: () => undefined,
 	onDropdownOpen: () => undefined,
 	onDropdownClose: () => undefined,
-	searchFn: () => undefined,
-	handleKeyDownFn: () => undefined,
-	additionalProps: null,
+	placeholder: 'Select...',
+	addPlaceholder: '',
+	loading: false,
+	multi: false,
+	create: false,
+	clearable: false,
+	searchable: true,
 	backspaceDelete: true,
+	readOnly: false,
+	closeOnScroll: false,
+	clearOnSelect: true,
+	clearOnBlur: true,
+	keepOpen: false,
+	keepSelectedInList: true,
+	autoFocus: false,
+	portal: null,
+
+	labelField: 'label',
+	valueField: 'value',
+	searchBy: 'label',
+	sortBy: null,
 	valuesEqual: (a, b) => a === b,
 
+	direction: 'ltr',
+	dropdownHandle: true,
+	separator: false,
+	noDataLabel: 'No data',
+	createNewLabel: 'add {search}',
+	color: '#0074D9',
+	dropdownGap: 5,
+	dropdownHeight: 300,
+	dropdownPosition: 'bottom',
+	estimatedItemHeight: 29.6667,
+
 	/* Select children */
-	contentRenderer: (props) => <Content {...props} />,
-	optionRenderer: (props) => <Option {...props} />,
+	contentRenderer: defaultContentRenderer,
+	selectItemRenderer: (props) => <SelectItem {...props} />,
+	multiSelectItemRenderer: (props) => <MultiSelectItem {...props} />,
 	inputRenderer: (props) => <Input {...props} />,
-	loadingRenderer: (props) => <Loading {...props} />,
-	clearRenderer: (props) => <Clear {...props} />,
-	separatorRenderer: (props) => <Separator {...props} />,
-	dropdownHandleRenderer: (props) => <DropdownHandle {...props} />,
 
 	/* Dropdown */
 	dropdownRenderer: (props) => <Dropdown {...props} />,
@@ -542,40 +545,5 @@ Select.defaultProps = {
 	noDataRenderer: (props) => <NoData {...props} />,
 };
 
-const SelectContainer = styled.div`
-
-	position: relative;
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-	direction: ${({ direction }) => direction};
-	box-sizing: border-box;
-	border: 1px solid #ddd;
-	border-radius: 2px;
-	background-color: #fafafa;
-	width: 100%;
-	padding: 2px 5px;
-	cursor: pointer;
-
-	:hover,
-	:focus,
-	:focus-within {
-		border-color: #0074d9;
-	}
-
-	:focus,
-	:focus-within {
-		outline: 1px solid #0074d9;
-	}
-
-	* {
-		box-sizing: border-box;
-	}
-
-	&.${LIB_NAME}-disabled {
-		cursor: not-allowed;
-		opacity: 0.4;
-	}
-`;
-
 export default Select;
+export {Loading, Clear, Separator, DropdownHandle}

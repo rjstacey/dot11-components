@@ -1,10 +1,8 @@
+import PropTypes from 'prop-types';
 import React from 'react';
-import styled from '@emotion/styled';
 import {VariableSizeList as List} from 'react-window';
 
-import { LIB_NAME } from './constants';
-import { valueExistInSelected, hexToRGBA, getByPath } from './util';
-
+/* ItemWrapper measures and sets the height of the item */
 function ItemWrapper({style, item, index, setHeight, props, state, methods}) {
 	const ref = React.useRef();
 	React.useEffect(() => {
@@ -14,7 +12,7 @@ function ItemWrapper({style, item, index, setHeight, props, state, methods}) {
 				setHeight(bounds.height);
 		}
 	});
-	const key = `${getByPath(item, props.valueField)}${getByPath(item, props.labelField)}`;
+	const key = '' + item[props.valueField] + item[props.labelField];
 	const el = props.itemRenderer({index, item, props, state, methods});
 	return (
 		<div style={style}>
@@ -25,9 +23,10 @@ function ItemWrapper({style, item, index, setHeight, props, state, methods}) {
 	)
 }
 
-const Dropdown = React.forwardRef(({style, className, props, state, methods}, ref) => {
+const Dropdown = ({style, className, dropdownRef, props, state, methods}) => {
 
 	const listRef = React.useRef();
+	const listInnerRef = React.useRef();
 	const heightsRef = React.useRef([]);
 
 	const setItemHeight = (index, height) => {
@@ -48,36 +47,42 @@ const Dropdown = React.forwardRef(({style, className, props, state, methods}, re
 			listRef.current.scrollToItem(state.cursor);
 	}, [state.cursor]);
 
-	let cn = `${LIB_NAME}-dropdown`;
+	const [maxHeight, setMaxHeight] = React.useState(props.dropdownHeight);
+
+	React.useLayoutEffect(() => {
+		if (!listInnerRef.current)
+			return;
+		const bounds = listInnerRef.current.getBoundingClientRect();
+		const height = bounds.height < props.dropdownHeight? bounds.height: props.dropdownHeight;
+		if (height !== maxHeight)
+			setMaxHeight(height);
+	});
+
+	let cn = `select-dropdown`;
 	if (className)
 		cn += ' ' + className;
 
+	const itemKey = (index) => '' + options[index][props.valueField] + options[index][props.valueField];
+
 	return (
-		<DropdownContainer
-			ref={ref}
+		<div
+			ref={dropdownRef}
 			style={style}
 			className={cn}
-			tabIndex="-1"
 			role="list"
-			height={props.dropdownHeight}
+			onClick={e => e.stopPropagation()}	// prevent click propagating to select and closing the dropdown
 		>
-			{props.create && state.search && !valueExistInSelected(state.search, [...state.values, ...props.options], props) &&
-				<AddNew
-					role="button"
-					className={`${LIB_NAME}-dropdown-add-new`}
-					color={props.color}
-					onClick={() => methods.createNew(state.search)}>
-					{props.createNewLabel.replace('{search}', `"${state.search}"`)}
-				</AddNew>
-			}
 			{options.length === 0?
 				props.noDataRenderer({props, state, methods}):
-				<StyledList
+				<List
 					ref={listRef}
-					height={300}
+					height={maxHeight}
+					width='auto'
 					itemCount={options.length}
 					itemSize={getItemHeight}
-					width='auto'
+					estimatedItemSize={props.estimatedItemHeight}
+					itemKey={itemKey}
+					innerRef={listInnerRef}
 				>
 					{({index, style}) =>
 						<ItemWrapper 
@@ -90,42 +95,17 @@ const Dropdown = React.forwardRef(({style, className, props, state, methods}, re
 							state={state}
 						/>
 					}
-				</StyledList>
+				</List>
 			}
-		</DropdownContainer>
+		</div>
 	)
-});
+}
 
-const DropdownContainer = styled.div`
-	padding: 0;
-	display: flex;
-	flex-direction: column;
-	background: #fff;
-	border: 1px solid #ccc;
-	border-radius: 2px;
-	box-shadow: 0 0 10px 0 ${hexToRGBA('#000000', 0.2)};
-	max-height: ${({ height }) => height};
-	overflow: auto;
-	z-index: 9;
-
-	:focus {
-		outline: none;
-	}
-`;
-
-const AddNew = styled.div`
-	color: ${({ color }) => color};
-	padding: 5px 10px;
-
-	:hover {
-		background: ${({ color }) => color && hexToRGBA(color, 0.1)};
-		outline: none;
-		cursor: pointer;
-	}
-`;
-
-const StyledList = styled(List)`
-	flex: 1;
-`;
+Dropdown.propTypes = {
+	dropdownRef: PropTypes.object.isRequired,
+	props: PropTypes.object.isRequired,
+	state: PropTypes.object.isRequired,
+	methods: PropTypes.object.isRequired
+}
 
 export default Dropdown;

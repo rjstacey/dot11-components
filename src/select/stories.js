@@ -14,8 +14,6 @@ const story = {
 
 const lorem = new LoremIpsum();
 
-const options = Array(100).fill().map((value, index) => ({value: index, label: lorem.generateWords(4)}));
-
 const Container = styled.div`
 	display: flex;
 	justify-content: space-around;
@@ -28,14 +26,14 @@ const SubContainer = styled.div`
 	border: 2px dashed black;
 `;
 
+const genOptions = (n) => Array(n).fill().map((value, index) => ({value: index, label: lorem.generateWords(4), disabled: Math.random() > 0.8}));
+
 export const SelectComponent = (args) => {
 	const {portal: noop, numberOfItems, ...otherArgs} = args;
 	const [select, setSelect] = React.useState([]);
 	const portalRef = React.useRef();
 
-	const options = React.useMemo(() => {
-		return Array(numberOfItems).fill().map((value, index) => ({value: index, label: lorem.generateWords(4)}));
-	}, [numberOfItems]);
+	const options = React.useMemo(() => genOptions(numberOfItems), [numberOfItems]);
 
 	return (
 		<Container ref={portalRef}>
@@ -61,13 +59,11 @@ export const SelectComponent = (args) => {
 }
 
 export const SelectInModal = (args) => {
-	const {portal: noop, numberOfItems, ...otherArgs} = args;
+	const {portal: noop, numberOfItems, onChange, ...otherArgs} = args;
 	const [select, setSelect] = React.useState([]);
 	const portal = document.querySelector('#root');
 
-	const options = React.useMemo(() => {
-		return Array(numberOfItems).fill().map((value, index) => ({value: index, label: lorem.generateWords(4)}));
-	}, [numberOfItems]);
+	const options = React.useMemo(() => genOptions(numberOfItems), [numberOfItems]);
 
 	return (
 		<AppModal
