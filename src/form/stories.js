@@ -1,5 +1,5 @@
 import React from 'react';
-import {ActionButtonDropdown} from '../general/Dropdown';
+import {ActionButtonDropdown} from '../dropdown';
 import {
 	Form,
 	Field,
@@ -78,8 +78,8 @@ export const TwoColsForm = (args) => {
 						<ListItem><Field label='Checkbox:'><Checkbox value={checkbox} onChange={setCheckbox} /></Field></ListItem>
 						<ListItem><Field label='SliderSwitch:'><SliderSwitch value={slider} onChange={setSlider} /></Field></ListItem>
 						<ListItem><Field label={'Search:'}><Input type='search' disabled={disabled} /></Field></ListItem>
-						<ListItem><Field label={'Select:'}><Select disabled={disabled} options={options} value={select} onChange={setSelect} /></Field></ListItem>
-						<ListItem><Field label={'Select (portal):'}><Select disabled={disabled} options={options} value={select} onChange={setSelect} portal={document.querySelector('#root')} /></Field></ListItem>
+						<ListItem><Field label={'Select:'}><Select readOnly={disabled} options={options} values={select} onChange={setSelect} /></Field></ListItem>
+						<ListItem><Field label={'Select (portal):'}><Select readOnly={disabled} options={options} values={select} onChange={setSelect} portal={document.querySelector('#root')} /></Field></ListItem>
 					</List>
 				</Col>
 				<Col>

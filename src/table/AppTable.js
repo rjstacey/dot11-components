@@ -178,6 +178,7 @@ function AppTableSized({
 	height,
 	gutterSize,
 	estimatedRowHeight,
+	measureRowHeight,
 	dataSet,
 	...props
 }) {
@@ -311,6 +312,7 @@ function AppTableSized({
 		getRowData: props.rowGetter,
 		getField,
 		estimatedRowHeight,
+		measureRowHeight,
 		onRowHeightChange,
 		onRowClick
 	}), [props.rowGetter, gutterSize, entities, ids, selected, expanded, fixed, columns, estimatedRowHeight, getField, onRowHeightChange, onRowClick]);
@@ -374,12 +376,14 @@ AppTable.propTypes = {
 	rowGetter: PropTypes.func,
 	headerHeight: PropTypes.number.isRequired,
 	estimatedRowHeight: PropTypes.number.isRequired,
+	measureRowHeight: PropTypes.bool,
 	defaultTablesConfig: PropTypes.object,
 	gutterSize: PropTypes.number,
 }
 
 AppTable.defaultProps = {
-	gutterSize: 5
+	gutterSize: 5,
+	measureRowHeight: false,
 }
 
 export default React.memo(AppTable);

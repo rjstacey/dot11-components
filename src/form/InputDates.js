@@ -4,7 +4,7 @@ import styled from '@emotion/styled';
 import {ActionIcon} from '../icons';
 import Calendar from '../calendar';
 import TextArea from './TextArea';
-import Dropdown from '../general/Dropdown';
+import Dropdown from '../dropdown';
 
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 

@@ -111,7 +111,7 @@ const TableRow = React.memo(PureTableRow, areEqual);
 function AppTableRow({rowIndex, style, data}) {
 
 	// Extract context from data prop and isolate the row specific data
-	const {entities, ids, selected, expanded, getRowData, onRowClick, ...otherProps} = data;
+	const {entities, ids, selected, expanded, measureRowHeight, getRowData, onRowClick, ...otherProps} = data;
 
 	const rowId = ids[rowIndex];
 	const rowData = getRowData 
@@ -119,7 +119,7 @@ function AppTableRow({rowIndex, style, data}) {
 		: entities[rowId];
 		
 	const isSelected = selected && selected.includes(rowId);
-	const isExpanded = expanded && expanded.includes(rowId);
+	const isExpanded = measureRowHeight || (expanded && expanded.includes(rowId));
 
 	const onClick = React.useMemo(() => onRowClick? event => onRowClick({event, rowIndex}): undefined, [onRowClick, rowIndex]);
 

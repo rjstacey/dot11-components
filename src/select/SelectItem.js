@@ -1,8 +1,8 @@
 import React from 'react';
 
-const SelectItem = ({ item, props, state, methods }) =>
+const SelectItem = ({item, props, state, methods}) =>
 	<span
-		className='select-item'
+		className='dropdown-select-single-item'
 	>
 		{item[props.labelField]}
 	</span>

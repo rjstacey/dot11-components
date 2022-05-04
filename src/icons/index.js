@@ -39,7 +39,8 @@ export const IconFilter = (props) => <FontAwesomeIcon icon={faFilter} {...props}
 
 export const IconCollapse = ({isCollapsed, ...props}) => <FontAwesomeIcon icon={isCollapsed? faPlusSquare: faMinusSquare} {...props} />
 
-const IconHandle = styled.div`
+/*
+const _IconHandle = styled.div`
     display: inline-block;
     border-top: 0.4em solid;
     border-right: 0.4em solid transparent;
@@ -48,13 +49,21 @@ const IconHandle = styled.div`
     margin: 2px;
 `;
 
+const IconHandle = ({isOpen}) => <_IconHandle style={isOpen? {transform: 'rotate(180deg)'}: undefined} />
+*/
+
 const IconSVG = styled.svg`
 	display: inline-block;
 	height: 1em;
 `;
 
-const IconClear = 
-	<IconSVG fill="currentColor" viewBox="0 0 40 40">
+const IconHandle = ({isOpen, style, ...otherProps}) =>
+	<IconSVG style={isOpen? style: {...style, transform: 'rotate(180deg)'}} {...otherProps} fill="currentColor" viewBox="0 0 40 40">
+		<path d="M31 26.4q0 .3-.2.5l-1.1 1.2q-.3.2-.6.2t-.5-.2l-8.7-8.8-8.8 8.8q-.2.2-.5.2t-.5-.2l-1.2-1.2q-.2-.2-.2-.5t.2-.5l10.4-10.4q.3-.2.6-.2t.5.2l10.4 10.4q.2.2.2.5z" />
+	</IconSVG>
+
+const IconClear = (props) =>
+	<IconSVG {...props} fill="currentColor" viewBox="0 0 40 40">
 		<path d="M 10 10 L 30 30 M 10 30 L 30 10" stroke="currentColor" strokeWidth="4" />
 	</IconSVG>
 
@@ -129,7 +138,7 @@ export const faIcons = {
 
 export const otherIcons = {
 	'clear': IconClear,
-	'handle': <IconHandle />,
+	'handle': IconHandle,
 	'expander': IconExpander,
 	'double-expander': IconDoubleExpander,
 	'sort': IconSort,

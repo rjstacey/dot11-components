@@ -23,7 +23,7 @@ function ItemWrapper({style, item, index, setHeight, props, state, methods}) {
 	)
 }
 
-const Dropdown = ({style, className, dropdownRef, props, state, methods}) => {
+function Dropdown({props, state, methods}) {
 
 	const listRef = React.useRef();
 	const listInnerRef = React.useRef();
@@ -58,51 +58,35 @@ const Dropdown = ({style, className, dropdownRef, props, state, methods}) => {
 			setMaxHeight(height);
 	});
 
-	let cn = `select-dropdown`;
-	if (className)
-		cn += ' ' + className;
-
 	const itemKey = (index) => '' + options[index][props.valueField] + options[index][props.valueField];
 
-	return (
-		<div
-			ref={dropdownRef}
-			style={style}
-			className={cn}
-			role="list"
-			onClick={e => e.stopPropagation()}	// prevent click propagating to select and closing the dropdown
+	return options.length === 0?
+		props.noDataRenderer({props, state, methods}):
+		<List
+			ref={listRef}
+			height={maxHeight}
+			width='auto'
+			itemCount={options.length}
+			itemSize={getItemHeight}
+			estimatedItemSize={props.estimatedItemHeight}
+			itemKey={itemKey}
+			innerRef={listInnerRef}
 		>
-			{options.length === 0?
-				props.noDataRenderer({props, state, methods}):
-				<List
-					ref={listRef}
-					height={maxHeight}
-					width='auto'
-					itemCount={options.length}
-					itemSize={getItemHeight}
-					estimatedItemSize={props.estimatedItemHeight}
-					itemKey={itemKey}
-					innerRef={listInnerRef}
-				>
-					{({index, style}) =>
-						<ItemWrapper 
-							style={style}
-							item={options[index]}
-							index={index}
-							setHeight={(height) => setItemHeight(index, height)}
-							props={props}
-							methods={methods}
-							state={state}
-						/>
-					}
-				</List>
+			{({index, style}) =>
+				<ItemWrapper 
+					style={style}
+					item={options[index]}
+					index={index}
+					setHeight={(height) => setItemHeight(index, height)}
+					props={props}
+					methods={methods}
+					state={state}
+				/>
 			}
-		</div>
-	)
+		</List>
 }
 
 Dropdown.propTypes = {
-	dropdownRef: PropTypes.object.isRequired,
 	props: PropTypes.object.isRequired,
 	state: PropTypes.object.isRequired,
 	methods: PropTypes.object.isRequired

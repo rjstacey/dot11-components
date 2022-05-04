@@ -3,7 +3,7 @@ import React from 'react'
 import styled from '@emotion/styled'
 import {Icon} from '../icons'
 
-import Dropdown from './Dropdown'
+import Dropdown from '../dropdown'
 import {logout, AccessLevelOptions} from '../lib'
 
 const AccountSummaryContainer = styled.div`
@@ -18,14 +18,10 @@ const AccountSummaryContainer = styled.div`
 `;
 
 const AccountSummary = ({user, isOpen, open, close}) =>
-	<AccountSummaryContainer
-		onClick={() => isOpen? close(): open()}
-	>
+	<>
 		<span>{`${user.Name} (${user.SAPIN})`}</span>
-		<Icon
-			type='handle'
-		/>
-	</AccountSummaryContainer>
+		<Icon type='handle'/>
+	</>
 
 const Button = styled.button`
 	height: 36px;
@@ -48,13 +44,9 @@ const Button = styled.button`
 	:hover {background-color: #fafafa}
 `;
 
-const SignOutForm = ({user, close}) => {
+const SignOutForm = ({user, methods}) => {
 
-	const submit = async () => {
-		await logout();
-		if (close)
-			close();
-	}
+	const submit = methods.close;
 
 	const accessOption = AccessLevelOptions.find(o => o.value === user.Access);
 	const accessLabel = accessOption? accessOption.label: 'Unknown';
@@ -72,7 +64,7 @@ const SignOutForm = ({user, close}) => {
 
 const Account = ({user}) =>
 	<Dropdown
-		selectRenderer={(args) => <AccountSummary user={user} {...args} />}
+		label={`${user.Name} (${user.SAPIN})`}
 		dropdownRenderer={(args) => <SignOutForm user={user} {...args} />}
 	/>
 

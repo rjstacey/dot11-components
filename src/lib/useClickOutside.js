@@ -15,13 +15,13 @@ export default function useClickOutside(ref, handler) {
       //document.addEventListener('mousedown', listener);
       //document.addEventListener('touchstart', listener);
       document.addEventListener('click', listener);
-      document.addEventListener('scroll', listener, true);
+      //document.addEventListener('scroll', listener, true);
 
       return () => {
         //document.removeEventListener('mousedown', listener);
         //document.removeEventListener('touchstart', listener);
         document.removeEventListener('click', listener);
-        document.removeEventListener('scroll', listener)
+        //document.removeEventListener('scroll', listener)
       };
     },
     // Add ref and handler to effect dependencies

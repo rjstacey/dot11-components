@@ -1,86 +1,97 @@
 import React from 'react';
-import styled from '@emotion/styled';
-import { LoremIpsum } from 'lorem-ipsum';
+import {LoremIpsum} from 'lorem-ipsum';
 import {AppModal} from '../modals';
 import Select from '.';
 
-const story = {
-  title: 'Select',
-  component: Select,
-  args: {
-  	numberOfItems: 100,
-  }
-};
-
 const lorem = new LoremIpsum();
-
-const Container = styled.div`
-	display: flex;
-	justify-content: space-around;
-	overflow: auto;
-`;
-
-const SubContainer = styled.div`
-	width: 300px;
-	height: 200px;
-	border: 2px dashed black;
-`;
 
 const genOptions = (n) => Array(n).fill().map((value, index) => ({value: index, label: lorem.generateWords(4), disabled: Math.random() > 0.8}));
 
-export const SelectComponent = (args) => {
-	const {portal: noop, numberOfItems, ...otherArgs} = args;
+function WrappedSelect(args) {
+	const {usePortal, useCreate, portalRef, numberOfItems, onChange, ...otherArgs} = args;
 	const [select, setSelect] = React.useState([]);
-	const portalRef = React.useRef();
+	const [options, setOptions] = React.useState(() => genOptions(numberOfItems));
 
-	const options = React.useMemo(() => genOptions(numberOfItems), [numberOfItems]);
+	function addOption({props, state, methods}) {
+		const newItem = {
+			value: options.length,
+			label: state.search
+		}
+		const newOptions = [...options, newItem];
+		setOptions(newOptions);
+		return newItem;
+	}
+
+	if (usePortal)
+		otherArgs.portal = portalRef.current;
+
+	if (useCreate) {
+		otherArgs.createOption = addOption;
+		otherArgs.create = true;
+	}
 
 	return (
-		<Container ref={portalRef}>
-			<SubContainer>
-				<Select
-					options={options}
-					value={select}
-					onChange={setSelect}
-					portal={portalRef.current}
-					{...otherArgs}
-				/>
-			</SubContainer>
-			<SubContainer>
-				<Select
-					options={options}
-					value={select}
-					onChange={setSelect}
-					{...args}
-				/>
-			</SubContainer>
-		</Container>
+		<Select
+			options={options}
+			values={select}
+			onChange={setSelect}
+			{...otherArgs}
+		/>
 	)
 }
 
-export const SelectInModal = (args) => {
-	const {portal: noop, numberOfItems, onChange, ...otherArgs} = args;
-	const [select, setSelect] = React.useState([]);
-	const portal = document.querySelector('#root');
+export function BasicSelect(args) {
+	const portalRef = React.useRef();
+	const style = {
+		display: 'flex',
+		width: '300px'
+	}
+	return (
+		<div style={style}>
+			<WrappedSelect portalRef={portalRef} {...args} />
+		</div>
+	)
+}
 
-	const options = React.useMemo(() => genOptions(numberOfItems), [numberOfItems]);
+export function ContainedSelect(args) {
+	const portalRef = React.useRef();
+	const style = {
+		overflow: 'hidden',
+		width: '300px',
+		height: '200px',
+		border: '2px dashed black',
+	}
+	return (
+		<div ref={portalRef} style={style}>
+			<WrappedSelect portalRef={portalRef} {...args} />
+		</div>
+	)
+}
+ContainedSelect.args = {
+	usePortal: true
+}
 
+export function SelectInModal(args) {
+	const portalRef = {};
+	portalRef.current = document.querySelector('#root');
 	return (
 		<AppModal
 			isOpen={true}
 		>
-			<SubContainer>
-				<Select
-					options={options}
-					value={select}
-					onChange={setSelect}
-					portal={portal}
-					{...otherArgs}
-				/>
-			</SubContainer>
+			<label>Select:</label>
+			<WrappedSelect portalRef={portalRef} {...args} />
 		</AppModal>
 	)
 }
 
+const story = {
+	title: 'Select',
+	component: Select,
+	args: {
+		numberOfItems: 100,
+		usePortal: false,
+		useCreate: false
+	},
+};
 
 export default story;

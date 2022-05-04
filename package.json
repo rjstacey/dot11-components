@@ -1,6 +1,6 @@
 {
   "name": "dot11-components",
-  "version": "1.0.82",
+  "version": "1.0.92",
   "description": "Components for 802 apps",
   "private": false,
   "repository": {
@@ -65,7 +65,7 @@
     "start": "start-storybook -p 6006 -s public --no-manager-cache",
     "prebuild": "rm -rf dist/*",
     "postbuild": "cp package.json dist",
-    "build": "babel src --out-dir dist --ignore \"**/*stories.js\",\"**/stories.js\",\"src/*.js\" --no-copy-ignored",
+    "build": "babel src --out-dir dist --ignore \"**/*stories.js\",\"**/stories.js\",\"src/*.js\" --no-copy-ignored --copy-files",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "storybook": "start-storybook -p 6006 -s public",

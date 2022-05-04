@@ -8,19 +8,24 @@ function Item({style, className, index, item, props, state, methods}) {
 	const isActive = state.cursor === index;
 	const isNew = props.create && state.search && index === 0;
 
-	let cn = `select-dropdown-item`;
+	let cn = `dropdown-select-item`;
 	if (isNew)
-		cn += ` select-dropdown-item-new`;
+		cn += ` dropdown-select-item-new`;
 	if (isActive)
-		cn += ` select-dropdown-item-active`;
+		cn += ` dropdown-select-item-active`;
 	if (isSelected)
-		cn += ` select-dropdown-item-selected`;
+		cn += ` dropdown-select-item-selected`;
 	if (isDisabled)
-		cn += ` select-dropdown-item-disabled`;
+		cn += ` dropdown-select-item-disabled`;
 	if (className)
 		cn += ' ' + className;
 
-	const addItem = isDisabled? undefined: () => methods.addItem(item);
+	const addItem =
+		isDisabled?
+			undefined:
+			isNew?
+				() => methods.addSearchItem():
+				() => methods.addItem(item);
 
 	return (
 		<div

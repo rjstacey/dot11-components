@@ -9,6 +9,7 @@ const SliderSwitch = styled.input`
 	border-radius: 16px;
 	transition: .4s;
 	appearance: none;
+	border: 1px solid #adb8c0;
 
 	:before {
 		position: absolute;
@@ -16,7 +17,7 @@ const SliderSwitch = styled.input`
 		height: 1em;
 		width: 1em;
 		left: 0.25em;
-		bottom: 0.25em;
+		top: 0.2em;
 		background-color: white;
 		transition: .4s;
 		border-radius: 50%;
@@ -30,8 +31,11 @@ const SliderSwitch = styled.input`
 		transform: translateX(1em);
 	}
 
-	:focus, :focus-visible {
-		outline: none;
+	:focus,
+	:focus-visible {
+		outline: 0; //1px solid #0074d9;
+		border-color: #0074D9;
+		box-shadow: 0 0 0 3px rgb(0 116 217 / 20%);
 	}
 `;
 

@@ -6,7 +6,7 @@ import {FixedSizeList as List} from 'react-window';
 
 import {Icon} from '../icons';
 import {Button, Checkbox, Input} from '../form';
-import {Dropdown} from '../general';
+import Dropdown from '../dropdown';
 
 import {
 	selectGetField,
@@ -375,11 +375,11 @@ function TableColumnHeader({
 						direction={sort.direction}
 						isAlpha={sort.type !== SortType.NUMERIC}
 					/>}
-				<Icon type='handle' />
+				<Icon type='handle' isOpen={isOpen} />
 			</div>
 		</Header>;
 
-	const dropdownRenderer = ({close}) =>
+	const dropdownRenderer = () =>
 		<>
 			{sort &&
 				<Sort
@@ -405,8 +405,8 @@ function TableColumnHeader({
 			style={style}
 			selectRenderer={selectRenderer}
 			dropdownRenderer={dropdownRenderer}
-			portal
-			anchorEl={anchorEl}
+			portal={anchorEl}
+			//anchorEl={anchorEl}
 		/>
 	)
 }

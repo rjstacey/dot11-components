@@ -1,9 +1,9 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 
-const Clear = (props) => <div className='select-multi-item-remove' {...props} />
+const Clear = (props) => <div className='dropdown-select-multi-item-remove' {...props} />
 
-const MultiSelectItem = ({ item, props, state, methods }) => {
+const MultiSelectItem = ({item, props, state, methods}) => {
 
 	const remove = (event) => {
 		event.stopPropagation();
@@ -14,17 +14,18 @@ const MultiSelectItem = ({ item, props, state, methods }) => {
 		<div
 			role="listitem"
 			direction={props.direction}
-			className='select-multi-item'
+			className='dropdown-select-multi-item'
 		>
 			<span
-				className='select-multi-item-label'
+				className='dropdown-select-multi-item-label'
 			>
 				{item[props.labelField]}
 			</span>
-			<Clear
-				className='select-multi-item-remove'
-				onClick={remove}
-			/>
+			{!props.readOnly &&
+				<Clear
+					className='dropdown-select-multi-item-remove'
+					onClick={remove}
+				/>}
 		</div>
 	);
 }

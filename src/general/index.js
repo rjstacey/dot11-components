@@ -1,5 +1,5 @@
 import Account from './Account';
-import Dropdown, {ActionButtonDropdown} from './Dropdown';
+import Dropdown, {ActionButtonDropdown} from '../dropdown';
 
 export {
 	Account,

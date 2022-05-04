@@ -5,7 +5,7 @@ import styled from '@emotion/styled';
 
 import {ActionIcon} from '../icons';
 import {Checkbox} from '../form';
-import {Dropdown} from '../general';
+import Dropdown from '../dropdown';
 
 import {
 	selectSelected,
@@ -86,9 +86,8 @@ function ControlHeader({
 				{customSelectorElement &&
 					<Dropdown
 						style={{display: 'flex', width: '100%', justifyContent: 'center'}}
-						alignLeft
-						portal
-						anchorEl={anchorEl}
+						dropdownAlign='left'
+						portal={anchorEl}
 						dropdownRenderer={() => customSelectorElement}
 					/>}
 			</Selector>
