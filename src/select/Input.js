@@ -17,8 +17,9 @@ function Input({inputRef, props, state, methods}) {
 
 Input.propTypes = {
 	inputRef: PropTypes.object.isRequired,
-	value: PropTypes.string.isRequired,
-	onChange: PropTypes.func.isRequired,
+	props: PropTypes.object.isRequired,
+	state: PropTypes.object.isRequired,
+	methods: PropTypes.object.isRequired,
 };
 
 export default Input;

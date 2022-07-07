@@ -41,7 +41,8 @@ export function createAppTableDataSlice({
 	reducers,
 	extraReducers,
 	selectField,
-	selectEntities
+	selectEntities,
+	selectIds
 }) {
 
 	const dataAdapter = createEntityAdapter(Object.assign({}, selectId? {selectId}: {}, sortComparer? {sortComparer}: {}));
@@ -49,7 +50,7 @@ export function createAppTableDataSlice({
 	selectors[name] = {}; //dataAdapter.getSelectors();
 	selectors[name].getField = selectField? selectField: (entity, dataKey) => entity[dataKey];
 	selectors[name].getId = selectId? selectId: (entity) => entity.id;
-	selectors[name].selectIds = state => state[name].ids;
+	selectors[name].selectIds = selectIds || (state => state[name].ids);
 	selectors[name].selectEntities = selectEntities || (state => state[name].entities);
 
 	const selectedSubslice = createSelectedSubslice(name);
@@ -84,6 +85,8 @@ export function createAppTableDataSlice({
 				state.loading = false;
 			},
 			setAll: dataAdapter.setAll,
+			setOne: dataAdapter.setOne,
+			setMany: dataAdapter.setMany,
 			addOne: dataAdapter.addOne,
 			addMany: dataAdapter.addMany,
 			updateOne: dataAdapter.updateOne,

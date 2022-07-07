@@ -1,4 +1,5 @@
 /* Format: 2021 May 1 */
+/*
 export const displayDate = d => {
 	const date = (typeof d === 'string')? new Date(d): d;
 	if (!(date instanceof Date))
@@ -8,6 +9,7 @@ export const displayDate = d => {
 	const day = date.getDate();
 	return `${year} ${month} ${day}`;
 }
+*/
 
 /* Format: HH:MM */
 export const displayTime = d => {
@@ -37,6 +39,7 @@ export const displayDayDate = d => {
 }
 
 /* Format: "2021 May 5-12" or "2021 May 22-Jun 3" or "2021 Dec 22-2022 Jan 3" */
+/*
 export const displayDateRange = (d1, d2) => {
 	const start = (typeof d1 === 'string')? new Date(d1): d1;
 	const end = (typeof d2 === 'string')? new Date(d2): d2;
@@ -57,4 +60,35 @@ export const displayDateRange = (d1, d2) => {
 	if (s.month !== e.month)
 		return `${s.year} ${s.month} ${s.day}-${e.month} ${e.day}`;
 	return `${s.year} ${s.month} ${s.day}-${e.day}`;
+}
+*/
+
+function parseISODate(isoDate) {
+	// ISO date: "YYYY-MM-DD"
+	const year = parseInt(isoDate.substr(0, 4));
+	const month = parseInt(isoDate.substr(5, 7));
+	const day = parseInt(isoDate.substr(8, 10));
+	const monthStr = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+	return {
+		year,
+		monthShort: monthStr[month] || '???',
+		month,
+		day
+	}
+}
+
+export function displayDate(isoDate) {
+	const {year, monthShort, day} = parseISODate(isoDate);
+	return `${year} ${monthShort} ${day}`; 
+}
+
+/* Format: "2021 May 5-12" or "2021 May 22-Jun 3" or "2021 Dec 22-2022 Jan 3" */
+export function displayDateRange(start, end) {
+	const s = parseISODate(start);
+	const e = parseISODate(end);
+	if (s.year !== e.year)
+		return `${s.year} ${s.monthShort} ${s.day}-${e.year} ${e.monthShort} ${e.day}`;
+	if (s.month !== e.month)
+		return `${s.year} ${s.monthShort} ${s.day}-${e.monthShort} ${e.day}`;
+	return `${s.year} ${s.monthShort} ${s.day}-${e.day}`;
 }

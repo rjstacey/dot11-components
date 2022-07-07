@@ -322,8 +322,6 @@ class Select extends React.Component {
 		const arrowUp = event.key === 'ArrowUp';
 		const arrowDown = event.key === 'ArrowDown';
 		const backspace = event.key === 'Backspace';
-		const tab = event.key === 'Tab' && !event.shiftKey;
-		const shiftTab = event.key === 'Tab' && event.shiftKey;
 
 		if (backspace && props.backspaceDelete && !state.search && props.values.length > 0) {
 			const item = props.values[props.values.length - 1];

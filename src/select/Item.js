@@ -48,10 +48,10 @@ function Item({style, className, index, item, props, state, methods}) {
 
 Item.propTypes = {
 	index: PropTypes.number.isRequired,
-	item: PropTypes.object,
-	props: PropTypes.any,
-	state: PropTypes.any,
-	methods: PropTypes.any,
+	item: PropTypes.object.isRequired,
+	props: PropTypes.object.isRequired,
+	state: PropTypes.object.isRequired,
+	methods: PropTypes.object.isRequired,
 };
 
 export default Item;

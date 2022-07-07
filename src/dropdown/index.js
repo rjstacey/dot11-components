@@ -143,8 +143,6 @@ class Dropdown extends React.Component {
 		const escape = event.key === 'Escape';
 		const enter = event.key === 'Enter';
 		const arrowDown = event.key === 'ArrowDown';
-		const tab = event.key === 'Tab' && !event.shiftKey;
-		const shiftTab = event.key === 'Tab' && event.shiftKey;
 
 		if (state.isOpen && escape)
 			this.close();

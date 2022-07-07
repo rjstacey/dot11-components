@@ -1,7 +1,7 @@
 {
   "name": "dot11-components",
-  "version": "1.0.92",
-  "description": "Components for 802 apps",
+  "version": "1.0.99",
+  "description": "Components for 802 tools",
   "private": false,
   "repository": {
     "type": "git",

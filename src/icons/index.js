@@ -20,6 +20,7 @@ import {
 	faUserSlash, faUserCheck,
 	faBookOpen,
 	faAngleRight, faAngleLeft,
+	faLink,
 } from '@fortawesome/free-solid-svg-icons';
 import {
 	faPlusSquare, faMinusSquare, faCopy,
@@ -95,7 +96,7 @@ const IconVoteNo = ({style, ...otherProps}) =>
 
 
 export const faIcons = {
-	//'refresh': faSync,
+	'refresh': faSync,
 	'add': faPlus,
 	'delete': faTrashAlt,
 	'next': faArrowCircleRight,
@@ -121,6 +122,7 @@ export const faIcons = {
 	'angle-left': faAngleLeft,
 	'calendar': faCalendar,
 	'filter': faFilter,
+	'link': faLink,
 
 	/* editing: inline styles */
 	'bold': faBold,
@@ -145,7 +147,6 @@ export const otherIcons = {
 	'vote-yes': IconVoteYes,
 	'vote-no': IconVoteNo,
 	'add-item': <i className="bi-journal-plus" />,
-	'refresh': <i className="bi-arrow-repeat" />,
 }
 
 export const availableIcons = Object.keys(faIcons).concat(Object.keys(otherIcons));

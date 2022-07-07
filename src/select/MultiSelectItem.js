@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 
-const Clear = (props) => <div className='dropdown-select-multi-item-remove' {...props} />
+const Clear = (props) => <div {...props} />
 
 const MultiSelectItem = ({item, props, state, methods}) => {
 
@@ -32,9 +32,9 @@ const MultiSelectItem = ({item, props, state, methods}) => {
 
 MultiSelectItem.propTypes = {
 	item: PropTypes.object.isRequired,
-	props: PropTypes.any,
-	state: PropTypes.any,
-	methods: PropTypes.any
+	props: PropTypes.object.isRequired,
+	state: PropTypes.object.isRequired,
+	methods: PropTypes.object.isRequired
 }
 
 export default MultiSelectItem;
