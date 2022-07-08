@@ -5,7 +5,6 @@ import ReactDOM from 'react-dom';
 import {Icon} from '../icons';
 
 import Dropdown from './Dropdown';
-import Item from './Item';
 import MultiSelectItem from './MultiSelectItem';
 import SelectItem from './SelectItem';
 import Input from './Input';
@@ -37,6 +36,12 @@ function defaultContentRenderer({props, state, methods}) {
 	}
 	return null;
 }
+
+const defaultAddItemRenderer = ({item, className, props, state, methods}) =>
+	<span className={className}>{`Add "${item[props.labelField]}"`}</span>
+
+const defaultItemRenderer = ({item, className, props, state, methods}) =>
+	<span className={className}>{item[props.labelField]}</span>
 
 function defaultCreateOption({props, state, methods}) {
 	return {
@@ -580,7 +585,8 @@ Select.defaultProps = {
 	dropdownRenderer: (props) => <Dropdown {...props} />,
 
 	/* Dropdown children */
-	itemRenderer: (props) => <Item {...props} />,
+	addItemRenderer: defaultAddItemRenderer,
+	itemRenderer: defaultItemRenderer,
 	noDataRenderer: (props) => <NoData {...props} />,
 };
 

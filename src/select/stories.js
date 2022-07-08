@@ -2,6 +2,7 @@ import React from 'react';
 import {LoremIpsum} from 'lorem-ipsum';
 import {AppModal} from '../modals';
 import Select from '.';
+import {Icon} from '../icons'
 
 const lorem = new LoremIpsum();
 
@@ -40,7 +41,8 @@ function WrappedSelect(args) {
 	)
 }
 
-export function BasicSelect(args) {
+
+export function Basic(args) {
 	const portalRef = React.useRef();
 	const style = {
 		display: 'flex',
@@ -48,8 +50,43 @@ export function BasicSelect(args) {
 	}
 	return (
 		<div style={style}>
-			<WrappedSelect portalRef={portalRef} {...args} />
+			<WrappedSelect
+				portalRef={portalRef}
+				{...args}
+			/>
 		</div>
+	)
+}
+
+const itemRenderer = ({item, props}) => {
+	const style={
+		color: '#555',
+		overflow: 'hidden',
+		whiteSpace: 'nowrap',
+		textOverflow: 'ellipsis'
+	}
+	return (
+		<div style={style}>
+			<Icon name='user-check'/>
+			<span style={{marginLeft: 10}}>{item[props.labelField]}</span>
+		</div>
+	)
+}
+
+export function IconItems(args) {
+	const portalRef = React.useRef();
+	const style = {
+		display: 'flex',
+		width: '300px'
+	}
+	return (
+		<WrappedSelect
+			style={style}
+			portalRef={portalRef}
+			itemRenderer={itemRenderer}
+			selectItemRenderer={itemRenderer}
+			{...args}
+		/>
 	)
 }
 

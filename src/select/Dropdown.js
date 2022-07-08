@@ -4,6 +4,7 @@ import {VariableSizeList as List} from 'react-window';
 
 /* ItemWrapper measures and sets the height of the item */
 function ItemWrapper({style, item, index, setHeight, props, state, methods}) {
+
 	const ref = React.useRef();
 	React.useEffect(() => {
 		if (ref.current) {
@@ -12,12 +13,40 @@ function ItemWrapper({style, item, index, setHeight, props, state, methods}) {
 				setHeight(bounds.height);
 		}
 	});
-	const key = '' + item[props.valueField] + item[props.labelField];
-	const el = props.itemRenderer({index, item, props, state, methods});
+
+	const isSelected = methods.isSelected(item);
+	const isDisabled = methods.isDisabled(item);
+	const isActive = state.cursor === index;
+	const isNew = props.create && state.search && index === 0;
+
+	let className = `dropdown-select-item`;
+	if (isNew)
+		className += ` dropdown-select-item-new`;
+	if (isActive)
+		className += ` dropdown-select-item-active`;
+	if (isSelected)
+		className += ` dropdown-select-item-selected`;
+	if (isDisabled)
+		className += ` dropdown-select-item-disabled`;
+
+	const addItem = isNew?
+			() => methods.addSearchItem():
+			() => methods.addItem(item);
+
 	return (
-		<div style={style}>
-			<div ref={ref}>
-				{({key, ...el})}
+		<div
+			style={style}
+		>
+			<div
+				ref={ref}
+				className={className}
+				onClick={isDisabled? undefined: addItem}
+				role="option"
+				aria-selected={isSelected}
+				aria-disabled={isDisabled}
+				aria-label={item[props.labelField]}
+			>
+				{props.itemRenderer({index, item, props, state, methods})}
 			</div>
 		</div>
 	)
@@ -56,9 +85,9 @@ function Dropdown({props, state, methods}) {
 		const height = bounds.height < props.dropdownHeight? bounds.height: props.dropdownHeight;
 		if (height !== maxHeight)
 			setMaxHeight(height);
-	});
+	}, [props.dropdownHeight, maxHeight]);
 
-	const itemKey = (index) => '' + options[index][props.valueField] + options[index][props.valueField];
+	const itemKey = (index) => '' + options[index][props.valueField] + options[index][props.labelField];
 
 	return options.length === 0?
 		props.noDataRenderer({props, state, methods}):
