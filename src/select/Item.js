@@ -27,21 +27,20 @@ function Item({style, className, index, item, props, state, methods}) {
 				() => methods.addSearchItem():
 				() => methods.addItem(item);
 
+	const label = item[props.labelField];
+
 	return (
 		<div
 			style={style}
-			className={cn}
+			className={className}
 			role="option"
 			aria-selected={isSelected}
 			aria-disabled={isDisabled}
-			aria-label={item[props.labelField]}
+			aria-label={label}
 			onClick={addItem}
 			color={props.color}
 		>
-			{isNew?
-				`Add "${item[props.labelField]}"`:
-				item[props.labelField]
-			} 
+			{isNew? `Add "${label}"`:label} 
 		</div>
 	);
 }

@@ -52,11 +52,10 @@ function PureTableRow({
 			flexShrink: fixed? 0: flexShrink,
 			overflow: 'hidden'	// necessary to ensure that the content does not affect width
 		}
-		const cellData = getField(rowData, dataKey);
 		const renderer = cellRenderer ||
 			(dataRenderer
-				? ({rowData, dataKey}) => dataRenderer(cellData)
-				: ({rowData, dataKey}) => cellData);
+				? ({rowData, dataKey}) => dataRenderer(getField(rowData, dataKey))
+				: ({rowData, dataKey}) => getField(rowData, dataKey));
 		const props = {rowIndex, rowId, rowData, dataKey, ...colProps}
 		return (
 			<div

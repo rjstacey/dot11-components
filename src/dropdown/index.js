@@ -38,7 +38,8 @@ class Dropdown extends React.Component {
 		super(props);
 		this.state = {
 			isOpen: false,
-			selectBounds: {},
+			selectBounds: null,
+			dropdownBounds: null
 		};
 
 		this.methods = {
@@ -46,15 +47,15 @@ class Dropdown extends React.Component {
 			close: this.close,
 		};
 
-		this.selectRef = React.createRef();
-		this.dropdownRef = React.createRef();
+		this.selectRef = null;
+		this.dropdownRef = null;
 
 		this.debouncedUpdateSelectBounds = debounce(this.updateSelectBounds);
 		this.debouncedOnScroll = debounce(this.onScroll);
 	}
 
 	componentDidMount() {
-		this.updateSelectBounds();
+		this.updateBounds();
 	}
 
 	onOutsideClick = (event) => {
@@ -67,12 +68,12 @@ class Dropdown extends React.Component {
 		const {target} = event;
 
 		// Ignore click in dropdown
-		const dropdownEl = this.dropdownRef.current;
+		const dropdownEl = this.dropdownRef;
 		if (dropdownEl && (dropdownEl === target || dropdownEl.contains(target)))
 			return;
 		
 		// Ignore click in select
-		const selectEl = this.selectRef.current;
+		const selectEl = this.selectRef;
 		if (selectEl && (selectEl === target || selectEl.contains(target)))
 			return;
 
@@ -85,14 +86,28 @@ class Dropdown extends React.Component {
 			return;
 		}
 
-		this.updateSelectBounds();
+		this.updateBounds();
 	}
 
-	updateSelectBounds = () => {
-		if (!this.selectRef.current)
-			return;
-		const selectBounds = this.selectRef.current.getBoundingClientRect();
+	updateBounds = () => {
+		//console.log(this.selectRef, this.dropdownRef)
+		const selectBounds = this.selectRef?
+			this.selectRef.getBoundingClientRect(): {};
+		const dropdownBounds = this.dropdownRef?
+			this.dropdownRef.getBoundingClientRect(): null;
+		this.setState({selectBounds, dropdownBounds});
+	}
+
+	setSelectRef = (ref) => {
+		this.selectRef = ref;
+		const selectBounds = ref? ref.getBoundingClientRect(): null;
 		this.setState({selectBounds});
+	}
+
+	setDropdownRef = (ref) => {
+		this.dropdownRef = ref;
+		const dropdownBounds = ref? ref.getBoundingClientRect(): null;
+		this.setState({dropdownBounds});
 	}
 
 	open = () => {
@@ -104,7 +119,7 @@ class Dropdown extends React.Component {
 		document.addEventListener('scroll', this.debouncedOnScroll, true);
 		document.addEventListener('click', this.onOutsideClick, true);
 
-		this.updateSelectBounds();
+		this.updateBounds();
 
 		this.setState({isOpen: true});
 
@@ -152,7 +167,7 @@ class Dropdown extends React.Component {
 
 	renderDropdown = (dropdownProps) => {
 		const {props, state, methods} = this;
-		const {selectBounds} = state;
+		const {selectBounds, dropdownBounds} = state;
 		const style = {};
 
 		let className = 'dropdown-container';
@@ -161,7 +176,7 @@ class Dropdown extends React.Component {
 
 		const dropdownEl = 
 			<div
-				ref={this.dropdownRef}
+				ref={this.setDropdownRef}
 				className={className}
 				style={style}
 				onClick={e => e.stopPropagation()}	// prevent click propagating to select and closing the dropdown
@@ -186,10 +201,16 @@ class Dropdown extends React.Component {
 
 		if (props.portal) {
 			style.position = 'fixed';
-			if (align === 'left')
+			if (align === 'left') {
 				style.left = selectBounds.left - 1;
-			else
+			}
+			else {
 				style.right = window.innerWidth - selectBounds.right + 1;
+				if (dropdownBounds) {
+					if (dropdownBounds.left < 0)
+						style.right += dropdownBounds.left;
+				}
+			}
 			if (position === 'bottom')
 				style.top = selectBounds.bottom + props.dropdownGap;
 			else 
@@ -223,7 +244,7 @@ class Dropdown extends React.Component {
 			<div
 				className={className}
 				style={props.style}
-				ref={this.selectRef}
+				ref={this.setSelectRef}
 				onClick={this.onClick}
 				onKeyDown={this.onKeyDown}
 				onBlur={props.closeOnBlur? this.close: undefined}

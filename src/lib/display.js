@@ -15,7 +15,7 @@ export const displayDate = d => {
 export const displayTime = d => {
 	const date = (typeof d === 'string')? new Date(d): d;
 	if (date instanceof Date)
-		return ('0' + date.getHours()).substr(-2) + ':' + ('0' + date.getMinutes()).substr(-2)
+		return ('0' + date.getHours()).substring(-2) + ':' + ('0' + date.getMinutes()).substring(-2)
 	return '';
 }
 
@@ -32,7 +32,7 @@ export const displayDayDate = d => {
 	const date = (typeof d === 'string')? new Date(d): d;
 	if (date instanceof Date)
 		return new Intl.DateTimeFormat('en-US', {weekday: 'short'}).format(date) + ', ' +
-			('0' + date.getDate()).substr(-2) + '-' +
+			('0' + date.getDate()).substring(-2) + '-' +
 			new Intl.DateTimeFormat('en-US', {month: 'short'}).format(date) + '-' +
 			date.getFullYear();
 	return '';
@@ -65,9 +65,9 @@ export const displayDateRange = (d1, d2) => {
 
 function parseISODate(isoDate) {
 	// ISO date: "YYYY-MM-DD"
-	const year = parseInt(isoDate.substr(0, 4));
-	const month = parseInt(isoDate.substr(5, 7));
-	const day = parseInt(isoDate.substr(8, 10));
+	const year = parseInt(isoDate.substring(0, 4));
+	const month = parseInt(isoDate.substring(5, 7));
+	const day = parseInt(isoDate.substring(8, 10));
 	const monthStr = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 	return {
 		year,

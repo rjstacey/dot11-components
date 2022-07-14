@@ -46,7 +46,9 @@ function ItemWrapper({style, item, index, setHeight, props, state, methods}) {
 				aria-disabled={isDisabled}
 				aria-label={item[props.labelField]}
 			>
-				{props.itemRenderer({index, item, props, state, methods})}
+				{isNew?
+					props.addItemRenderer({index, item, props, state, methods}):
+					props.itemRenderer({index, item, props, state, methods})}
 			</div>
 		</div>
 	)
@@ -85,9 +87,13 @@ function Dropdown({props, state, methods}) {
 		const height = bounds.height < props.dropdownHeight? bounds.height: props.dropdownHeight;
 		if (height !== maxHeight)
 			setMaxHeight(height);
-	}, [props.dropdownHeight, maxHeight]);
+	}, [props.dropdownHeight, maxHeight, options]);
 
-	const itemKey = (index) => '' + options[index][props.valueField] + options[index][props.labelField];
+	const itemKey = (index) => {
+		if (props.create && state.search && index === 0)
+			return '{new-item}';
+		return '' + options[index][props.valueField] + options[index][props.labelField];
+	}
 
 	return options.length === 0?
 		props.noDataRenderer({props, state, methods}):

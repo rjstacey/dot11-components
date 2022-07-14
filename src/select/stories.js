@@ -83,11 +83,15 @@ export function IconItems(args) {
 		<WrappedSelect
 			style={style}
 			portalRef={portalRef}
+			create
 			itemRenderer={itemRenderer}
 			selectItemRenderer={itemRenderer}
 			{...args}
 		/>
 	)
+}
+IconItems.args = {
+	useCreate: true
 }
 
 export function ContainedSelect(args) {
