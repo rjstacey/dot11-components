@@ -21,6 +21,7 @@ import {
 	faBookOpen,
 	faAngleRight, faAngleLeft,
 	faLink,
+	faBan,
 } from '@fortawesome/free-solid-svg-icons';
 import {
 	faPlusSquare, faMinusSquare, faCopy,
@@ -123,6 +124,7 @@ export const faIcons = {
 	'calendar': faCalendar,
 	'filter': faFilter,
 	'link': faLink,
+	'cancel': faBan,
 
 	/* editing: inline styles */
 	'bold': faBold,
