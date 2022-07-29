@@ -1,5 +1,3 @@
-import {deepMerge} from '../lib';
-
 const defaultTableView = 'default';
 const defaultTableConfig = {fixed: false, columns: {}}
 const defaultPanelConfig = {split: 0.5, isSplit: false};
@@ -31,16 +29,29 @@ export const createUiSubslice = (dataSet) => ({
 			const {tablesConfig} = action.payload;
 			// Remove table views with no default config
 			for (const tableView of Object.keys(ui.tablesConfig)) {
-				if (!tablesConfig[tableView])
+				if (!tablesConfig[tableView]) {
 					delete ui.tablesConfig[tableView];
-				if (!tablesConfig[tableView])
 					delete ui.panelsConfig[tableView];
+				}
 			}
 			// Add default config if config not already present
 			for (const [tableView, tableConfig] of Object.entries(tablesConfig)) {
-				if (!ui.tablesConfig[tableView])
+				if (!ui.tablesConfig[tableView]) {
 					ui.tablesConfig[tableView] = defaultTableConfig;
-				ui.tablesConfig[tableView] = deepMerge(ui.tablesConfig[tableView], tableConfig);
+				}
+				else {
+					const existingTableConfig = ui.tablesConfig[tableView];
+					// Remove columns that no longer exist
+					for (const colKey of Object.keys(existingTableConfig.columns)) {
+						if (!tableConfig.columns[colKey])
+							delete existingTableConfig.columns[colKey];
+					}
+					// Add columns that aren't currently present
+					for (const colKey of Object.keys(tableConfig.columns)) {
+						if (!existingTableConfig.columns[colKey])
+							existingTableConfig.columns[colKey] = tableConfig.columns[colKey];
+					}
+				}
 				if (!ui.panelsConfig[tableView])
 					ui.panelsConfig[tableView] = defaultPanelConfig;
 			}
