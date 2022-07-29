@@ -49,6 +49,10 @@ const ActiveFilter = ({children, remove}) =>
 function renderActiveFilters({fields, filters, removeFilter, clearAllFilters}) {
 	let elements = [];
 	for (const [dataKey, filter] of Object.entries(filters)) {
+		if (!fields[dataKey]) {
+			console.warn(`${dataKey} not present in fields`);
+			continue;
+		}
 		const {label, dataRenderer} = fields[dataKey];
 		const {comps, options} = filter;
 		if (comps.length > 0) {
