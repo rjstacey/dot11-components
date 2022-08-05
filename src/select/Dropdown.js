@@ -95,6 +95,9 @@ function Dropdown({props, state, methods}) {
 		return '' + options[index][props.valueField] + options[index][props.labelField];
 	}
 
+	// To prevent input element losing focus, block mousedown event
+	const innerEl = (props) => <div ref={listInnerRef} onMouseDown={e => e.preventDefault()} {...props} />
+
 	return options.length === 0?
 		props.noDataRenderer({props, state, methods}):
 		<List
@@ -105,7 +108,8 @@ function Dropdown({props, state, methods}) {
 			itemSize={getItemHeight}
 			estimatedItemSize={props.estimatedItemHeight}
 			itemKey={itemKey}
-			innerRef={listInnerRef}
+			//innerRef={listInnerRef}
+			innerElementType={innerEl}
 		>
 			{({index, style}) =>
 				<ItemWrapper 

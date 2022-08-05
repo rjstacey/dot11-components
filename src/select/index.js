@@ -122,11 +122,8 @@ class Select extends React.Component {
 
 		// Ignore click in dropdown
 		const dropdownEl = this.dropdownRef.current;
-		if (dropdownEl && (dropdownEl === target || dropdownEl.contains(target))) {
-			// don't take focus from select
-			this.selectRef.current.focus();
+		if (dropdownEl && (dropdownEl === target || dropdownEl.contains(target)))
 			return;
-		}
 		
 		// Ignore click in select
 		const selectEl = this.selectRef.current;
@@ -257,7 +254,7 @@ class Select extends React.Component {
 		return !!props.values.find((selectedItem) => props.valuesEqual(selectedItem, item));
 	}
 
-	isDisabled = (item) => item.disabled;
+	isDisabled = (item) => item.disabled || false;
 
 	sort = (options) => {
 		const {sortBy} = this.props;
@@ -317,6 +314,11 @@ class Select extends React.Component {
 			this.close();
 		else
 			this.open();
+	}
+
+	onFocus = (event) => {
+		if (this.inputRef.current && document.activeElement !== this.inputRef.current)
+			this.inputRef.current.focus();
 	}
 
 	onKeyDown = (event) => {
@@ -459,7 +461,7 @@ class Select extends React.Component {
 				aria-expanded={state.isOpen}
 				onClick={this.onClick}
 				onKeyDown={this.onKeyDown}
-				onFocus={() => this.inputRef.current && this.inputRef.current.focus()}
+				onFocus={this.onFocus}
 				onBlur={props.closeOnBlur? this.close: undefined}
 				direction={props.direction}
 			>	
