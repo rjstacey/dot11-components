@@ -3,6 +3,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import styled from '@emotion/styled';
 
+import {shallowEqual} from '../lib';
 import {Icon} from '../icons';
 import {Button} from '../form';
 
@@ -95,7 +96,10 @@ class Dropdown extends React.Component {
 			this.selectRef.getBoundingClientRect(): {};
 		const dropdownBounds = this.dropdownRef?
 			this.dropdownRef.getBoundingClientRect(): null;
-		this.setState({selectBounds, dropdownBounds});
+		if (!shallowEqual(this.state.selectBounds, selectBounds))
+			this.setState({selectBounds});
+		if (!shallowEqual(this.state.dropdownBounds, dropdownBounds))
+			this.setState({dropdownBounds});
 	}
 
 	setSelectRef = (ref) => {
@@ -202,14 +206,22 @@ class Dropdown extends React.Component {
 		if (props.portal) {
 			style.position = 'fixed';
 			if (align === 'left') {
-				style.left = selectBounds.left - 1;
+				let left = selectBounds.left - 1;
+				if (dropdownBounds) {
+					const right = left + dropdownBounds.width;
+					if (right > window.innerWidth)
+						left = window.innerWidth - dropdownBounds.width;
+				}
+				style.left = left;
 			}
 			else {
-				style.right = window.innerWidth - selectBounds.right + 1;
+				let right = selectBounds.right + 1;
 				if (dropdownBounds) {
-					if (dropdownBounds.left < 0)
-						style.right += dropdownBounds.left;
+					const left = right - dropdownBounds.width;
+					if (left < 0)
+						right -= left;
 				}
+				style.right = window.innerWidth - right;
 			}
 			if (position === 'bottom')
 				style.top = selectBounds.bottom + props.dropdownGap;

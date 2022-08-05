@@ -137,3 +137,17 @@ export function deepMergeTagMultiple(obj1, obj2) {
 	result = Object.keys(obj2).reduce((result, key) => ({...result, [key]: (key in obj1)? deepMergeTagMultiple(obj1[key], obj2[key]): obj2[key]}), result);
 	return result;
 }
+
+export function shallowEqual(obj1, obj2) {
+	if (obj1 === obj2)
+		return true;
+	if (obj1 == null || typeof obj1 !== 'object' || obj2 == null || typeof obj2 !== 'object')
+		return false;
+	if (Object.keys(obj1).length !== Object.keys(obj2).length)
+		return false;
+	for (const [key, value] of Object.entries(obj1)) {
+		if (value !== obj2[key])
+			return false;
+	}
+	return true;
+}

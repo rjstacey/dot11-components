@@ -37,7 +37,7 @@ export const createUiSubslice = (dataSet) => ({
 			// Add default config if config not already present
 			for (const [tableView, tableConfig] of Object.entries(tablesConfig)) {
 				if (!ui.tablesConfig[tableView]) {
-					ui.tablesConfig[tableView] = defaultTableConfig;
+					ui.tablesConfig[tableView] = tableConfig;
 				}
 				else {
 					const existingTableConfig = ui.tablesConfig[tableView];

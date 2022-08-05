@@ -244,7 +244,7 @@ function AppTableSized({
 
 	React.useEffect(() => {
 		dispatch(setDefaultTablesConfig(dataSet, defaultTableView, defaultTablesConfig));
-	}, []);
+	}, [dispatch, dataSet, defaultTableView, defaultTablesConfig]);
 
 	const selectInfo = React.useCallback(state => {
 		const {selected, expanded, loading} = state[dataSet];
@@ -315,7 +315,7 @@ function AppTableSized({
 		measureRowHeight,
 		onRowHeightChange,
 		onRowClick
-	}), [props.rowGetter, gutterSize, entities, ids, selected, expanded, fixed, columns, estimatedRowHeight, getField, onRowHeightChange, onRowClick]);
+	}), [props.rowGetter, gutterSize, entities, ids, selected, expanded, fixed, columns, getField, estimatedRowHeight, measureRowHeight, onRowHeightChange, onRowClick]);
 
 	// put header after body and reverse the display order via css to prevent header's shadow being covered by body
 	return (
