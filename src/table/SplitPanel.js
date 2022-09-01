@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {useDispatch, useSelector} from 'react-redux';
-
-import {adjustPanelSplit, selectCurrentPanelConfig} from '../store/appTableData';
+import {debounce} from '../lib';
+import {adjustPanelWidth, selectCurrentPanelConfig} from '../store/appTableData';
 
 import ColumnResizer from './ColumnResizer';
 
@@ -12,24 +12,31 @@ export const Panel = ({children, ...otherProps}) =>
 	</div>
 
 function SplitPanel({dataSet, style, children, ...otherProps}) {
+	const panelRef = React.useRef();
 	const dispatch = useDispatch();
-	const adjustSplit = React.useCallback((deltaX) => dispatch(adjustPanelSplit(dataSet, undefined, deltaX/window.innerWidth)), [dispatch, dataSet]);
 
 	const selectPanelConfig = React.useCallback(state => selectCurrentPanelConfig(state, dataSet), [dataSet]);
-	const {isSplit, split} = useSelector(selectPanelConfig);
+	const {isSplit, width} = useSelector(selectPanelConfig);
 
-	//const [split, setSplit] = React.useState(0.5);
-	//const setWidth = (deltaX) => setSplit(split => split - deltaX/window.innerWidth);
+	const onDrag = React.useCallback(debounce((event, {deltaX}) => {
+		const width = panelRef.current.getBoundingClientRect().width;
+		dispatch(adjustPanelWidth(dataSet, undefined, deltaX/width));
+	}), [dispatch, dataSet]);
+
 	const style0 = children[0].props.style || {};
 	const style1 = children[1].props.style || {};
 
 	return (
-		<div style={{display: 'flex', flex: 1, width: '100%', overflow: 'hidden', ...style}} {...otherProps} >
-			{React.cloneElement(children[0], {style: {...style0, flex: `${100 - split*100}%`}})}
+		<div
+			ref={panelRef} 
+			style={{display: 'flex', flex: 1, width: '100%', overflow: 'hidden', ...style}}
+			{...otherProps}
+		>
+			{React.cloneElement(children[0], {style: {...style0, flex: `${width*100}%`}})}
 			{isSplit &&
 				<>
-					<ColumnResizer setWidth={adjustSplit} />
-					{React.cloneElement(children[1], {style: {...style1, flex: `${split*100}%`}})}
+					<ColumnResizer onDrag={onDrag} />
+					{React.cloneElement(children[1], {style: {...style1, flex: `${(1 - width)*100}%`}})}
 				</>}
 		</div>
 	)

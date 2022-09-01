@@ -5,7 +5,7 @@ import styled from '@emotion/styled';
 
 const ResizeHandle = styled.div`
 	height: 100%;
-	width: 12px;
+	width: 10px;
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
@@ -15,35 +15,38 @@ const ResizeHandle = styled.div`
 	::after {
 		content: "⋮";
 	}
-	:hover,
-	.dragging {
+	:hover {
 		color: #0b6fcc;
 		background-color: rgba(0, 0, 0, 0.1)
 	}
 `;
 
-function ColumnResizer({style, setWidth}) {
-	const [drag, setDrag] = React.useState(false)
+function ColumnResizer({style, onDrag}) {
 	const nodeRef = React.useRef(null);
+	const [drag, setDrag] = React.useState(false);
+	if (drag)
+		style = {...style, backgroundColor: 'rgba(0, 0, 0, 0.1)'}
+
 	return (
 		<DraggableCore
 			axis="x"
-			onDrag={(event, {deltaX}) => setWidth(deltaX)}
+			onDrag={onDrag}
 			onStart={e => setDrag(true)}
 			onStop={e => setDrag(false)}
+			handle='.column-resizer-handle'
 			nodeRef={nodeRef}
 		>
 			<ResizeHandle
 				ref={nodeRef}
 				style={style}
-				className={drag? 'dragging': undefined}
+				className={'column-resizer-handle '}
 			/>
 		</DraggableCore>
 	)
 }
 
 ColumnResizer.propTypes = {
-	setWidth: PropTypes.func.isRequired
+	onDrag: PropTypes.func.isRequired
 }
 
 export default ColumnResizer;

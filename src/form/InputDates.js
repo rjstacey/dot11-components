@@ -62,8 +62,9 @@ const toISODate = (d) => '' + d.getFullYear() + '-' + ('0' + (d.getMonth()+1)).s
 function toDatesStr(dates) {
 	let currentMonth;
 	const list = [];
+	const rx = /(\d{4})-(\d{2})-(\d{2})/;
 	for (const date of dates) {
-		const m = date.match(/(\d{4})-(\d{2})-(\d{2})/);
+		const m = rx.exec(date);
 		if (m) {
 			const month = m[2];
 			const day = m[3];
@@ -120,10 +121,11 @@ function InputDates({
 		let strArray = str.split(',');
 		if (!multi)
 			strArray = strArray.slice(0, 1);
+		const rx = /([A-Za-z]*)\s*([\d]+)/i;
 		for (let s of strArray) {
 			let date = null;
 			s = s.trim();
-			const matches = s.match(/([A-Za-z]*)\s*([\d]+)/i);
+			const matches = rx.exec(s);
 			if (matches) {
 				const monthStr = matches[1];
 				const dayStr = matches[2];

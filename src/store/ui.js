@@ -1,6 +1,6 @@
 const defaultTableView = 'default';
 const defaultTableConfig = {fixed: false, columns: {}}
-const defaultPanelConfig = {split: 0.5, isSplit: false};
+const defaultPanelConfig = {width: 0.5, isSplit: false};
 
 const name = 'ui';
 
@@ -98,13 +98,21 @@ export const createUiSubslice = (dataSet) => ({
 			tableConfig.fixed = !ui.tablesConfig[tableView].fixed;
 			ui.tablesConfig[tableView] = tableConfig;
 		},
-		adjustPanelSplit(state, action) {
+		adjustPanelWidth(state, action) {
 			const ui = state[name];
 			let {tableView, delta} = action.payload;
 			if (!tableView)
 				tableView = ui.tableView;
 			const panelConfig = ui.panelsConfig[tableView];
-			panelConfig.split = panelConfig.split - delta;
+			panelConfig.width += delta;
+		},
+		setPanelWidth(state, action) {
+			const ui = state[name];
+			let {tableView, width} = action.payload;
+			if (!tableView)
+				tableView = ui.tableView;
+			const panelConfig = ui.panelsConfig[tableView];
+			panelConfig.width = width;
 		},
 		setPanelIsSplit(state, action) {
 			const ui = state[name];
@@ -161,8 +169,10 @@ export const setTableColumnShown = (dataSet, tableView, key, shown) =>
 export const setTableColumnUnselectable = (dataSet, tableView, key, unselectable) => 
 	({type: dataSet + '/upsertTableColumns', payload: {tableView, columns: {[key]: {unselectable}}}});
 
-export const adjustPanelSplit = (dataSet, tableView, delta) => 
-	({type: dataSet + '/adjustPanelSplit', payload: {tableView, delta}});
+export const adjustPanelWidth = (dataSet, tableView, delta) => 
+	({type: dataSet + '/adjustPanelWidth', payload: {tableView, delta}});
+export const setPanelWidth = (dataSet, tableView, width) => 
+	({type: dataSet + '/setPanelWidth', payload: {tableView, width}});
 export const setPanelIsSplit = (dataSet, tableView, isSplit) => 
 	({type: dataSet + '/setPanelIsSplit', payload: {tableView, isSplit}});
 

@@ -26,7 +26,8 @@ function InputTime({
 		const rawValue = e.target.value;
 		let isValid = false;
 		let value = '';
-		const m = rawValue.match(/(\d{1,2}):(\d{2})$/);
+		const rx = /(\d{1,2}):(\d{2})$/;
+		const m = rx.exec(rawValue);
 		if (m) {
 			const hour = parseInt(m[1], 10);
 			const min = parseInt(m[2], 10);
@@ -64,7 +65,8 @@ function InputTime({
 function isValidTime(value) {
 	if (value === '')
 		return true;
-	const m = value.match(/(\d{1,2}):(\d{2})$/);
+	const rx = /(\d{1,2}):(\d{2})$/;
+	const m = rx.exec(value);
 	if (m) {
 		const hour = parseInt(m[1], 10);
 		const min = parseInt(m[2], 10);

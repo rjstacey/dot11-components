@@ -260,6 +260,39 @@ function tableColumnsWithControl(expandable, dispatch) {
 	return columns;
 }
 
+export const _SplitPanel = ({expandable, numberOfRows}) => {
+
+	const dispatch = useDispatch();
+
+	const isSplit = useSelector(state => {
+		const panelConfig = selectCurrentPanelConfig(state, dataSet);
+		return panelConfig.isSplit;
+	});
+
+	const setIsSplit = (isSplit) => dispatch(setPanelIsSplit(dataSet, undefined, isSplit));
+
+	return (
+		<div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '80vh'}}>
+			<div>
+				<ActionButton
+				name='book-open'
+				title='Do split'
+				isActive={isSplit} 
+				onClick={() => setIsSplit(!isSplit)}
+				/>
+			</div>
+			<SplitPanel dataSet={dataSet} >
+				<Panel>
+					<span>Something here...</span>
+				</Panel>
+				<Panel>
+					<span>And something here...</span>
+				</Panel>
+			</SplitPanel>
+		</div>
+	)
+}
+
 export const SplitTable = ({expandable, numberOfRows}) => {
 
 	const dispatch = useDispatch();

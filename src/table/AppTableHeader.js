@@ -68,7 +68,7 @@ const HeaderRow = styled.div`
 						{renderer(props)}
 					</HeaderCellContent>
 					<ColumnResizer
-						setWidth={deltaX => setColumnWidth(dataKey, deltaX)}
+						onDrag={(event, {deltaX}) => setColumnWidth(dataKey, deltaX)}
 					/>
 				</HeaderCell>
 			)
