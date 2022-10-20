@@ -1,8 +1,9 @@
 import React from 'react';
+import {styled} from '@emotion/styled';
 import {LoremIpsum} from 'lorem-ipsum';
 import {AppModal} from '../modals';
 import Select from '.';
-import {Icon} from '../icons'
+import {Icon, ActionIcon} from '../icons'
 
 const lorem = new LoremIpsum();
 
@@ -122,6 +123,38 @@ export function SelectInModal(args) {
 			<label>Select:</label>
 			<WrappedSelect portalRef={portalRef} {...args} />
 		</AppModal>
+	)
+}
+
+export function IconSelect(args) {
+	const options = genOptions(10);
+	return (
+		<div style={{display: 'flex', justifyContent: 'space-between'}} >
+			<Select
+				style={{border: 'none', padding: 'none'}}
+				options={options}
+				values={[]}
+				onChange={() => {}}
+				placeholder=''
+				searchable={false}
+				handle={false}
+				dropdownWidth={300}
+				dropdownAlign='left'
+				contentRenderer={() => <ActionIcon name='import' />}
+			/>
+			<Select
+				style={{border: 'none', padding: 'none'}}
+				options={options}
+				values={[]}
+				onChange={() => {}}
+				placeholder=''
+				searchable={false}
+				handle={false}
+				dropdownWidth={300}
+				dropdownAlign='right'
+				contentRenderer={() => <ActionIcon name='import' />}
+			/>
+		</div>
 	)
 }
 

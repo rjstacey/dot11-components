@@ -394,7 +394,7 @@ class Select extends React.Component {
 	renderDropdown = (dropdownProps) => {
 		const {props, state, methods} = this;
 		const {selectBounds} = state;
-		const style = {width: selectBounds.width};
+		const style = {width: props.dropdownWidth || selectBounds.width};
 
 		let className = 'dropdown-select-dropdown';
 		if (props.dropdownClassName)
@@ -412,6 +412,7 @@ class Select extends React.Component {
 
 		// Determine if above or below selector
 		let position = props.dropdownPosition;
+		let align = props.dropdownAlign;
 		if (position === 'auto') {
 			const dropdownHeight = selectBounds.bottom + parseInt(props.dropdownHeight, 10) + parseInt(props.dropdownGap, 10);
 			if (dropdownHeight > window.innerHeight && dropdownHeight > selectBounds.top)
@@ -422,7 +423,10 @@ class Select extends React.Component {
 
 		if (props.portal) {
 			style.position = 'fixed';
-			style.left = selectBounds.left - 1;
+			if (align === 'left')
+				style.left = selectBounds.left - 1;
+			else
+				style.right = selectBounds.right - 1;
 			if (position === 'bottom')
 				style.top = selectBounds.bottom + props.dropdownGap;
 			else 
@@ -432,7 +436,10 @@ class Select extends React.Component {
 		}
 		else {
 			style.position = 'absolute';
-			style.left = -1;
+			if (align === 'left')
+				style.left = -1;
+			else
+				style.right = -1;
 			if (position === 'bottom')
 				style.top = selectBounds.height + 2 + props.dropdownGap;
 			else
@@ -524,6 +531,7 @@ Select.propTypes = {
 	dropdownGap: PropTypes.number,
 	dropdownHeight: PropTypes.number,
 	dropdownPosition: PropTypes.oneOf(['auto', 'bottom', 'top']),
+	dropdownAlign: PropTypes.oneOf(['left', 'right']),
 	estimatedItemHeight: PropTypes.number,
 
 	style: PropTypes.object,
@@ -573,6 +581,7 @@ Select.defaultProps = {
 	dropdownGap: 5,
 	dropdownHeight: 300,
 	dropdownPosition: 'bottom',
+	dropdownAlign: 'left',
 	estimatedItemHeight: 29.6667,
 
 	/* Select children */
