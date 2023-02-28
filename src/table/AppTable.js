@@ -15,6 +15,7 @@ import {
 	setSelected,
 	setDefaultTablesConfig,
 	adjustTableColumnWidth,
+	setTableColumnWidth,
 	selectEntities,
 	selectGetField,
 	selectSortedFilteredIds,
@@ -265,8 +266,9 @@ function AppTableSized({
 
 	const tableConfig = tablesConfig[tableView] || defaultTablesConfig[defaultTableView];
 
-	const adjustColumnWidth = React.useCallback(async (key, deltaX) => {
-		await dispatch(adjustTableColumnWidth(dataSet, tableView, key, deltaX));
+	const adjustColumnWidth = React.useCallback((key, deltaX) => {
+		dispatch(adjustTableColumnWidth(dataSet, tableView, key, deltaX));
+		//dispatch(setTableColumnWidth(dataSet, tableView, key, width));
 		if (gridRef.current)
 			gridRef.current.resetAfterColumnIndex(0, true);
 	}, [dispatch, dataSet, tableView]);
@@ -350,7 +352,7 @@ function AppTableSized({
 				innerStyle={{width: fixed? totalWidth + scrollbarSize: '100%'}}
 				fixed={fixed}
 				columns={columns}
-				setColumnWidth={adjustColumnWidth}
+				adjustColumnWidth={adjustColumnWidth}
 				defaultHeaderCellRenderer={(p) => <ColumnHeader dataSet={dataSet} {...p}/>}
 			/>
 		</Table>

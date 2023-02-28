@@ -1,5 +1,4 @@
 import React from 'react';
-import {styled} from '@emotion/styled';
 import {LoremIpsum} from 'lorem-ipsum';
 import {AppModal} from '../modals';
 import Select from '.';

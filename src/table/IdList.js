@@ -7,7 +7,7 @@ import 'draft-js/dist/Draft.css';
 
 import {ActionIcon} from '../icons';
 import {parseNumber} from '../lib';
-import {setSelected, setFilter, selectIds, selectEntities, selectFilters, selectGetField} from '../store/appTableData';
+import {setSelected, setFilter, selectIds, selectEntities, selectFilters, selectGetField, FilterType} from '../store/appTableData';
 
 const Container = styled.div`
 	display: flex;
@@ -158,7 +158,10 @@ function IdFilter({dataSet, dataKey, ...props}) {
 
 	const isValid = React.useCallback(value => ids.findIndex(id => getField(entities[id], dataKey) === value) !== -1, [ids, entities, dataKey, getField]);
 
-	const onChange = React.useCallback(values => dispatch(setFilter(dataSet, dataKey, values)), [dispatch, dataSet, dataKey]);
+	const onChange = React.useCallback(values => {
+		const comps = values.map(value => ({value, filterType: FilterType.EXACT}));
+		dispatch(setFilter(dataSet, dataKey, comps));
+	}, [dispatch, dataSet, dataKey]);
 
 	return (
 		<IdList

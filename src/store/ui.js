@@ -19,6 +19,9 @@ export const createUiSubslice = (dataSet) => ({
 			const {property, value} = action.payload;
 			ui[property] = value;
 		},
+		setUiProperties(state, action) {
+			state[name] = {...state[name], ...action.payload};
+		},
 		setTableView(state, action) {
 			const ui = state[name];
   			const {tableView} = action.payload;
@@ -86,6 +89,15 @@ export const createUiSubslice = (dataSet) => ({
 			const tableConfig = ui.tablesConfig[tableView];
 			const column = tableConfig.columns[key];
 			column.width = Math.max(0, column.width + delta);
+		},
+		setTableColumnWidth(state, action) {
+			const ui = state[name];
+			let {tableView, key, width} = action.payload;
+			if (!tableView)
+				tableView = ui.tableView;
+			const tableConfig = ui.tablesConfig[tableView];
+			const column = tableConfig.columns[key];
+			column.width = Math.max(0, width);
 		},
 		toggleTableFixed(state, action) {
 			const ui = state[name];
@@ -164,6 +176,8 @@ export const upsertTableColumns = (dataSet, tableView, columns) =>
 	({type: dataSet + '/upsertTableColumns', payload: {tableView, columns}});
 export const adjustTableColumnWidth = (dataSet, tableView, key, delta) => 
 	({type: dataSet + '/adjustTableColumnWidth', payload: {tableView, key, delta}});
+export const setTableColumnWidth = (dataSet, tableView, key, width) => 
+	({type: dataSet + '/setTableColumnWidth', payload: {tableView, key, width}});
 export const setTableColumnShown = (dataSet, tableView, key, shown) => 
 	({type: dataSet + '/upsertTableColumns', payload: {tableView, columns: {[key]: {shown}}}});
 export const setTableColumnUnselectable = (dataSet, tableView, key, unselectable) => 

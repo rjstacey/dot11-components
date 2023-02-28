@@ -3,26 +3,28 @@ import React from 'react';
 import { configureStore, combineReducers, createSelector } from '@reduxjs/toolkit';
 import { createLogger } from 'redux-logger';
 import thunk from 'redux-thunk';
-import { Provider, useDispatch, useSelector } from 'react-redux';
+import { Provider, useDispatch } from 'react-redux';
 
 import {displayDate} from '../lib';
 import {ActionIcon} from '../icons';
-import {ButtonGroup, Button, ActionButton} from '../form';
-import {createAppTableDataSlice, SortType, setPanelIsSplit, selectCurrentPanelConfig} from '../store/appTableData';
+import {Button} from '../form';
+import {createAppTableDataSlice, SortType} from '../store/appTableData';
 
-import AppTable, {
+import {
+	AppTable, 
 	SelectHeader, 
 	SelectCell, 
 	SelectExpandHeader,
 	SelectExpandCell,
 	TableColumnHeader,
-	TableViewSelector,
-	TableColumnSelector,
 	ShowFilters,
+	GlobalFilter,
 	IdSelector,
 	IdFilter,
+	SplitPanelButton,
 	SplitPanel,
-	Panel
+	Panel,
+	SplitTableButtonGroup,
 } from '.';
 
 
@@ -262,24 +264,10 @@ function tableColumnsWithControl(expandable, dispatch) {
 
 export const _SplitPanel = ({expandable, numberOfRows}) => {
 
-	const dispatch = useDispatch();
-
-	const isSplit = useSelector(state => {
-		const panelConfig = selectCurrentPanelConfig(state, dataSet);
-		return panelConfig.isSplit;
-	});
-
-	const setIsSplit = (isSplit) => dispatch(setPanelIsSplit(dataSet, undefined, isSplit));
-
 	return (
 		<div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '80vh'}}>
 			<div>
-				<ActionButton
-				name='book-open'
-				title='Do split'
-				isActive={isSplit} 
-				onClick={() => setIsSplit(!isSplit)}
-				/>
+				<SplitPanelButton dataSet={dataSet} />
 			</div>
 			<SplitPanel dataSet={dataSet} >
 				<Panel>
@@ -297,34 +285,18 @@ export const SplitTable = ({expandable, numberOfRows}) => {
 
 	const dispatch = useDispatch();
 
-	const isSplit = useSelector(state => {
-		const panelConfig = selectCurrentPanelConfig(state, dataSet);
-		return panelConfig.isSplit;
-	});
-
-	const setIsSplit = (isSplit) => dispatch(setPanelIsSplit(dataSet, undefined, isSplit));
-
 	const columns = React.useMemo(() => tableColumnsWithControl(expandable, dispatch), [expandable, dispatch]);
 
 	return (
 		<div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '80vh'}}>
 			<div style={{display: 'flex', width: '100%', justifyContent: 'space-between'}}>
 				<LoaderButton numberOfRows={numberOfRows} />
-				<ButtonGroup>
-					<div>Table view</div>
-					<div style={{display: 'flex', justifyContent: 'center'}}>
-						<TableViewSelector dataSet={dataSet} />
-						<TableColumnSelector dataSet={dataSet} columns={columns} />
-						<ActionButton
-							name='book-open'
-							title='Show detail'
-							isActive={isSplit} 
-							onClick={() => setIsSplit(!isSplit)}
-						/>
-					</div>
-				</ButtonGroup>
+				<SplitTableButtonGroup dataSet={dataSet} columns={columns} />
 			</div>
-			<ShowFilters dataSet={dataSet} fields={fields} />
+			<div style={{display: 'flex', alignItems: 'center'}}>
+				<ShowFilters dataSet={dataSet} fields={fields} />
+				<GlobalFilter dataSet={dataSet} />
+			</div>
 			<SplitPanel dataSet={dataSet} >
 				<Panel>
 					<AppTable

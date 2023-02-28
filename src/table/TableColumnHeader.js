@@ -132,8 +132,8 @@ function Filter({
 	const values = useSelector(selectValues);
 
 	const filterSelected = React.useCallback(() => {
-		const list = selected.map(id => getField(entities[id], dataKey));
-		dispatch(setFilter(dataSet, dataKey, list));
+		const comps = selected.map(id => ({value: getField(entities[id], dataKey), filterType: FilterType.EXACT}));
+		dispatch(setFilter(dataSet, dataKey, comps));
 	}, [dispatch, dataSet, dataKey, selected, entities, getField]);
 
 	const isFilterSelected = React.useMemo(() => {

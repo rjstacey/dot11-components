@@ -3,7 +3,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import styled from '@emotion/styled';
 
-import {shallowEqual} from '../lib';
 import {Icon} from '../icons';
 import {Button} from '../form';
 
@@ -32,6 +31,14 @@ function defaultSelectRenderer({props, state, methods}) {
 		</Header>
 	)
 }
+
+const boundsEqual = (b1, b2) => 
+		b1 === b2 ||
+		(!!b1 && !!b2 &&
+		 b1.x === b2.x &&
+		 b1.y === b2.y &&
+		 b1.width === b2.width &&
+		 b1.height === b2.height);
 
 class Dropdown extends React.Component {
 
@@ -96,9 +103,9 @@ class Dropdown extends React.Component {
 			this.selectRef.getBoundingClientRect(): {};
 		const dropdownBounds = this.dropdownRef?
 			this.dropdownRef.getBoundingClientRect(): null;
-		if (!shallowEqual(this.state.selectBounds, selectBounds))
+		if (!boundsEqual(this.state.selectBounds, selectBounds))
 			this.setState({selectBounds});
-		if (!shallowEqual(this.state.dropdownBounds, dropdownBounds))
+		if (!boundsEqual(this.state.dropdownBounds, dropdownBounds))
 			this.setState({dropdownBounds});
 	}
 

@@ -49,6 +49,8 @@ const ActiveFilter = ({children, remove}) =>
 function renderActiveFilters({fields, filters, removeFilter, clearAllFilters}) {
 	let elements = [];
 	for (const [dataKey, filter] of Object.entries(filters)) {
+		if (dataKey === '__global__')
+			continue;
 		if (!fields[dataKey]) {
 			console.warn(`${dataKey} not present in fields`);
 			continue;

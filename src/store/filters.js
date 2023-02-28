@@ -13,10 +13,12 @@ export const FilterType = {
 	PAGE: 6,
 }
 
+export const globalFilterKey = '__global__';
+
 const parseNumber = (value) => {
 	// Return the value as-is if it's already a number
 	if (typeof value === 'number')
-		return value
+		return value;
 
 	// Build regex to strip out everything except digits, decimal point and minus sign
 	let regex = new RegExp('[^0-9-.]', ['g']);
@@ -85,14 +87,27 @@ function cmpValue(comp, d) {
  */
 export function filterData(filters, getField, entities, ids) {
 	let filteredIds = ids.slice();
-	for (const [dataKey, filter] of Object.entries(filters)) {
-		const comps = filter.comps;
-		if (comps.length) {
-			filteredIds = filteredIds.filter(id =>
+	const dataKeys = Object.keys(filters).filter(dataKey => dataKey !== '__global__');
+	// Apply the column filters
+	for (const dataKey of dataKeys) {
+		const comps = filters[dataKey].comps;
+		if (comps.length === 0)
+			continue;
+		filteredIds = filteredIds.filter(id =>
 				comps.reduce((result, comp) => result || cmpValue(comp, getField(entities[id], dataKey)), false)
 			);
-		}
 	}
+	// Apply the global filter
+	if (filters[globalFilterKey]) {
+		const comps = filters[globalFilterKey].comps;
+		if (comps.length) {
+			const comp = comps[0];
+			filteredIds = filteredIds.filter(id => {
+				const entity = entities[id];
+				return dataKeys.reduce((result, dataKey) => result || cmpValue(comp, getField(entity, dataKey)), false)
+			});
+		}
+	} 
 	return filteredIds;
 }
 
@@ -107,6 +122,7 @@ function filtersInit(fields) {
 		if (!field.dontFilter)
 			filters[dataKey] = filterCreate(field)
 	}
+	filters[globalFilterKey] = filterCreate({});
 	return filters;
 }
 
@@ -118,10 +134,9 @@ export const createFiltersSubslice = (dataSet, fields) => ({
 	reducers: {
 		setFilter(state, action) {
 			const filters = state[name];
-			const {dataKey, values} = action.payload;
-			const filter = filterCreate(filters[dataKey]);
-			for (let value of values)
-				filter.comps.push({value, filterType: FilterType.EXACT});
+			const {dataKey, comps} = action.payload;
+			const filter = filterCreate(filters[dataKey] || {});
+			filter.comps = comps;
 			filters[dataKey] = filter;
 		},
 		addFilter(state, action) {
@@ -146,7 +161,7 @@ export const createFiltersSubslice = (dataSet, fields) => ({
 });
 
 /* Actions */
-export const setFilter = (dataSet, dataKey, values) => ({type: dataSet + '/setFilter', payload: {dataKey, values}});
+export const setFilter = (dataSet, dataKey, comps) => ({type: dataSet + '/setFilter', payload: {dataKey, comps}});
 export const addFilter = (dataSet, dataKey, value, filterType) => ({type: dataSet + '/addFilter', payload: {dataKey, value, filterType}});
 export const removeFilter = (dataSet, dataKey, value, filterType) => ({type: dataSet + '/removeFilter', payload: {dataKey, value, filterType}});
 export const clearFilter = (dataSet, dataKey) => ({type: dataSet + '/clearFilter', payload: {dataKey}});

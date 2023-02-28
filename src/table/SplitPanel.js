@@ -1,60 +1,89 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {useDispatch, useSelector} from 'react-redux';
-import {debounce} from '../lib';
-import {adjustPanelWidth, selectCurrentPanelConfig} from '../store/appTableData';
+import {ActionButton} from '../form';
+import {setPanelWidth, setPanelIsSplit, selectCurrentPanelConfig} from '../store/appTableData';
 
 import ColumnResizer from './ColumnResizer';
 
-export const Panel = ({children, ...otherProps}) =>
-	<div {...otherProps} >
-		{children}
-	</div>
-
-function SplitPanel({dataSet, style, children, ...otherProps}) {
-	const panelRef = React.useRef();
+export function SplitPanelButton({dataSet, title, ...otherProps}) {
 	const dispatch = useDispatch();
-
 	const selectPanelConfig = React.useCallback(state => selectCurrentPanelConfig(state, dataSet), [dataSet]);
-	const {isSplit, width} = useSelector(selectPanelConfig);
+	let {isSplit} = useSelector(selectPanelConfig);
+	const setIsSplit = (isSplit) => dispatch(setPanelIsSplit(dataSet, undefined, isSplit));
 
-	const onDrag = React.useCallback(debounce((event, {deltaX}) => {
-		const width = panelRef.current.getBoundingClientRect().width;
-		dispatch(adjustPanelWidth(dataSet, undefined, deltaX/width));
-	}), [dispatch, dataSet]);
+	return (
+		<ActionButton
+			name='book-open'
+			title={title || 'Show detail'}
+			isActive={isSplit}
+			onClick={() => setIsSplit(!isSplit)}
+			{...otherProps}
+		/>
+	)
+}
 
-	const style0 = children[0].props.style || {};
-	const style1 = children[1].props.style || {};
+SplitPanelButton.propTypes = {
+	dataSet: PropTypes.string.isRequired,
+	title: PropTypes.string,
+}
+
+export const Panel = ({children, ...otherProps}) => <div {...otherProps} >{children}</div>;
+
+export function SplitPanel({dataSet, style, children, ...otherProps}) {
+	const dispatch = useDispatch();
+	const ref = React.useRef();
+	const selectPanelConfig = React.useCallback(state => selectCurrentPanelConfig(state, dataSet), [dataSet]);
+	let {isSplit, width} = useSelector(selectPanelConfig);
+
+	let content; 
+	if (isSplit) {
+		if (typeof width !== 'number' || isNaN(width) || width < 0 || width > 1)
+			width = 0.5;
+		const leftStyle = {...children[0].props.style, flex: `${width*100}%`};
+		const rightStyle = {...children[1].props.style, flex: `${(1 - width)*100}%`};
+		const onDrag = (event, {x, deltaX}) => {
+			const b = ref.current.getBoundingClientRect();
+			dispatch(setPanelWidth(dataSet, undefined, (x - b.x)/(b.width - 5)))
+		};
+		content =
+			<>
+				{React.cloneElement(children[0], {style: leftStyle})}
+				<ColumnResizer onDrag={onDrag}/>
+				{React.cloneElement(children[1], {style: rightStyle})}
+			</>
+	}
+	else {
+		const leftStyle = {...children[0].props.style, flex: '100%'};
+		content = React.cloneElement(children[0], {style: leftStyle});
+	}
 
 	return (
 		<div
-			ref={panelRef} 
+			ref={ref}
 			style={{display: 'flex', flex: 1, width: '100%', overflow: 'hidden', ...style}}
 			{...otherProps}
 		>
-			{React.cloneElement(children[0], {style: {...style0, flex: `${width*100}%`}})}
-			{isSplit &&
-				<>
-					<ColumnResizer onDrag={onDrag} />
-					{React.cloneElement(children[1], {style: {...style1, flex: `${(1 - width)*100}%`}})}
-				</>}
+			{content}
 		</div>
 	)
 }
 
+const checkChildren = (props, propName, componentName) => {
+	const {children} = props;
+	if (React.Children.count(children) !== 2)
+		return new Error('`' + componentName + '` has invalid number of children; expect exactly two');
+	let error;
+	React.Children.forEach(children, (el) => {
+		if (el.type !== Panel)
+			error = new Error('`' + componentName + '` has invalid child; expect only Panel children')
+	});
+	return error;
+}
+
 SplitPanel.propTypes = {
 	dataSet: PropTypes.string.isRequired,
-	children: (props, propName, componentName) => {
-		const prop = props[propName];
-		if (React.Children.count(prop) !== 2)
-			return new Error('`' + componentName + '` has invalid number of children; expect exactly two');
-		let error;
-		React.Children.forEach(prop, (el) => {
-			if (el.type !== Panel)
-				error = new Error('`' + componentName + '` has invalid child; expect only Panel children')
-		});
-		return error;
-	}
+	children: checkChildren
 }
 
 export default SplitPanel;

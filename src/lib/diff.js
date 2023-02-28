@@ -139,15 +139,21 @@ export function deepMergeTagMultiple(obj1, obj2) {
 }
 
 export function shallowEqual(obj1, obj2) {
+	console.log('in')
 	if (obj1 === obj2)
 		return true;
-	if (obj1 == null || typeof obj1 !== 'object' || obj2 == null || typeof obj2 !== 'object')
+	if (obj1 === null || typeof obj1 !== 'object' || obj2 === null || typeof obj2 !== 'object')
 		return false;
-	if (Object.keys(obj1).length !== Object.keys(obj2).length)
+	const keys1 = Object.keys(obj1);
+	const keys2 = Object.keys(obj2);
+	if (keys1.length !== keys2.length)
 		return false;
-	for (const [key, value] of Object.entries(obj1)) {
-		if (value !== obj2[key])
+	console.log(keys1)
+	for (const key of keys1) {
+		console.log(obj1[key], obj2[key])
+		if (obj1[key] !== obj2[key])
 			return false;
 	}
+	console.log('out', obj1, obj2)
 	return true;
 }

@@ -4,9 +4,9 @@ import styled from '@emotion/styled';
 
 import ColumnResizer from './ColumnResizer';
 
-const HeaderCell = styled.div`
-	display: flex;
-`;
+//const HeaderCell = styled.div`
+//	display: flex;
+//`;
 
 const HeaderCellContent = styled.div`
 	height: 100%;
@@ -26,6 +26,33 @@ const HeaderRow = styled.div`
 	height: 100%;
 `;
 
+function HeaderCell({anchorEl, column, fixed, adjustColumnWidth, defaultHeaderCellRenderer}) {
+	const {headerRenderer, width, flexGrow, flexShrink, key: dataKey, ...colProps} = column;
+	const style = {
+		display: 'flex',
+		flexBasis: width,
+		flexGrow: fixed? 0: flexGrow,
+		flexShrink: fixed? 0: flexShrink,
+		overflow: 'hidden'	// necessary so that the content does not affect size
+	};
+	const renderer = headerRenderer || defaultHeaderCellRenderer;
+	const props = {anchorEl, dataKey, column, ...colProps};
+	const onDrag = (event, {deltaX}) => adjustColumnWidth(dataKey, deltaX);
+	return (
+		<div
+			className='AppTable__headerCell'
+			style={style}
+		>
+			<HeaderCellContent>
+				{renderer(props)}
+			</HeaderCellContent>
+			<ColumnResizer
+				onDrag={onDrag}
+			/>
+		</div>
+	)
+}
+
 /**
  * TableHeader component for AppTable
  *
@@ -40,7 +67,7 @@ const HeaderRow = styled.div`
 	innerStyle,
 	fixed,
 	columns,
-	setColumnWidth,
+	adjustColumnWidth,
 	defaultHeaderCellRenderer}, ref) => {
 
 	const anchorRef = React.useRef(null);
@@ -48,7 +75,18 @@ const HeaderRow = styled.div`
 
 	React.useEffect(() => {
 		// After mount, update header cells: the anchor ref is now available
-		const cells = columns.map((column) => {
+		const cells = columns.map((column) =>
+			<HeaderCell
+				key={column.key}
+				anchorEl={anchorRef.current}
+				column={column}
+				fixed={fixed}
+				adjustColumnWidth={adjustColumnWidth}
+				defaultHeaderCellRenderer={defaultHeaderCellRenderer}
+			/>
+		);
+
+			/*{
 			const {headerRenderer, width, flexGrow, flexShrink, key: dataKey, ...colProps} = column;
 			const style = {
 				flexBasis: width,
@@ -72,9 +110,9 @@ const HeaderRow = styled.div`
 					/>
 				</HeaderCell>
 			)
-		});
+		});*/
 		setCells(cells);
-	}, [columns, fixed, defaultHeaderCellRenderer, setColumnWidth]);
+	}, [columns, fixed, defaultHeaderCellRenderer, adjustColumnWidth]);
 
 	const classNames = [className, 'AppTable__headerRow'].join(' ')
 
