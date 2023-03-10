@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 import {DraggableCore, DraggableEventHandler} from 'react-draggable';
 import styled from '@emotion/styled';
@@ -48,10 +47,6 @@ function ColumnResizer({style, onDrag}: ColumnResizerProps) {
 			/>
 		</DraggableCore>
 	)
-}
-
-ColumnResizer.propTypes = {
-	onDrag: PropTypes.func.isRequired
 }
 
 export default ColumnResizer;

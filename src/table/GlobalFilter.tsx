@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 
@@ -57,10 +56,6 @@ function GlobalFilter({
 			{...otherProps}
 		/>
 	)
-}
-
-GlobalFilter.propTypes = {
-	dataSet: PropTypes.string.isRequired
 }
 
 export default GlobalFilter;

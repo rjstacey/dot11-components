@@ -4,7 +4,7 @@ import { Provider } from 'react-redux';
 import {ActionIcon} from '../icons';
 import {Button} from '../form';
 
-import store, {loadData, removeRow, nameFields, dataFields, useAppDispatch} from './tableStoryStore';
+import store, {loadData, removeRow, dataFields, useAppDispatch} from './tableStoryStore';
 
 import {
 	AppTable, 
@@ -26,7 +26,7 @@ import {
 	ColumnParams
 } from '../table';
 
-const dataSet = 'names';
+const dataSet = 'data';
 
 const tableColumns: Array<ColumnParams> = [
 	{key: '__ctrl__',

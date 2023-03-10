@@ -4,11 +4,11 @@ import TableViewSelector from './TableViewSelector';
 import TableColumnSelector from './TableColumnSelector';
 import {SplitPanelButton} from './SplitPanel';
 
-import type {ColumnParams} from './AppTable';
+import type {ColumnProperties} from './AppTable';
 
 type SplitTableButtonGroupProps = {
 	dataSet: string;
-	columns: Array<ColumnParams>;
+	columns: Array<ColumnProperties>;
 }
 
 export function SplitTableButtonGroup({dataSet, columns}: SplitTableButtonGroupProps) {

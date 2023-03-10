@@ -1,11 +1,10 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 import styled from '@emotion/styled';
 import {VariableSizeGrid as Grid} from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
 
-import AppTableRow from './AppTableRow';
+import AppTableRow, {AppTableRowData} from './AppTableRow';
 import TableHeader from './AppTableHeader';
 import ColumnHeader from './TableColumnHeader';
 
@@ -19,50 +18,54 @@ import {
 	selectGetField,
 	selectSortedFilteredIds,
 	EntityId,
+	GetEntityField,
 	TablesConfig,
 	TableConfig,
-	ColumnProperties
+	ChangeableColumnProperties
 } from '../store/appTableData';
+
+export type {EntityId, GetEntityField};
 
 export type HeaderRendererProps = {
 	anchorEl: HTMLElement | null;
 	label?: string;
 	dataKey: string;
-	column: ColumnParams & ColumnProperties;
+	column: ColumnProperties & ChangeableColumnProperties;
 };
 
 export type CellRendererProps = {
 	dataKey: string;
-	column: ColumnParams & ColumnProperties;
 	rowId: EntityId;
 	rowData: object;
 }
 
-export type ColumnParams = {
+export type ColumnProperties = {
 	key: string;
 	label?: string;
 	width?: number;
 	flexGrow?: number;
 	flexShrink?: number;
 	dropdownWidth?: number;
-	headerRenderer?: (p: HeaderRendererProps) => JSX.Element;
-	cellRenderer?: (p: CellRendererProps) => JSX.Element;
+	dataRenderer?: (value: any) => any;
+	headerRenderer?: (p: HeaderRendererProps) => React.ReactNode;
+	cellRenderer?: (p: CellRendererProps) => React.ReactNode;
 };
 
-export {ColumnProperties, TablesConfig};
+export type {ChangeableColumnProperties, TablesConfig};
 
-export type RowGetterProps<EntityType> = {
+export type RowGetterProps = {
 	rowIndex: number;
-	entities: { [key: string]: EntityType };
-	ids: Array<EntityId>;
+	rowId: EntityId;
+	entities: { [key: string]: object };
+	ids: EntityId[];
 };
 
 export type AppTableProps<EntityType> = {
 	fitWidth?: boolean;
 	fixed?: boolean;
-	columns: Array<ColumnParams>,
+	columns: Array<ColumnProperties>,
 	dataSet: string;
-	rowGetter?: (props: RowGetterProps<EntityType>) => EntityType;
+	rowGetter?: (props: RowGetterProps) => EntityType;
 	headerHeight: number;
 	estimatedRowHeight: number;
 	measureRowHeight?: boolean;
@@ -127,7 +130,7 @@ const NoGrid = styled.div`
 /*
  * Key down handler for Grid (when focused)
  */
-const useKeyDown = (dataSet: string, selected: Array<EntityId>, ids: Array<EntityId>, dispatch, gridRef) => 
+const useKeyDown = (dataSet: string, selected: Array<EntityId>, ids: Array<EntityId>, dispatch: ReturnType<typeof useDispatch>, gridRef: Grid | null) => 
 	React.useCallback((event: React.KeyboardEvent) => {
 
 		const selectAndScroll = (i: number) => {
@@ -183,7 +186,7 @@ const useKeyDown = (dataSet: string, selected: Array<EntityId>, ids: Array<Entit
 	}, [dataSet, selected, ids, dispatch, gridRef]);
 
 const useRowClick = (dataSet: string, selected: Array<EntityId>, ids: Array<EntityId>, dispatch) => 
-	React.useCallback(({event, rowIndex}: {event: MouseEvent, rowIndex: number}) => {
+	React.useCallback(({event, rowIndex}: {event: React.MouseEvent, rowIndex: number}) => {
 
 		let newSelected = selected.slice();
 		const id = ids[rowIndex];
@@ -242,7 +245,7 @@ function AppTableSized<EntityType>({
 	dataSet,
 	...props
 }: AppTableSizedProps<EntityType>) {
-	const gridRef = React.useRef<typeof Grid>(null);
+	const gridRef = React.useRef<Grid>(null);
 	const headerRef = React.useRef<HTMLDivElement>(null);
 
 	const dispatch = useDispatch();
@@ -344,7 +347,7 @@ function AppTableSized<EntityType>({
 
 	const fixed = tableConfig.fixed;
 	const {columns, totalWidth} = React.useMemo(() => {
-		const columns: Array<ColumnParams & ColumnProperties> = props.columns
+		const columns: Array<ColumnProperties & ChangeableColumnProperties> = props.columns
 			.map(col => ({...col, ...tableConfig.columns[col.key]}))
 			.filter(col => col.shown);
 		const totalWidth = columns.reduce((totalWidth, col) => totalWidth = totalWidth + col.width, 0);
@@ -362,7 +365,7 @@ function AppTableSized<EntityType>({
 	}, [width, height, fixed]);
 
 	// Package the context data
-	const tableData = React.useMemo(() => ({
+	const tableData: AppTableRowData = React.useMemo(() => ({
 		gutterSize,
 		entities,
 		ids,
@@ -421,30 +424,12 @@ function AppTableSized<EntityType>({
 /*
  * AppTable
  */
-function AppTable<EntityType = object>(props: AppTableProps<EntityType>) {
+export function AppTable<EntityType = object>(props: AppTableProps<EntityType>) {
 	return (
 		<AutoSizer disableWidth={props.fitWidth} style={{maxWidth: '100vw'}} >
 			{({height, width}) => <AppTableSized<EntityType> height={height} width={width} {...props} />}
 		</AutoSizer>
 	)
-}
-
-AppTable.propTypes = {
-	fitWidth: PropTypes.bool,
-	fixed: PropTypes.bool,
-	columns: PropTypes.array.isRequired,
-	dataSet: PropTypes.string.isRequired,
-	rowGetter: PropTypes.func,
-	headerHeight: PropTypes.number.isRequired,
-	estimatedRowHeight: PropTypes.number.isRequired,
-	measureRowHeight: PropTypes.bool,
-	defaultTablesConfig: PropTypes.object,
-	gutterSize: PropTypes.number,
-}
-
-AppTable.defaultProps = {
-	gutterSize: 5,
-	measureRowHeight: false,
 }
 
 //export default React.memo(AppTable);

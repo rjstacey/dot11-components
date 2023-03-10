@@ -3,7 +3,7 @@ import styled from '@emotion/styled';
 
 import ColumnResizer from './ColumnResizer';
 
-import type { ColumnParams, ColumnProperties, HeaderRendererProps } from './AppTable';
+import type { ColumnProperties, ChangeableColumnProperties, HeaderRendererProps } from './AppTable';
 
 //const HeaderCell = styled.div`
 //	display: flex;
@@ -29,10 +29,10 @@ const HeaderRow = styled.div`
 
 type HeaderCellProps = {
 	anchorEl: HTMLElement | null;
-	column: ColumnParams & ColumnProperties;
+	column: ColumnProperties & ChangeableColumnProperties;
 	fixed: boolean;
 	adjustColumnWidth: (key: string, deltaX: number) => void;
-	defaultHeaderCellRenderer: (props: HeaderRendererProps) => JSX.Element;
+	defaultHeaderCellRenderer: (props: HeaderRendererProps) => React.ReactNode;
 };
 
 function HeaderCell({anchorEl, column, fixed, adjustColumnWidth, defaultHeaderCellRenderer}: HeaderCellProps) {
@@ -75,7 +75,7 @@ type TableHeaderProps = {
 	outerStyle?: React.CSSProperties;
 	innerStyle?: React.CSSProperties;
 	fixed: boolean;
-	columns: Array<ColumnParams & ColumnProperties>;
+	columns: Array<ColumnProperties & ChangeableColumnProperties>;
 } & Pick<HeaderCellProps, "adjustColumnWidth" | "defaultHeaderCellRenderer">;
 
  const TableHeader = React.forwardRef<HTMLDivElement, TableHeaderProps>(({

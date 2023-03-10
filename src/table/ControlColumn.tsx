@@ -37,7 +37,7 @@ const Container = styled.div`
 type ControlHeaderProps = {
 	dataSet: string;
 	anchorEl: HTMLElement | null;
-	customSelectorElement?: React.ReactElement;
+	customSelectorElement?: React.ReactNode;
 	showExpanded?: boolean;
 }
 

@@ -1,4 +1,5 @@
-import AppTable, {TablesConfig, HeaderRendererProps, CellRendererProps, ColumnParams} from './AppTable';
+import {AppTable} from './AppTable';
+import type {TablesConfig, HeaderRendererProps, CellRendererProps, ColumnProperties} from './AppTable';
 import ShowFilters from './ShowFilters';
 import GlobalFilter from './GlobalFilter';
 import {SelectHeader, SelectCell, SelectExpandHeader, SelectExpandCell} from './ControlColumn';
@@ -9,13 +10,14 @@ import {IdSelector, IdFilter} from './IdList';
 import {SplitPanel, Panel, SplitPanelButton} from './SplitPanel';
 import {SplitTableButtonGroup} from './SplitTableButtonGroup';
 
-export default AppTable;
-export {
-	AppTable,
+export type {
 	TablesConfig,
 	HeaderRendererProps,
 	CellRendererProps,
-	ColumnParams,
+	ColumnProperties
+}
+export {
+	AppTable,
 	SelectHeader,
 	SelectCell,
 	SelectExpandHeader,
@@ -32,3 +34,4 @@ export {
 	Panel,
 	SplitTableButtonGroup
 }
+export default AppTable;

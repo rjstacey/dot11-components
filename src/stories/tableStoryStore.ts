@@ -1,4 +1,4 @@
-import { configureStore, combineReducers, createSelector, ThunkAction, EntityState, Action, Dispatch } from '@reduxjs/toolkit';
+import { configureStore, combineReducers, createSelector, ThunkAction, EntityState, Action } from '@reduxjs/toolkit';
 import { createLogger } from 'redux-logger';
 import { useDispatch } from 'react-redux';
 
@@ -75,8 +75,6 @@ export const dataFields = {
 		label: 'Derived'
 	},
 };
-
-const dataSet = 'data';
 
 const selectField = (data: DataEntity, dataKey: string) => {
 	if (dataKey === 'Derived')

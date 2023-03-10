@@ -1,14 +1,14 @@
 
 import { parseNumber } from '../lib';
 import type { EntityId, PayloadAction } from '@reduxjs/toolkit';
-import type { GetField, Fields } from './appTableData';
+import type { Fields } from './appTableData';
 
 export type SortDirectionType = "NONE" | "ASC" | "DESC";
 
 export type Sort = {
 	type: number;
 	direction: SortDirectionType;
-	getField?: GetField;
+	//getField?: GetField;
 };
 
 export type SortSettings = { [dataKey: string]: Sort };
@@ -138,13 +138,13 @@ function sortsInit(fields: Fields): Sorts {
 		const direction = field.sortDirection || "NONE";
 		if (!Object.values(SortDirection).includes(direction))
 			console.error(`Invalid sort direction ${direction} for dataKey=${dataKey}`);
-		const {getField} = field;
-		if (getField && typeof getField !== 'function')
-			console.error(`Invalid getField; needs to be a function getField(rowData, dataKey)`);
+		//const {getField} = field;
+		//if (getField && typeof getField !== 'function')
+		//	console.error(`Invalid getField; needs to be a function getField(rowData, dataKey)`);
 		settings[dataKey] = {
 			type,
 			direction,
-			getField
+		//	getField
 		};
 	}
 	return {by: [], settings};

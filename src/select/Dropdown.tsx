@@ -56,7 +56,7 @@ function ItemWrapper({style, item, index, setHeight, props, state, methods}) {
 
 function Dropdown({props, state, methods}) {
 
-	const listRef = React.useRef<typeof List>(null);
+	const listRef = React.useRef<List>(null);
 	const listInnerRef = React.useRef<HTMLElement>(null);
 	const heightsRef = React.useRef<number[]>([]);
 

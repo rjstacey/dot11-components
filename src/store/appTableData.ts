@@ -18,7 +18,7 @@ export * from './ui';
 
 export { EntityId };
 
-export type GetField<EntityType = object> = (entity: EntityType, dataKey: string) => any;
+export type GetEntityField<EntityType = object> = (entity: EntityType, dataKey: string) => any;
 
 export type Option = {
 	value: any;
@@ -32,7 +32,7 @@ export type Field = {
 	dontSort?: boolean;
 	dontFilter?: boolean;
 	options?: Array<Option>;
-	getField?: GetField;
+	//getField?: GetField;
 };
 
 export type Fields = {
@@ -84,7 +84,7 @@ export function createAppTableDataSlice<EntityType, Reducers extends SliceCaseRe
 	initialState: object;
 	reducers?: ValidateSliceCaseReducers<AppTableDataState<EntityType>, Reducers>;
 	extraReducers?: any;
-	selectField?: GetField<EntityType>;
+	selectField?: GetEntityField<EntityType>;
 	selectEntities?: (state: any) => Record<EntityId, EntityType>;
 	selectIds?: (state: any) => Array<EntityId>;
 }) {
@@ -166,12 +166,12 @@ export function createAppTableDataSlice<EntityType, Reducers extends SliceCaseRe
 
 	selectors[name] = sliceSelectors;
 
-	return {...slice, selectors: sliceSelectors};
+	return slice;
 }
 
 export const selectEntities = (state, dataSet: string) => selectors[dataSet].selectEntities(state);
 export const selectIds = (state, dataSet: string): Array<EntityId> => selectors[dataSet].selectIds(state);
-export const selectGetField = (state, dataSet: string): GetField => selectors[dataSet].getField;
+export const selectGetField = (state, dataSet: string): GetEntityField => selectors[dataSet].getField;
 export const selectGetId = (state, dataSet: string) => selectors[dataSet].getId;
 const selectDataKey = (state, dataSet: string, dataKey: string) => dataKey;
 
@@ -214,7 +214,7 @@ export const selectSortedFilteredIds: (state: any, dataSet: string) => Array<Ent
 /*
  * Returns a list of unique values for a particular field
  */
-function uniqueFieldValues<EntityType = object, FieldType = any>(getField: GetField<EntityType>, entities: Record<EntityId, EntityType>, ids: Array<EntityId>, dataKey: string): Array<FieldType> {
+function uniqueFieldValues<EntityType = object, FieldType = any>(getField: GetEntityField<EntityType>, entities: Record<EntityId, EntityType>, ids: Array<EntityId>, dataKey: string): Array<FieldType> {
 	let values = ids.map(id => getField(entities[id], dataKey));
 	return [...new Set(values.map(v => v !== null? v: ''))];
 }

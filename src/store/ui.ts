@@ -1,12 +1,12 @@
 import type { PayloadAction } from '@reduxjs/toolkit';
 
-export type ColumnProperties = {
+export type ChangeableColumnProperties = {
 	width: number;
 	shown: boolean;
 	unselectable?: boolean;
 };
 
-export type TableConfig = { fixed: boolean; columns: { [key: string]: ColumnProperties } };
+export type TableConfig = { fixed: boolean; columns: { [key: string]: ChangeableColumnProperties } };
 export type TablesConfig = { [tableView: string]: TableConfig };
 
 export type PanelConfig = { width: number, isSplit: boolean };
@@ -15,10 +15,10 @@ export type PanelsConfig = { [tableView: string]: PanelConfig };
 export type UiProperty = { property: string; value: any };
 export type UiProperties = { [property: string]: any };
 
-const defaultColumnProperties: ColumnProperties = {
+const defaultColumnProperties: ChangeableColumnProperties = {
 	width: 100,
-	unselectable: false,
-	shown: false
+	shown: false,
+	unselectable: false
 };
 
 const defaultTableView = 'default';
@@ -100,7 +100,7 @@ export const createUiSubslice = (dataSet: string) => {
 						ui.tableView = Object.keys(ui.tablesConfig)[0];
 				}
 			},
-			upsertTableColumns(state: UiState, action: PayloadAction<{tableView: string | undefined; columns: Array<ColumnProperties>}>) {
+			upsertTableColumns(state: UiState, action: PayloadAction<{tableView: string | undefined; columns: Array<ChangeableColumnProperties>}>) {
 				const ui = state[name];
 				let {tableView, columns} = action.payload;
 				if (tableView === undefined)
@@ -206,7 +206,7 @@ export const setTableView = (dataSet: string, tableView: string) =>
 	({type: dataSet + '/setTableView', payload: {tableView}});
 export const toggleTableFixed = (dataSet: string, tableView: string) => 
 	({type: dataSet + '/toggleTableFixed', payload: {tableView}});
-export const upsertTableColumns = (dataSet: string, tableView: string, columns: Array<ColumnProperties>) => 
+export const upsertTableColumns = (dataSet: string, tableView: string, columns: Array<ChangeableColumnProperties>) => 
 	({type: dataSet + '/upsertTableColumns', payload: {tableView, columns}});
 export const adjustTableColumnWidth = (dataSet: string, tableView, key: string, delta: number) => 
 	({type: dataSet + '/adjustTableColumnWidth', payload: {tableView, key, delta}});

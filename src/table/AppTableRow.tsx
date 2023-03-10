@@ -1,7 +1,8 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import {areEqual} from 'react-window';
 import styled from '@emotion/styled';
+
+import type { EntityId, GetEntityField, ColumnProperties, RowGetterProps } from './AppTable';
 
 const OuterRow = styled.div`
 	overflow: hidden;
@@ -19,6 +20,23 @@ const InnerRow = styled.div`
 /**
  * TableRow component for AppTable
  */
+
+type PureTableRowProps = {
+	style: {top?: number | string, width?: number | string, height?: number | string};
+	gutterSize: number;
+	rowIndex: number;
+	rowId: EntityId;
+	rowData: object;
+	isSelected: boolean;
+	isExpanded: boolean;
+	fixed: boolean;
+	columns: ColumnProperties[];
+	getField: GetEntityField;
+	estimatedRowHeight: number;
+	onRowHeightChange: (rowIndex: number, height: number) => void;
+	onClick?: (event: React.MouseEvent) => void;
+};
+
 function PureTableRow({
 	style,
 	gutterSize,
@@ -33,7 +51,7 @@ function PureTableRow({
 	estimatedRowHeight,
 	onRowHeightChange,
 	onClick,
-}) {
+}: PureTableRowProps) {
 	const rowRef = React.useRef<HTMLDivElement>(null);
 
 	React.useEffect(() => {
@@ -75,9 +93,12 @@ function PureTableRow({
 	if (isSelected)
 		classNames.push('AppTable__dataRow-selected');
 
+	if (typeof style.top === 'number' && typeof style.height === 'number')
+		style = {...style, top: style.top + gutterSize, height: style.height - gutterSize};	// Adjust style for gutter
+
 	return (
 		<OuterRow
-			style={{...style, top: style.top + gutterSize, height: style.height - gutterSize}}	// Adjust style for gutter
+			style={style}
 			className={classNames.join(' ')}
 			onClick={onClick}
 		>
@@ -90,25 +111,32 @@ function PureTableRow({
 	)
 }
 
-PureTableRow.propTypes = {
-	style: PropTypes.object.isRequired,
-	rowIndex: PropTypes.number.isRequired,
-	rowId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-	rowData: PropTypes.object.isRequired,
-	isSelected: PropTypes.bool.isRequired,
-	isExpanded: PropTypes.bool.isRequired,
-	fixed: PropTypes.bool.isRequired,
-	columns: PropTypes.array.isRequired,
-	getField: PropTypes.func.isRequired,
-	estimatedRowHeight: PropTypes.number.isRequired,
-	onRowHeightChange: PropTypes.func.isRequired,
-	onClick: PropTypes.func
-};
-
 // Memoize so that a row is only re-rendered if the row specific data changes
 const TableRow = React.memo(PureTableRow, areEqual);
 
-function AppTableRow({rowIndex, style, data}) {
+export type AppTableRowData = {
+	gutterSize: number;
+	entities: { [key: string]: object },
+	ids: EntityId[];
+	selected: EntityId[];
+	expanded: EntityId[];
+	fixed: boolean;
+	columns: ColumnProperties[];
+	getRowData?: (props: RowGetterProps) => any;
+	getField: GetEntityField;
+	estimatedRowHeight: number;
+	measureRowHeight: boolean;
+	onRowHeightChange: (rowIndex: number, height: number) => void;
+	onRowClick: ({event, rowIndex}: {event: React.MouseEvent, rowIndex: number}) => void;
+};
+
+type AppTableRowProps = {
+	rowIndex: number;
+	style: {top?: number | string, width?: number | string, height?: number | string};
+	data: AppTableRowData;
+};
+
+function AppTableRow({rowIndex, style, data}: AppTableRowProps) {
 
 	// Extract context from data prop and isolate the row specific data
 	const {entities, ids, selected, expanded, measureRowHeight, getRowData, onRowClick, ...otherProps} = data;
@@ -121,7 +149,7 @@ function AppTableRow({rowIndex, style, data}) {
 	const isSelected = selected && selected.includes(rowId);
 	const isExpanded = measureRowHeight || (expanded && expanded.includes(rowId));
 
-	const onClick = React.useMemo(() => onRowClick? event => onRowClick({event, rowIndex}): undefined, [onRowClick, rowIndex]);
+	const onClick = React.useMemo(() => onRowClick? (event: React.MouseEvent) => onRowClick({event, rowIndex}): undefined, [onRowClick, rowIndex]);
 
 	return (
 		<TableRow
