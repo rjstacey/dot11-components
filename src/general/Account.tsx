@@ -4,11 +4,18 @@ import {Button} from '../form';
 import { Dropdown, RendererProps } from '../dropdown';
 import {logout, AccessLevelLabels} from '../lib';
 
+type User = {
+	Name: string;
+	SAPIN: number;
+	Username: string;
+	Access: number;
+}
+
 type SignOutFormProps = {
-	user: { Name: string; SAPIN: number; Username: string, Access: number };
+	user: User;
 } & RendererProps;
 
-const SignOutForm = ({user, methods}) => {
+const SignOutForm = ({user, methods}: SignOutFormProps) => {
 
 	const submit = () => {
 		logout();
@@ -29,7 +36,7 @@ const SignOutForm = ({user, methods}) => {
 }
 
 type AccountProps = {
-	user: {Name: string, SAPIN: number};
+	user: User;
 };
 
 const Account = ({user}: AccountProps) =>

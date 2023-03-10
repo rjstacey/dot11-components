@@ -82,9 +82,6 @@
 	margin-left: 5px;
 }
 
-.dropdown-select-single-item {
-}
-
 .dropdown-select-input {
 	line-height: inherit;
 	border: none;
@@ -114,9 +111,6 @@
 	border-radius: 50%;
 	border-color: #0074d9 transparent;
 	animation: dropdown-select-dual-ring-spin 0.7s ease-in-out infinite;
-}
-
-.dropdown-select-clear-all {
 }
 
 .dropdown-select-clear-all:after {

@@ -3,7 +3,7 @@ import { connect, ConnectedProps } from 'react-redux';
 import {Form} from '../form';
 import {AppModal} from '.';
 
-import {clearError, ErrorMsg, ErrorMsgState} from '../store/error';
+import {clearError, ErrorMsgState} from '../store/error';
 
 function strToHtml(s: string) {
 	return s

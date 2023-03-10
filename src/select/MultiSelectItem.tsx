@@ -1,11 +1,20 @@
-import PropTypes from 'prop-types';
 import React from 'react';
+import type { ItemType, SelectProps, SelectState, SelectMethods } from './index';
+
+type MultiSelectItemProps = {
+	style?: React.CSSProperties;
+	className?: string;
+	item: ItemType;
+	props: SelectProps;
+	state: SelectState;
+	methods: SelectMethods;
+};
 
 const Clear = (props) => <div {...props} />
 
-const MultiSelectItem = ({item, props, state, methods}) => {
+const MultiSelectItem = ({item, props, state, methods}: MultiSelectItemProps) => {
 
-	const remove = (event) => {
+	const remove = (event: React.MouseEvent) => {
 		event.stopPropagation();
 		methods.removeItem(item);
 	}
@@ -13,7 +22,7 @@ const MultiSelectItem = ({item, props, state, methods}) => {
 	return (
 		<div
 			role="listitem"
-			direction={props.direction}
+			//direction={props.direction}
 			className='dropdown-select-multi-item'
 		>
 			<span
@@ -28,13 +37,6 @@ const MultiSelectItem = ({item, props, state, methods}) => {
 				/>}
 		</div>
 	);
-}
-
-MultiSelectItem.propTypes = {
-	item: PropTypes.object.isRequired,
-	props: PropTypes.object.isRequired,
-	state: PropTypes.object.isRequired,
-	methods: PropTypes.object.isRequired
 }
 
 export default MultiSelectItem;

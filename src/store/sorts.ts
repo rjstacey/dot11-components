@@ -3,9 +3,6 @@ import { parseNumber } from '../lib';
 import type { EntityId, PayloadAction } from '@reduxjs/toolkit';
 import type { GetField, Fields } from './appTableData';
 
-
-type SortsField = Pick<Fields, "sortType" | "dontSort" | "getField">;
-
 export type SortDirectionType = "NONE" | "ASC" | "DESC";
 
 export type Sort = {

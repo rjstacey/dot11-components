@@ -1,6 +1,6 @@
 import React from 'react';
 
-import {availableIcons, Icon} from '.';
+import {availableIcons, Icon} from '../icons';
 
 const story = {
   title: 'Icon',

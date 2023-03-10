@@ -44,6 +44,7 @@ export type ColumnParams = {
 	width?: number;
 	flexGrow?: number;
 	flexShrink?: number;
+	dropdownWidth?: number;
 	headerRenderer?: (p: HeaderRendererProps) => JSX.Element;
 	cellRenderer?: (p: CellRendererProps) => JSX.Element;
 };
@@ -446,4 +447,5 @@ AppTable.defaultProps = {
 	measureRowHeight: false,
 }
 
-export default React.memo(AppTable);
+//export default React.memo(AppTable);
+export default AppTable;

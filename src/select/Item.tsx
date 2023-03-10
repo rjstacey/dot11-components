@@ -1,7 +1,17 @@
-import PropTypes from 'prop-types';
 import React from 'react';
+import type { ItemType, SelectProps, SelectState, SelectMethods } from './index';
 
-function Item({style, className, index, item, props, state, methods}) {
+type ItemProps = {
+	style?: React.CSSProperties;
+	className?: string;
+	index: number;
+	item: ItemType;
+	props: SelectProps;
+	state: SelectState;
+	methods: SelectMethods;
+};
+
+function Item({style, className, index, item, props, state, methods}: ItemProps) {
 
 	const isSelected = methods.isSelected(item);
 	const isDisabled = methods.isDisabled(item);
@@ -45,12 +55,5 @@ function Item({style, className, index, item, props, state, methods}) {
 	);
 }
 
-Item.propTypes = {
-	index: PropTypes.number.isRequired,
-	item: PropTypes.object.isRequired,
-	props: PropTypes.object.isRequired,
-	state: PropTypes.object.isRequired,
-	methods: PropTypes.object.isRequired,
-};
 
 export default Item;

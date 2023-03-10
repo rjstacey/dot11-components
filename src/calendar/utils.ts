@@ -55,11 +55,6 @@ type MonthGridDay = {
 	isDisabled: boolean;
 };
 
-type Options = {
-	minDate: string;
-	maxDate: string;
-}
-
 export function getMonthGrid({
 	dates,
 	viewDate,
@@ -92,7 +87,7 @@ export function getMonthGrid({
 			const cell = {
 				isoDate,
 				date,
-				isSelected: dates.findIndex(d => d === isoDate) >= 0,
+				isSelected: dates.findIndex((d: string) => d === isoDate) >= 0,
 				isToday: isEqual(date, today),
 				isWeekend: isWeekend(date.getDay()),
 				isInactive,

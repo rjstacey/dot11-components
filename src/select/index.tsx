@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
@@ -21,7 +20,7 @@ const DropdownHandle = (props) => <Icon className='dropdown-select-handle' type=
 const Placeholder = (props) => <div className='dropdown-select-placeholder' {...props} />
 const NoData = ({props}) => <div className='dropdown-select-no-data'>{props.noDataLabel}</div>
 
-function defaultContentRenderer({props, state, methods}) {
+function defaultContentRenderer({props, state, methods}: RendererProps): React.ReactNode {
 	const values = props.values;
 	if (props.multi) {
 		return values.map((item) => {
@@ -37,20 +36,111 @@ function defaultContentRenderer({props, state, methods}) {
 	return null;
 }
 
-const defaultAddItemRenderer = ({item, className, props, state, methods}) =>
+const defaultAddItemRenderer = ({item, className, props, state, methods}: {item: ItemType, className?: string} & RendererProps): React.ReactNode =>
 	<span className={className}>{`Add "${item[props.labelField]}"`}</span>
 
-const defaultItemRenderer = ({item, className, props, state, methods}) =>
+const defaultItemRenderer = ({item, className, props, state, methods}: {item: ItemType, className?: string} & RendererProps): React.ReactNode =>
 	<span className={className}>{item[props.labelField]}</span>
 
-function defaultCreateOption({props, state, methods}) {
+function defaultCreateOption({props, state, methods}: RendererProps): ItemType {
 	return {
 		[props.valueField]: state.search,
 		[props.labelField]: state.search,
 	}
 }
 
-class Select extends React.Component {
+
+export type ItemType = any; //{ [key: string]: any} | {};
+
+export type RendererProps = {props: any, state: SelectState, methods: SelectMethods};
+
+export type SelectProps = typeof Select.defaultProps & {
+	values: ItemType[];
+	onChange: (values: ItemType[]) => void;
+	options: ItemType[];
+
+	style?: React.CSSProperties;
+	className?: string;
+	dropdownClassName?: string;
+
+	portal?: Element | null;
+
+	dropdownWidth?: number;
+
+	/*onRequestClose?: () => void,
+	onRequestOpen?: () => void;
+	createOption?: (search: string) => any;
+
+	placeholder?: string;
+	addPlaceholder?: string;
+	loading?: boolean;
+	multi?: boolean;
+	create?: boolean;
+	clearable?: boolean;
+	searchable?: boolean;
+	backspaceDelete?: boolean;
+	readOnly?: boolean;
+
+	closeOnScroll?: boolean;
+	closeOnSelect?: boolean;
+	closeOnBlur?: boolean;
+	clearOnBlur?: boolean;
+	keepOpen?: boolean,
+	keepSelectedInList?: boolean;
+	autoFocus?: boolean;
+
+	labelField?: string;
+	valueField?: string;
+	searchBy?: string;
+	sortBy?: string;
+	valuesEqual?: (item1: any, item2: any) => boolean;
+
+	handle?: boolean;
+	separator?: boolean;
+	noDataLabel?: boolean;
+
+	dropdownGap?: number;
+	dropdownHeight?: number;
+	dropdownPosition?: 'auto' | 'bottom' | 'top';
+	dropdownAlign?: 'left' | 'right';
+	dropdownWidth?: number;
+	estimatedItemHeight?: number;
+
+
+	contentRenderer?: (props: RendererProps) => React.ReactNode;
+	selectItemRenderer?: (props: {item: any} & RendererProps) => React.ReactNode;
+	multiSelectItemRenderer?: (props: {item: any} & RendererProps) => React.ReactNode;
+	inputRenderer?: (props: {inputRef: React.RefObject<HTMLInputElement>} & RendererProps) => React.ReactNode;
+
+	dropdownRenderer?: (props: RendererProps) => React.ReactNode;
+	itemRenderer?: (props: {item: any, className?: string} & RendererProps) => React.ReactNode;
+	noDataRenderer?: (props: SelectProps) => React.ReactNode;*/
+};
+
+export type SelectState = {
+	isOpen: boolean;
+	search: string;
+	selectBounds: DOMRect | {};
+	cursor: number | null;
+	searchResults: ItemType[];
+}
+
+export type SelectMethods = {
+	open: () => void;
+	close: () => void;
+	addItem: (item: any) => void;
+	addSearchItem: () => Promise<void>;
+	removeItem: (item: any) => void;
+	setSearch: (search: string) => void;
+	getInputSize: () => number;
+	isSelected: (item: any) => boolean;
+	isDisabled: (item: any) => boolean;
+	sort: (options: any) => any;
+	filter: (options: any) => any;
+	searchResults: () => ItemType[];
+};
+
+class Select extends React.Component<SelectProps, SelectState> {
 
 	constructor(props) {
 		super(props);
@@ -86,6 +176,15 @@ class Select extends React.Component {
 		this.debouncedOnScroll = debounce(this.onScroll);
 	}
 
+	state: SelectState;
+	private methods: SelectMethods;
+	private selectRef: React.RefObject<HTMLDivElement>;
+	private inputRef: React.RefObject<HTMLInputElement>;
+	private dropdownRef: React.RefObject<HTMLDivElement>;
+
+	private debouncedUpdateSelectBounds: () => void;
+	private debouncedOnScroll: () => void;
+
 	componentDidMount() {
 		this.updateSelectBounds();
 	}
@@ -111,7 +210,7 @@ class Select extends React.Component {
 		}
 	}
 
-	onOutsideClick = (event) => {
+	onOutsideClick = (event: MouseEvent) => {
 		const {state} = this;
 
 		// Ignore if not open
@@ -119,6 +218,8 @@ class Select extends React.Component {
 			return;
 
 		const {target} = event;
+		if (!(target instanceof Element))
+			return;
 
 		// Ignore click in dropdown
 		const dropdownEl = this.dropdownRef.current;
@@ -160,7 +261,7 @@ class Select extends React.Component {
 
 		this.updateSelectBounds();
 
-		let cursor = null;
+		let cursor: number | null = null;
 		if (!props.multi && props.values.length > 0) {
 			// Position cursor on selected value
 			const item = props.values[0];
@@ -170,7 +271,8 @@ class Select extends React.Component {
 		}
 		this.setState({isOpen: true, cursor});
 
-		props.onRequestOpen();
+		if (props.onRequestOpen)
+			props.onRequestOpen();
 	}
 
 	close = () => {
@@ -180,7 +282,7 @@ class Select extends React.Component {
 
 		window.removeEventListener('resize', this.debouncedUpdateSelectBounds);
 		document.removeEventListener('scroll', this.debouncedOnScroll, true);
-		document.removeEventListener('click', this.onOverlayClick, true);
+		document.removeEventListener('click', this.onOutsideClick, true);
 
 		this.setState({
 			isOpen: false,
@@ -189,10 +291,11 @@ class Select extends React.Component {
 			cursor: null
 		});
 
-		props.onRequestClose();
+		if (props.onRequestClose)
+			props.onRequestClose();
 	}
 
-	addItem = (item) => {
+	addItem = (item: ItemType) => {
 		const {props} = this;
 		let values;
 		if (props.multi) {
@@ -218,7 +321,7 @@ class Select extends React.Component {
 		this.addItem(item);
 	}
 
-	removeItem = (item) => {
+	removeItem = (item: ItemType) => {
 		const {props} = this;
 		const newValues = props.values.filter((valueItem) => !props.valuesEqual(valueItem, item));
 		props.onChange(newValues);
@@ -249,12 +352,12 @@ class Select extends React.Component {
 		return props.placeholder.length;
 	};
 
-	isSelected = (item) => {
+	isSelected = (item: any) => {
 		const {props} = this;
 		return !!props.values.find((selectedItem) => props.valuesEqual(selectedItem, item));
 	}
 
-	isDisabled = (item) => item.disabled || false;
+	isDisabled = (item: any) => item.disabled || false;
 
 	sort = (options) => {
 		const {sortBy} = this.props;
@@ -293,8 +396,8 @@ class Select extends React.Component {
 		let {options} = props;
 		if (!props.keepSelectedInList)
 			options = options.filter(item => methods.isSelected(item));
-		options = methods.filter(options, state);
-		options = methods.sort(options, state);
+		options = methods.filter(options);
+		options = methods.sort(options);
 		if (props.create && state.search) {
 			const newItem = {
 				[props.valueField]: state.search,
@@ -316,12 +419,12 @@ class Select extends React.Component {
 			this.open();
 	}
 
-	onFocus = (event) => {
+	onFocus = (event: React.FocusEvent) => {
 		if (this.inputRef.current && document.activeElement !== this.inputRef.current)
 			this.inputRef.current.focus();
 	}
 
-	onKeyDown = (event) => {
+	onKeyDown = (event: React.KeyboardEvent) => {
 		const {props, state} = this;
 
 		const escape = event.key === 'Escape';
@@ -349,7 +452,7 @@ class Select extends React.Component {
 		}
 
 		if (enter) {
-			const item = state.searchResults[state.cursor];
+			const item = state.searchResults[state.cursor || 0];
 			if (item && !item.disabled) {
 				if (!this.isSelected(item))
 					this.addItem(item);
@@ -393,12 +496,14 @@ class Select extends React.Component {
 
 	renderDropdown = (dropdownProps) => {
 		const {props, state, methods} = this;
-		const {selectBounds} = state;
-		const style = {width: props.dropdownWidth || selectBounds.width};
+		const selectBounds = state.selectBounds as DOMRect;
+		const style: Partial<React.CSSProperties> = {width: props.dropdownWidth || selectBounds.width};
 
 		let className = 'dropdown-select-dropdown';
 		if (props.dropdownClassName)
 			className += ` ${props.dropdownClassName}`;
+
+		const dropdownRenderer = props.dropdownRenderer || ((props: RendererProps) => <Dropdown {...props} />);
 
 		const dropdownEl = 
 			<div
@@ -407,14 +512,16 @@ class Select extends React.Component {
 				style={style}
 				onClick={e => e.stopPropagation()}	// prevent click propagating to select and closing the dropdown
 			>
-				{props.dropdownRenderer({props, state, methods})}
+				{dropdownRenderer({props, state, methods})}
 			</div>
 
 		// Determine if above or below selector
-		let position = props.dropdownPosition;
-		let align = props.dropdownAlign;
+		let position = props.dropdownPosition || 'bottom';
+		let align = props.dropdownAlign || 'left';
+		let height = props.dropdownHeight || 300;
+		let gap = props.dropdownGap || 5;
 		if (position === 'auto') {
-			const dropdownHeight = selectBounds.bottom + parseInt(props.dropdownHeight, 10) + parseInt(props.dropdownGap, 10);
+			const dropdownHeight = selectBounds.bottom + height + gap;
 			if (dropdownHeight > window.innerHeight && dropdownHeight > selectBounds.top)
 				position = 'top';
 			else
@@ -428,9 +535,9 @@ class Select extends React.Component {
 			else
 				style.right = selectBounds.right - 1;
 			if (position === 'bottom')
-				style.top = selectBounds.bottom + props.dropdownGap;
+				style.top = selectBounds.bottom + gap;
 			else 
-				style.bottom = window.innerHeight - selectBounds.top + props.dropdownGap;
+				style.bottom = window.innerHeight - selectBounds.top + gap;
 
 			return ReactDOM.createPortal(dropdownEl, props.portal);
 		}
@@ -441,9 +548,9 @@ class Select extends React.Component {
 			else
 				style.right = -1;
 			if (position === 'bottom')
-				style.top = selectBounds.height + 2 + props.dropdownGap;
+				style.top = selectBounds.height + 2 + gap;
 			else
-				style.bottom = selectBounds.height + 2 + props.dropdownGap;
+				style.bottom = selectBounds.height + 2 + gap;
 
 			return dropdownEl;
 		}
@@ -463,17 +570,17 @@ class Select extends React.Component {
 				ref={this.selectRef}
 				style={props.style}
 				className={cn}
-				tabIndex={props.readOnly? '-1': '0'}
+				tabIndex={props.readOnly? -1: 0}
 				aria-label="Dropdown select"
 				aria-expanded={state.isOpen}
 				onClick={this.onClick}
 				onKeyDown={this.onKeyDown}
 				onFocus={this.onFocus}
 				onBlur={props.closeOnBlur? this.close: undefined}
-				direction={props.direction}
+				//direction={props.direction}
 			>	
 				<Content
-					style={{minWidth: props.placeholder? `${props.placeholder.length}ch`: undefined}}
+					style={{minWidth: `${props.placeholder.length}ch`}}
 				>
 					{props.values.length === 0 && !state.search && <Placeholder >{props.placeholder}</Placeholder>}
 					{props.contentRenderer({props, state, methods})}
@@ -493,112 +600,59 @@ class Select extends React.Component {
 			</div>
 		)
 	}
+
+	static defaultProps = {
+		onRequestOpen: () => undefined,
+		onRequestClose: () => undefined,
+		createOption: defaultCreateOption,
+		placeholder: 'Select...',
+		addPlaceholder: '',
+		loading: false,
+		multi: false,
+		create: false,
+		clearable: false,
+		searchable: true,
+		backspaceDelete: true,
+		readOnly: false,
+		closeOnScroll: false,
+		closeOnBlur: false,
+		clearOnSelect: true,
+		clearOnBlur: true,
+		keepOpen: false,
+		keepSelectedInList: true,
+		autoFocus: false,
+	
+		labelField: 'label',
+		valueField: 'value',
+		searchBy: null,
+		sortBy: null,
+		valuesEqual: (a: ItemType, b: ItemType) => a === b,
+	
+		handle: true,
+		separator: false,
+		noDataLabel: 'No data',
+		dropdownGap: 5,
+		dropdownHeight: 300,
+		dropdownPosition: 'bottom',
+		dropdownAlign: 'left',
+		estimatedItemHeight: 29.6667,
+	
+		/* Select children */
+		contentRenderer: defaultContentRenderer,
+	
+		/* Content children */
+		selectItemRenderer: (props: {item: ItemType} & RendererProps): React.ReactNode => <SelectItem {...props} />,
+		multiSelectItemRenderer: (props: {item: ItemType} & RendererProps): React.ReactNode => <MultiSelectItem {...props} />,
+		inputRenderer: (props: {inputRef: React.RefObject<HTMLInputElement>} & RendererProps): React.ReactNode => <Input {...props} />,
+	
+		/* Dropdown */
+		dropdownRenderer: (props: RendererProps): React.ReactNode => <Dropdown {...props} />,
+	
+		/* Dropdown children */
+		addItemRenderer: defaultAddItemRenderer,
+		itemRenderer: defaultItemRenderer,
+		noDataRenderer: (props) => <NoData {...props} />,
+	};
 }
-
-Select.propTypes = {
-	values: PropTypes.array.isRequired,
-	onChange: PropTypes.func.isRequired,
-	options: PropTypes.array.isRequired,
-	onRequestClose: PropTypes.func,
-	onRequestOpen: PropTypes.func,
-	createOption: PropTypes.func,
-	placeholder: PropTypes.string,
-	addPlaceholder: PropTypes.string,
-	loading: PropTypes.bool,
-	multi: PropTypes.bool,
-	create: PropTypes.bool,
-	clearable: PropTypes.bool,
-	searchable: PropTypes.bool,
-	backspaceDelete: PropTypes.bool,
-	readOnly: PropTypes.bool,
-	closeOnScroll: PropTypes.bool,
-	closeOnSelect: PropTypes.bool,
-	closeOnBlur: PropTypes.bool,
-	keepOpen: PropTypes.bool,
-	keepSelectedInList: PropTypes.bool,
-	autoFocus: PropTypes.bool,
-	portal: PropTypes.object,
-
-	labelField: PropTypes.string,
-	valueField: PropTypes.string,
-	searchBy: PropTypes.string,
-	sortBy: PropTypes.string,
-	valuesEqual: PropTypes.func,
-
-	handle: PropTypes.bool,
-	separator: PropTypes.bool,
-	noDataLabel: PropTypes.string,
-	dropdownGap: PropTypes.number,
-	dropdownHeight: PropTypes.number,
-	dropdownPosition: PropTypes.oneOf(['auto', 'bottom', 'top']),
-	dropdownAlign: PropTypes.oneOf(['left', 'right']),
-	estimatedItemHeight: PropTypes.number,
-
-	style: PropTypes.object,
-	className: PropTypes.string,
-	dropdownClassName: PropTypes.string,
-
-	contentRenderer: PropTypes.func,
-	selectItemRenderer: PropTypes.func,
-	multiSelectItemRenderer: PropTypes.func,
-	inputRenderer: PropTypes.func,
-
-	dropdownRenderer: PropTypes.func,
-	itemRenderer: PropTypes.func,
-	noDataRenderer: PropTypes.func,
-}
-
-Select.defaultProps = {
-	onRequestOpen: () => undefined,
-	onRequestClose: () => undefined,
-	createOption: defaultCreateOption,
-	placeholder: 'Select...',
-	addPlaceholder: '',
-	loading: false,
-	multi: false,
-	create: false,
-	clearable: false,
-	searchable: true,
-	backspaceDelete: true,
-	readOnly: false,
-	closeOnScroll: false,
-	clearOnSelect: true,
-	clearOnBlur: true,
-	keepOpen: false,
-	keepSelectedInList: true,
-	autoFocus: false,
-	portal: null,
-
-	labelField: 'label',
-	valueField: 'value',
-	searchBy: null,
-	sortBy: null,
-	valuesEqual: (a, b) => a === b,
-
-	handle: true,
-	separator: false,
-	noDataLabel: 'No data',
-	dropdownGap: 5,
-	dropdownHeight: 300,
-	dropdownPosition: 'bottom',
-	dropdownAlign: 'left',
-	estimatedItemHeight: 29.6667,
-
-	/* Select children */
-	contentRenderer: defaultContentRenderer,
-
-	/* Content children */
-	selectItemRenderer: (props) => <SelectItem {...props} />,
-	multiSelectItemRenderer: (props) => <MultiSelectItem {...props} />,
-	inputRenderer: (props) => <Input {...props} />,
-
-	/* Dropdown */
-	dropdownRenderer: (props) => <Dropdown {...props} />,
-
-	/* Dropdown children */
-	addItemRenderer: defaultAddItemRenderer,
-	itemRenderer: defaultItemRenderer,
-	noDataRenderer: (props) => <NoData {...props} />,
-};
 
 export default Select;

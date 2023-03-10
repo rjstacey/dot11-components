@@ -91,12 +91,6 @@ export function createAppTableDataSlice<EntityType, Reducers extends SliceCaseRe
 
 	const dataAdapter = createEntityAdapter<EntityType>(Object.assign({}, selectId? {selectId}: {}, sortComparer? {sortComparer}: {}));
 
-	selectors[name] = {}; //dataAdapter.getSelectors();
-	selectors[name].getField = selectField? selectField: (entity: EntityType, dataKey: string) => entity[dataKey];
-	selectors[name].getId = selectId? selectId: (entity: {id: EntityId}) => entity.id;
-	selectors[name].selectIds = selectIds || (state => state[name].ids);
-	selectors[name].selectEntities = selectEntities || (state => state[name].entities);
-
 	const selectedSubslice = createSelectedSubslice(name);
 	const expandedSubslice = createExpandedSubslice(name);
 	const filtersSubslice = createFiltersSubslice(name, fields);
@@ -163,7 +157,16 @@ export function createAppTableDataSlice<EntityType, Reducers extends SliceCaseRe
 		}
 	});
 
-	return slice;
+	const sliceSelectors = {
+		getField: selectField? selectField: (entity: EntityType, dataKey: string) => entity[dataKey],
+		getId: selectId? selectId: (entity: {id: EntityId}) => entity.id,
+		selectIds: selectIds || (state => state[name].ids),
+		selectEntities: selectEntities || (state => state[name].entities)
+	};
+
+	selectors[name] = sliceSelectors;
+
+	return {...slice, selectors: sliceSelectors};
 }
 
 export const selectEntities = (state, dataSet: string) => selectors[dataSet].selectEntities(state);
@@ -211,7 +214,7 @@ export const selectSortedFilteredIds: (state: any, dataSet: string) => Array<Ent
 /*
  * Returns a list of unique values for a particular field
  */
-function uniqueFieldValues<EntityType = object>(getField: GetField<EntityType>, entities: Record<EntityId, EntityType>, ids: Array<EntityId>, dataKey: string): Array<any> {
+function uniqueFieldValues<EntityType = object, FieldType = any>(getField: GetField<EntityType>, entities: Record<EntityId, EntityType>, ids: Array<EntityId>, dataKey: string): Array<FieldType> {
 	let values = ids.map(id => getField(entities[id], dataKey));
 	return [...new Set(values.map(v => v !== null? v: ''))];
 }
@@ -220,7 +223,7 @@ function uniqueFieldValues<EntityType = object>(getField: GetField<EntityType>, 
  * selectAllFieldOptions(state, dataSet, dataKey) selector
  * Generate an array of all the unique field values
  */
-export const selectAllFieldValues = createSelector(
+export const selectAllFieldValues: (state, any, dataSet: string, dataKey: string) => any[] = createSelector(
 	selectGetField,
 	selectEntities,
 	selectSortedIds,
@@ -232,7 +235,7 @@ export const selectAllFieldValues = createSelector(
  * selectAvailableFieldOptions(state, dataSet, dataKey)
  * Generate an array of unique values for the currently filtered entries
  */
-export const selectAvailableFieldValues = createSelector(
+export const selectAvailableFieldValues: (state: any, dataSet: string, dataKey: string) => any[] = createSelector(
 	selectGetField,
 	selectEntities,
 	selectSortedFilteredIds,

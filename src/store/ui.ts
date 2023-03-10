@@ -174,7 +174,7 @@ export const createUiSubslice = (dataSet: string) => {
 /*
  * Selectors
  */
-export const selectCurrentView = (state, dataSet: string): string => state[dataSet].ui.tableView;
+export const selectCurrentView = (state: any, dataSet: string): string => state[dataSet].ui.tableView;
 
 export const selectCurrentPanelConfig = (state, dataSet: string): PanelConfig => {
 	const {tableView, panelsConfig} = state[dataSet].ui;
@@ -186,7 +186,7 @@ export const selectCurrentPanelConfig = (state, dataSet: string): PanelConfig =>
 	return defaultPanelConfig;
 }
 
-export const selectCurrentTableConfig = (state, dataSet: string): TableConfig => {
+export const selectCurrentTableConfig = (state: any, dataSet: string): TableConfig => {
 	const {tableView, tablesConfig} = state[dataSet].ui;
 	if (tablesConfig) {
 		const tableConfig = tablesConfig[tableView];
@@ -196,7 +196,7 @@ export const selectCurrentTableConfig = (state, dataSet: string): TableConfig =>
 	return defaultTableConfig;
 }
 
-export const selectViews = (state, dataSet: string): Array<string> => Object.keys(state[dataSet].ui.tablesConfig);
+export const selectViews = (state: any, dataSet: string): Array<string> => Object.keys(state[dataSet].ui.tablesConfig);
 
 
 /* Actions */
@@ -224,5 +224,5 @@ export const setPanelWidth = (dataSet: string, tableView: string | undefined, wi
 export const setPanelIsSplit = (dataSet: string, tableView: string | undefined, isSplit: boolean) => 
 	({type: dataSet + '/setPanelIsSplit', payload: {tableView, isSplit}});
 
-export const setProperty = (dataSet: string, property, value) => 
+export const setProperty = (dataSet: string, property, value: any) => 
 	({type: dataSet + '/setProperty', payload: {property, value}});

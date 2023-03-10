@@ -5,7 +5,7 @@ import {VariableSizeList as List} from 'react-window';
 /* ItemWrapper measures and sets the height of the item */
 function ItemWrapper({style, item, index, setHeight, props, state, methods}) {
 
-	const ref = React.useRef();
+	const ref = React.useRef<HTMLDivElement>(null);
 	React.useEffect(() => {
 		if (ref.current) {
 			const bounds = ref.current.getBoundingClientRect();
@@ -56,9 +56,9 @@ function ItemWrapper({style, item, index, setHeight, props, state, methods}) {
 
 function Dropdown({props, state, methods}) {
 
-	const listRef = React.useRef();
-	const listInnerRef = React.useRef();
-	const heightsRef = React.useRef([]);
+	const listRef = React.useRef<typeof List>(null);
+	const listInnerRef = React.useRef<HTMLElement>(null);
+	const heightsRef = React.useRef<number[]>([]);
 
 	const setItemHeight = (index, height) => {
 		const heights = heightsRef.current;

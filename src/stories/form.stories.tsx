@@ -14,7 +14,7 @@ import {
 	InputDates,
 	InputTime,
 	SliderSwitch
-} from '.';
+} from '../form';
 
 const story = {
   title: 'Form',
@@ -45,7 +45,7 @@ export const TwoColsForm = ({disabled, ...otherArgs}: {disabled: boolean} & Reac
 	const [dates, setDates] = React.useState<Array<string>>([]);
 	const [time, setTime] = React.useState('');
 	const [checkbox, setCheckbox] = React.useState(false);
-	const [select, setSelect] = React.useState([]);
+	const [select, setSelect] = React.useState<any[]>([]);
 	const [slider, setSlider] = React.useState(false);
 
 	return (

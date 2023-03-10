@@ -1,6 +1,6 @@
 import React from 'react';
 
-import {Account} from '.';
+import {Account} from '../general';
 import {getUser} from '../lib';
 
 export default {

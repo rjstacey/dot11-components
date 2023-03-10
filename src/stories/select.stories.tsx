@@ -1,17 +1,23 @@
 import React from 'react';
 import {LoremIpsum} from 'lorem-ipsum';
 import {AppModal} from '../modals';
-import Select from '.';
+import Select from '../select';
 import {Icon, ActionIcon} from '../icons'
 
 const lorem = new LoremIpsum();
 
-const genOptions = (n) => Array(n).fill().map((value, index) => ({value: index, label: lorem.generateWords(4), disabled: Math.random() > 0.8}));
+type Options = {
+	value: any;
+	label: string;
+	disabled?: boolean;
+}
+
+const genOptions = (n: number) => Array(n).fill(0).map((value, index) => ({value: index, label: lorem.generateWords(4), disabled: Math.random() > 0.8}));
 
 function WrappedSelect(args) {
 	const {usePortal, useCreate, portalRef, numberOfItems, onChange, ...otherArgs} = args;
-	const [select, setSelect] = React.useState([]);
-	const [options, setOptions] = React.useState(() => genOptions(numberOfItems));
+	const [select, setSelect] = React.useState<Options[]>([]);
+	const [options, setOptions] = React.useState<Options[]>(() => genOptions(numberOfItems));
 
 	function addOption({props, state, methods}) {
 		const newItem = {
@@ -59,10 +65,10 @@ export function Basic(args) {
 }
 
 const itemRenderer = ({item, props}) => {
-	const style={
+	const style = {
 		color: '#555',
 		overflow: 'hidden',
-		whiteSpace: 'nowrap',
+		//whiteSpace: 'nowrap',
 		textOverflow: 'ellipsis'
 	}
 	return (
@@ -74,7 +80,7 @@ const itemRenderer = ({item, props}) => {
 }
 
 export function IconItems(args) {
-	const portalRef = React.useRef();
+	const portalRef = React.useRef(null);
 	const style = {
 		display: 'flex',
 		width: '300px'
@@ -95,7 +101,7 @@ IconItems.args = {
 }
 
 export function ContainedSelect(args) {
-	const portalRef = React.useRef();
+	const portalRef = React.useRef(null);
 	const style = {
 		overflow: 'hidden',
 		width: '300px',
@@ -113,8 +119,7 @@ ContainedSelect.args = {
 }
 
 export function SelectInModal(args) {
-	const portalRef = {};
-	portalRef.current = document.querySelector('#root');
+	const portalRef = {current: document.querySelector('#root')};
 	return (
 		<AppModal
 			isOpen={true}
