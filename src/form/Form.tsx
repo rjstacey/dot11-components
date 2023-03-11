@@ -1,5 +1,4 @@
-import PropTypes from 'prop-types';
-import React, { ReactNode } from 'react';
+import React from 'react';
 import styled from '@emotion/styled';
 import {Spinner} from '../icons';
 
@@ -68,7 +67,7 @@ type FieldProps = {
 	style?: object;
 	className?: string;
 	label: string;
-	children?: ReactNode;
+	children?: React.ReactNode;
 }
 
 const Field = ({style, className, label, children}: FieldProps) =>
@@ -95,7 +94,7 @@ type ListProps = {
 	style?: object;
 	className?: string;
 	label: string;
-	children?: ReactNode;
+	children?: React.ReactNode;
 }
 
 const List = ({style, className, label, children}: ListProps) =>
@@ -117,7 +116,7 @@ const ListItemContainer = styled.div`
 type ListItemProps = {
 	style?: object;
 	className?: string;
-	children?: ReactNode;
+	children?: React.ReactNode;
 }
 
 const ListItem = ({style, className, children}: ListItemProps) =>
@@ -139,7 +138,7 @@ type FormProps = {
 	cancel?: () => void;
 	close?: () => void;
 	cancelLabel?: string;
-	children?: ReactNode;
+	children?: React.ReactNode;
 }
 
 const Form = ({style, className, title, busy, errorText, submit, submitLabel, cancel, close, cancelLabel, children}: FormProps) => 
@@ -156,16 +155,6 @@ const Form = ({style, className, title, busy, errorText, submit, submitLabel, ca
 			{(cancel || close) && <Button onClick={cancel || close} >{cancelLabel || 'Cancel'}</Button>}
 		</ButtonRow>
 	</Container>
-
-Form.propTypes = {
-	title: PropTypes.string,
-	submit: PropTypes.func,
-	cancel: PropTypes.func,
-	submitLabel: PropTypes.string,
-	cancelLabel: PropTypes.string,
-	errorText: PropTypes.string,
-	busy: PropTypes.bool,
-};
 
 export {
 	Form,

@@ -1,8 +1,7 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import Modal from 'react-modal';
 
-const defaultModalStyle = {
+const defaultModalStyle: {content: React.CSSProperties; overlay: React.CSSProperties} = {
 	content: {
 		position: 'absolute',
 		top: '20%',
@@ -48,18 +47,13 @@ function AppModal({style, overlayStyle, className, isOpen, onRequestClose, child
 			isOpen={isOpen}
 			style={modalStyle}
 			className={className}
-			appElement={document.querySelector('#root')}
+			appElement={document.querySelector('#root') as HTMLElement}
 			onRequestClose={onRequestClose}
 			{...otherProps}
 		>
 			{children}
 		</Modal>
 	)
-}
-
-AppModal.propTypes = {
-	isOpen: PropTypes.bool.isRequired,
-	onRequestClose: PropTypes.func,
 }
 
 export default AppModal;

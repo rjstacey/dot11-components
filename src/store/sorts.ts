@@ -1,7 +1,7 @@
 
 import { parseNumber } from '../lib';
 import type { EntityId, PayloadAction } from '@reduxjs/toolkit';
-import type { Fields } from './appTableData';
+import type { Fields, GetEntityField } from './appTableData';
 
 export type SortDirectionType = "NONE" | "ASC" | "DESC";
 
@@ -73,7 +73,7 @@ export const sortFunc = {
 	[SortType.DATE]: cmpDate
 }
 
-export function sortData<EntityType = object>(sorts: Sorts, getField, entities: EntityType, ids: Array<EntityId>): Array<EntityId> {
+export function sortData(sorts: Sorts, getField: GetEntityField, entities: {}, ids: Array<EntityId>): Array<EntityId> {
 	let sortedIds = ids.slice();
 	for (const dataKey of sorts.by) {
 		const {direction, type} = sorts.settings[dataKey];

@@ -133,37 +133,39 @@ const name = 'filters';
 
 export type FiltersState = { [name]: Filters };
 
-export const createFiltersSubslice = (dataSet: string, fields: Fields) => ({
-	name,
-	initialState: {[name]: filtersInit(fields)},
-	reducers: {
-		setFilter(state, action: PayloadAction<{dataKey: string; comps: Array<Comp>}>) {
-			const filters = state[name];
-			const {dataKey, comps} = action.payload;
-			const filter = filterCreate(filters[dataKey] || {});
-			filter.comps = comps;
-			filters[dataKey] = filter;
-		},
-		addFilter(state, action: PayloadAction<{dataKey: string} & Comp>) {
-			const filters = state[name];
-			const {dataKey, value, filterType} = action.payload;
-			filters[dataKey].comps.push({value, filterType});
-		},
-		removeFilter(state, action: PayloadAction<{dataKey: string} & Comp>) {
-			const filters = state[name];
-			const {dataKey, value, filterType} = action.payload;
-			filters[dataKey].comps = filters[dataKey].comps.filter((comp: Comp) => comp.value !== value || comp.filterType !== filterType)
-		},
-		clearFilter(state, action: PayloadAction<{dataKey: string}>) {
-			const filters = state[name];
-			const {dataKey} = action.payload;
-			filters[dataKey] = filterCreate(filters[dataKey]);
-		},
-		clearAllFilters(state) {
-			state[name] = filtersInit(state[name]);
-		},
+export function createFiltersSubslice(dataSet: string, fields: Fields) {
+	return {
+		name,
+		initialState: {[name]: filtersInit(fields)},
+		reducers: {
+			setFilter(state: FiltersState, action: PayloadAction<{dataKey: string; comps: Array<Comp>}>) {
+				const filters = state[name];
+				const {dataKey, comps} = action.payload;
+				const filter = filterCreate(filters[dataKey] || {});
+				filter.comps = comps;
+				filters[dataKey] = filter;
+			},
+			addFilter(state: FiltersState, action: PayloadAction<{dataKey: string} & Comp>) {
+				const filters = state[name];
+				const {dataKey, value, filterType} = action.payload;
+				filters[dataKey].comps.push({value, filterType});
+			},
+			removeFilter(state: FiltersState, action: PayloadAction<{dataKey: string} & Comp>) {
+				const filters = state[name];
+				const {dataKey, value, filterType} = action.payload;
+				filters[dataKey].comps = filters[dataKey].comps.filter((comp: Comp) => comp.value !== value || comp.filterType !== filterType)
+			},
+			clearFilter(state: FiltersState, action: PayloadAction<{dataKey: string}>) {
+				const filters = state[name];
+				const {dataKey} = action.payload;
+				filters[dataKey] = filterCreate(filters[dataKey]);
+			},
+			clearAllFilters(state: FiltersState) {
+				state[name] = filtersInit(state[name]);
+			},
+		}
 	}
-});
+}
 
 /* Actions */
 export const setFilter = (dataSet: string, dataKey: string, comps: Array<Comp>) => ({type: dataSet + '/setFilter', payload: {dataKey, comps}});

@@ -35,7 +35,7 @@ export type UiState = { [name]: {
 	};
 };
 
-export const createUiSubslice = (dataSet: string) => {
+export function createUiSubslice(dataSet: string) {
 	const initialUiState = {
 		tableView: defaultTableView,
 		tablesConfig: {[defaultTableView]: defaultTableConfig},
@@ -169,7 +169,7 @@ export const createUiSubslice = (dataSet: string) => {
 			},
 		}
 	}
-};
+}
 
 /*
  * Selectors

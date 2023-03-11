@@ -1,6 +1,6 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 import {VariableSizeList as List} from 'react-window';
+import type { RendererProps } from '.';
 
 /* ItemWrapper measures and sets the height of the item */
 function ItemWrapper({style, item, index, setHeight, props, state, methods}) {
@@ -54,7 +54,7 @@ function ItemWrapper({style, item, index, setHeight, props, state, methods}) {
 	)
 }
 
-function Dropdown({props, state, methods}) {
+function Dropdown({props, state, methods}: RendererProps) {
 
 	const listRef = React.useRef<List>(null);
 	const listInnerRef = React.useRef<HTMLElement>(null);
@@ -74,7 +74,7 @@ function Dropdown({props, state, methods}) {
 	React.useEffect(() => {
 		if (!listRef.current)
 			return;
-		if (state.cursor >= 0)
+		if (state.cursor)
 			listRef.current.scrollToItem(state.cursor);
 	}, [state.cursor]);
 
@@ -123,12 +123,6 @@ function Dropdown({props, state, methods}) {
 				/>
 			}
 		</List>
-}
-
-Dropdown.propTypes = {
-	props: PropTypes.object.isRequired,
-	state: PropTypes.object.isRequired,
-	methods: PropTypes.object.isRequired
 }
 
 export default Dropdown;

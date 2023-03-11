@@ -6,8 +6,8 @@ import {selectFilters, filterData} from './filters';
 
 import { createSelectedSubslice, SelectedState } from './selected'
 import { createExpandedSubslice, ExpandedState } from './expanded'
-import { createFiltersSubslice, FiltersState } from './filters'
-import { createSortsSubslice, SortsState } from './sorts'
+import { createFiltersSubslice, FiltersState, Filters } from './filters'
+import { createSortsSubslice, SortsState, Sorts } from './sorts'
 import { createUiSubslice, UiState } from './ui'
 
 export * from './selected';
@@ -18,7 +18,7 @@ export * from './ui';
 
 export { EntityId };
 
-export type GetEntityField<EntityType = object> = (entity: EntityType, dataKey: string) => any;
+export type GetEntityField<EntityType = {}> = (entity: EntityType, dataKey: string) => any;
 
 export type Option = {
 	value: any;
@@ -65,7 +65,7 @@ export type AppTableDataState<EntityType> = {
  * Field values may be derived from other fields by supplying a selectField() function. This allows derived values to be sorted.
  */
 
-export function createAppTableDataSlice<EntityType, Reducers extends SliceCaseReducers<AppTableDataState<EntityType>>>({
+export function createAppTableDataSlice<EntityType extends {}, Reducers extends SliceCaseReducers<AppTableDataState<EntityType>>>({
 	name,
 	fields,
 	selectId,
@@ -74,8 +74,8 @@ export function createAppTableDataSlice<EntityType, Reducers extends SliceCaseRe
 	reducers,
 	extraReducers,
 	selectField,
-	selectEntities,
-	selectIds
+	selectEntities,	/** optional: Overload selectEntities */
+	selectIds	/** optional: Overload selectIds */
 }: {
 	name: string;
 	fields: Fields;
@@ -84,9 +84,9 @@ export function createAppTableDataSlice<EntityType, Reducers extends SliceCaseRe
 	initialState: object;
 	reducers?: ValidateSliceCaseReducers<AppTableDataState<EntityType>, Reducers>;
 	extraReducers?: any;
-	selectField?: GetEntityField<EntityType>;
-	selectEntities?: (state: any) => Record<EntityId, EntityType>;
-	selectIds?: (state: any) => Array<EntityId>;
+	selectField?: GetEntityField;
+	selectEntities?: (state: {}) => Dictionary<EntityType>;
+	selectIds?: (state: {}) => EntityId[];
 }) {
 
 	const dataAdapter = createEntityAdapter<EntityType>(Object.assign({}, selectId? {selectId}: {}, sortComparer? {sortComparer}: {}));
@@ -157,16 +157,95 @@ export function createAppTableDataSlice<EntityType, Reducers extends SliceCaseRe
 		}
 	});
 
-	const sliceSelectors = {
-		getField: selectField? selectField: (entity: EntityType, dataKey: string) => entity[dataKey],
-		getId: selectId? selectId: (entity: {id: EntityId}) => entity.id,
-		selectIds: selectIds || (state => state[name].ids),
-		selectEntities: selectEntities || (state => state[name].entities)
+	if (!selectId)
+		selectId = (entity: any): EntityId => entity.id;
+
+	if (!selectField)
+		selectField = (entity, dataKey) => entity[dataKey];
+
+	const selectState = (state: {}): typeof initialState => state[name];
+	if (!selectIds)
+		selectIds = (state: {}): EntityId[] => selectState(state).ids;
+	if (!selectEntities)
+		selectEntities = (state: {}) => selectState(state).entities;
+
+	const selectFilters = (state: {}) => selectState(state).filters;
+	const selectSorts = (state: {}) => selectState(state).sorts;
+
+	const getField = selectField;
+
+	/** returns array of filtered ids */
+	const selectFilteredIds = createSelector<any, EntityId[]>(
+		selectFilters,
+		selectEntities,
+		selectIds,
+		(filters, entities, ids) => filterData(filters, getField, entities, ids)
+	);
+
+	/** returns array of sorted ids */
+ 	const selectSortedIds = createSelector(
+		selectSorts,
+		selectEntities,
+		selectIds,
+		(sorts, entities, ids) => sortData(sorts, getField, entities, ids)
+	);
+
+	/** returns array of sorted and filtered ids */
+	const selectSortedFilteredIds = createSelector(
+		selectSorts,
+		selectEntities,
+		selectFilteredIds,
+		(sorts, entities, ids) => sortData(sorts, getField, entities, ids)
+	);
+
+	/** Returns a list of unique values for a particular field */
+	function uniqueFieldValues(entities: Record<EntityId, EntityType>, ids: EntityId[], dataKey: string): any[] {
+		let values = ids.map(id => getField(entities[id], dataKey));
+		return [...new Set(values.map(v => v !== null? v: ''))];
+	}
+
+	/** Generate an array of all the unique field values */
+	const selectAllFieldValues = createSelector<any, any[]>(
+		selectEntities,
+		selectSortedIds,
+		selectDataKey,
+		uniqueFieldValues
+	);
+
+	/** Generate an array of unique values for the currently filtered entries */
+	const selectAvailableFieldValues = createSelector<any, any[]>(
+		selectEntities,
+		selectSortedFilteredIds,
+		selectDataKey,
+		uniqueFieldValues
+	);
+
+	const appTableDataMethods = {
+		selectState,
+		selectIds,
+		selectEntities,
+		selectFilters,
+		selectSorts,
+		selectFilteredIds,
+		selectSortedIds,
+		selectSortedFilteredIds,
+		selectAllFieldValues,
+		selectAvailableFieldValues,
+		selectSelectedIds: (state: {}) => selectState(state).selected,
+		selectExpandedIds: (state: {}) => selectState(state).expanded,
+		selectUiProperties: (state: {}) => selectState(state).ui,
+
+		...slice.actions,
+	}
+
+	selectors[name] = {
+		getField: selectField,
+		getId: selectId,
+		selectIds,
+		selectEntities
 	};
 
-	selectors[name] = sliceSelectors;
-
-	return slice;
+	return {...slice, appTableDataMethods};
 }
 
 export const selectEntities = (state, dataSet: string) => selectors[dataSet].selectEntities(state);
