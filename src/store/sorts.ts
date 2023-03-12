@@ -73,7 +73,7 @@ export const sortFunc = {
 	[SortType.DATE]: cmpDate
 }
 
-export function sortData(sorts: Sorts, getField: GetEntityField, entities: {}, ids: Array<EntityId>): Array<EntityId> {
+export function sortData<EntityType>(sorts: Sorts, getField: GetEntityField<EntityType>, entities: {}, ids: EntityId[]): EntityId[] {
 	let sortedIds = ids.slice();
 	for (const dataKey of sorts.by) {
 		const {direction, type} = sorts.settings[dataKey];
@@ -173,5 +173,5 @@ export const createSortsSubslice = (dataSet: string, fields: Fields) => {
 export const sortSet = (dataSet: string, dataKey: string, direction: SortDirectionType) => ({type: dataSet + '/setSortDirection', payload: {dataKey, direction}});
 
 /* Selectors */
-export const selectSorts = (state, dataSet: string): Sorts => state[dataSet][name];
-export const selectSort = (state, dataSet: string, dataKey: string): Sort | undefined => state[dataSet][name].settings[dataKey];
+export const selectSorts = (state: {}, dataSet: string): Sorts => state[dataSet][name];
+export const selectSort = (state: {}, dataSet: string, dataKey: string): Sort | undefined => state[dataSet][name].settings[dataKey];

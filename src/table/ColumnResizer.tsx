@@ -26,7 +26,7 @@ type ColumnResizerProps = {
 }
 
 function ColumnResizer({style, onDrag}: ColumnResizerProps) {
-	const nodeRef = React.useRef(null);
+	const nodeRef = React.useRef<HTMLDivElement>(null);
 	const [drag, setDrag] = React.useState(false);
 	if (drag)
 		style = {...style, backgroundColor: 'rgba(0, 0, 0, 0.1)'}

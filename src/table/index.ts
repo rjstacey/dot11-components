@@ -16,6 +16,7 @@ export type {
 	CellRendererProps,
 	ColumnProperties
 }
+
 export {
 	AppTable,
 	SelectHeader,
@@ -34,4 +35,5 @@ export {
 	Panel,
 	SplitTableButtonGroup
 }
+
 export default AppTable;

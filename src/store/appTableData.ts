@@ -25,7 +25,7 @@ export type Option = {
 	label: string;
 };
 
-export type Field = {
+export type ColumnFieldProperties = {
 	label?: string;
 	sortType?: number;
 	sortDirection?: SortDirectionType;
@@ -36,7 +36,7 @@ export type Field = {
 };
 
 export type Fields = {
-	[dataKey: string]: Field;
+	[dataKey: string]: ColumnFieldProperties;
 };
 
 const selectors =  {};
@@ -84,7 +84,7 @@ export function createAppTableDataSlice<EntityType extends {}, Reducers extends 
 	initialState: object;
 	reducers?: ValidateSliceCaseReducers<AppTableDataState<EntityType>, Reducers>;
 	extraReducers?: any;
-	selectField?: GetEntityField;
+	selectField?: GetEntityField<EntityType>;
 	selectEntities?: (state: {}) => Dictionary<EntityType>;
 	selectIds?: (state: {}) => EntityId[];
 }) {
@@ -164,8 +164,10 @@ export function createAppTableDataSlice<EntityType extends {}, Reducers extends 
 		selectField = (entity, dataKey) => entity[dataKey];
 
 	const selectState = (state: {}): typeof initialState => state[name];
+
 	if (!selectIds)
 		selectIds = (state: {}): EntityId[] => selectState(state).ids;
+
 	if (!selectEntities)
 		selectEntities = (state: {}) => selectState(state).entities;
 
@@ -199,8 +201,8 @@ export function createAppTableDataSlice<EntityType extends {}, Reducers extends 
 	);
 
 	/** Returns a list of unique values for a particular field */
-	function uniqueFieldValues(entities: Record<EntityId, EntityType>, ids: EntityId[], dataKey: string): any[] {
-		let values = ids.map(id => getField(entities[id], dataKey));
+	function uniqueFieldValues(entities: Dictionary<EntityType>, ids: EntityId[], dataKey: string): any[] {
+		let values = ids.map(id => getField(entities[id]!, dataKey));
 		return [...new Set(values.map(v => v !== null? v: ''))];
 	}
 
@@ -248,6 +250,8 @@ export function createAppTableDataSlice<EntityType extends {}, Reducers extends 
 	return {...slice, appTableDataMethods};
 }
 
+export type AppTableDataMethods = ReturnType<typeof createAppTableDataSlice>['appTableDataMethods'];
+
 export const selectEntities = (state, dataSet: string) => selectors[dataSet].selectEntities(state);
 export const selectIds = (state, dataSet: string): Array<EntityId> => selectors[dataSet].selectIds(state);
 export const selectGetField = (state, dataSet: string): GetEntityField => selectors[dataSet].getField;
@@ -258,11 +262,11 @@ const selectDataKey = (state, dataSet: string, dataKey: string) => dataKey;
  * selectFilteredIds(state, dataSet)
  * returns array of filtered ids
  */
-export const selectFilteredIds: (state: any, dataSet: string) => Array<EntityId> = createSelector(
-	selectFilters,
+export const selectFilteredIds: (state: {}, dataSet: string) => EntityId[] = createSelector<any, EntityId[]>(
+	[selectFilters,
 	selectGetField,
 	selectEntities,
-	selectIds,
+	selectIds],
 	filterData
 );
 
@@ -270,11 +274,11 @@ export const selectFilteredIds: (state: any, dataSet: string) => Array<EntityId>
  * selectSortedIds(state, dataSet)
  * returns array of sorted ids
  */
-export const selectSortedIds: (state: any, dataSet: string) => Array<EntityId> = createSelector(
-	selectSorts,
+export const selectSortedIds: (state: {}, dataSet: string) => EntityId[] = createSelector<any, EntityId[]>(
+	[selectSorts,
 	selectGetField,
 	selectEntities,
-	selectIds,
+	selectIds],
 	sortData
 );
 
@@ -282,18 +286,18 @@ export const selectSortedIds: (state: any, dataSet: string) => Array<EntityId> =
  * selectSortedFilteredIds(state, dataSet)
  * returns array of sorted and filtered ids
  */
-export const selectSortedFilteredIds: (state: any, dataSet: string) => Array<EntityId> = createSelector(
-	selectSorts,
+export const selectSortedFilteredIds: (state: {}, dataSet: string) => EntityId[] = createSelector<any,EntityId[]>(
+	[selectSorts,
 	selectGetField,
 	selectEntities,
-	selectFilteredIds,
+	selectFilteredIds],
 	sortData
 );
 
 /*
  * Returns a list of unique values for a particular field
  */
-function uniqueFieldValues<EntityType = object, FieldType = any>(getField: GetEntityField<EntityType>, entities: Record<EntityId, EntityType>, ids: Array<EntityId>, dataKey: string): Array<FieldType> {
+function uniqueFieldValues(getField: GetEntityField, entities: {}, ids: EntityId[], dataKey: string): any[] {
 	let values = ids.map(id => getField(entities[id], dataKey));
 	return [...new Set(values.map(v => v !== null? v: ''))];
 }
@@ -302,11 +306,11 @@ function uniqueFieldValues<EntityType = object, FieldType = any>(getField: GetEn
  * selectAllFieldOptions(state, dataSet, dataKey) selector
  * Generate an array of all the unique field values
  */
-export const selectAllFieldValues: (state, any, dataSet: string, dataKey: string) => any[] = createSelector(
-	selectGetField,
+export const selectAllFieldValues: (state: {}, dataSet: string, dataKey: string) => any[] = createSelector<any, any[]>(
+	[selectGetField,
 	selectEntities,
 	selectSortedIds,
-	selectDataKey,
+	selectDataKey],
 	uniqueFieldValues
 );
 
@@ -314,10 +318,10 @@ export const selectAllFieldValues: (state, any, dataSet: string, dataKey: string
  * selectAvailableFieldOptions(state, dataSet, dataKey)
  * Generate an array of unique values for the currently filtered entries
  */
-export const selectAvailableFieldValues: (state: any, dataSet: string, dataKey: string) => any[] = createSelector(
-	selectGetField,
+export const selectAvailableFieldValues: (state: {}, dataSet: string, dataKey: string) => any[] = createSelector<any, any[]>(
+	[selectGetField,
 	selectEntities,
 	selectSortedFilteredIds,
-	selectDataKey,
+	selectDataKey],
 	uniqueFieldValues
 );

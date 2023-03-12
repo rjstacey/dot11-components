@@ -36,10 +36,10 @@ const idRegex = /[^\s,]+/g; // /\d+\.\d+|\d+/g
 type IdListProps = {
 	style?: React.CSSProperties;
 	className?: string;
-	ids: Array<EntityId>;
+	ids: EntityId[];
 	isValid: (id: EntityId) => boolean;
 	isNumber: boolean;
-	onChange: (ids: Array<EntityId>) => void;
+	onChange: (ids: EntityId[]) => void;
 	focusOnMount?: boolean;
 }
 

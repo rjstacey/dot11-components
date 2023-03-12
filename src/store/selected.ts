@@ -41,8 +41,8 @@ export function createSelectedSubslice(dataSet: string) {
 }
 
 /* Actions */
-export const setSelected = (dataSet: string, ids: Array<EntityId>) => ({type: dataSet + '/setSelected', payload: ids});
-export const toggleSelected = (dataSet: string, ids: Array<EntityId>) => ({type: dataSet + '/toggleSelected', payload: ids});
+export const setSelected = (dataSet: string, ids: EntityId[]) => ({type: dataSet + '/setSelected', payload: ids});
+export const toggleSelected = (dataSet: string, ids: EntityId[]) => ({type: dataSet + '/toggleSelected', payload: ids});
 
 /* Selectors */
-export const selectSelected = (state, dataSet: string): Array<EntityId> => state[dataSet][name];
+export const selectSelected = (state: {}, dataSet: string): EntityId[] => state[dataSet][name];

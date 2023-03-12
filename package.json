@@ -74,9 +74,13 @@
   },
   "scripts": {
     "start": "export NODE_OPTIONS=--openssl-legacy-provider; start-storybook -p 6006 -s public --no-manager-cache",
-    "prebuild": "rm -rf dist/*",
-    "postbuild": "cp package.json dist",
-    "build": "babel src --out-dir dist --ignore \"**/*stories.{js,tsx}\",\"**/stories.{js,tsx}\",\"src/*.{js,tsx}\" --no-copy-ignored --copy-files",
+    "clean": "rm -rf dist/*",
+    "build": "npm run clean && npm run build:esm && npm run build:cjs",
+    "build:esm": "tsc -p ./tsconfig.esm.json && mv dist/esm/index.js dist/esm/index.mjs",
+    "build:cjs": "tsc -p ./tsconfig.cjs.json",
+    "prebuild__": "rm -rf dist/*",
+    "postbuild__": "cp package.json dist",
+    "build__": "babel src --out-dir dist --verbose --extensions \".ts\",\".tsx\",\".js\" --ignore \"src/stories\",\"**/*stories.{js,tsx}\",\"src/*.js\",\".test.js\" --no-copy-ignored --copy-files",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "storybook": "start-storybook -p 6006 -s public",
@@ -98,6 +102,23 @@
       }
     ]
   },
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/esm/types/index.d.ts",
+        "default": "./dist/esm/index.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/types/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      }
+    }
+  },
+  "types": "./dist/cjs/types/index.d.ts",
+  "main": "./dist/cjs/index.js",
+  "files": [
+    "./dist/**/*"
+  ],
   "browserslist": {
     "production": [
       ">0.2%",

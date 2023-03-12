@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 import styled from '@emotion/styled';
@@ -168,11 +167,6 @@ function ShowFilters({
 			</FiltersContent>
 		</FiltersContainer>
 	)
-}
-
-ShowFilters.propTypes = {
-	dataSet: PropTypes.string.isRequired,
-	fields: PropTypes.object.isRequired
 }
 
 export default ShowFilters;

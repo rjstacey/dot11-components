@@ -4,7 +4,7 @@
 //
 import type { PayloadAction, EntityId } from '@reduxjs/toolkit';
 import { parseNumber } from '../lib';
-import type { Fields, Field, Option, GetEntityField } from './appTableData';
+import type { Fields, ColumnFieldProperties, Option, GetEntityField } from './appTableData';
 
 export const FilterType = {
 	EXACT: 0,
@@ -79,7 +79,7 @@ function cmpValue(comp: Comp, d: any) {
  * Applies the column filters in turn to the data.
  * Returns a list of ids that meet the filter requirements.
  */
-export function filterData(filters: Filters, getField: GetEntityField, entities: object, ids: Array<EntityId>): Array<EntityId> {
+export function filterData<EntityType={}>(filters: Filters, getField: GetEntityField<EntityType>, entities: object, ids: Array<EntityId>): Array<EntityId> {
 	let filteredIds = ids.slice();
 	const dataKeys = Object.keys(filters).filter(dataKey => dataKey !== globalFilterKey);
 	// Apply the column filters
@@ -114,7 +114,7 @@ export type Filters = {
 	[key: string]: Filter;
 };
 
-const filterCreate = ({options}: Field): Filter => ({
+const filterCreate = ({options}: ColumnFieldProperties): Filter => ({
 	options,	// Array of {label, value} objects
 	comps: [],	// Array of compare objects where a compare object {value, FilterType}
 });

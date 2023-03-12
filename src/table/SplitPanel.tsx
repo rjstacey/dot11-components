@@ -1,4 +1,4 @@
-import PropTypes from 'prop-types';
+//import PropTypes from 'prop-types';
 import React from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 import {ActionButton} from '../form';
@@ -25,11 +25,6 @@ export function SplitPanelButton({dataSet, title, ...otherProps}: SplitPanelButt
 			{...otherProps}
 		/>
 	)
-}
-
-SplitPanelButton.propTypes = {
-	dataSet: PropTypes.string.isRequired,
-	title: PropTypes.string,
 }
 
 interface PanelProps extends React.HTMLProps<HTMLDivElement> {
@@ -84,7 +79,7 @@ export function SplitPanel({dataSet, style, children, ...otherProps}: SplitPanel
 	)
 }
 
-const checkChildren = (props, propName, componentName) => {
+/*const checkChildren = (props, propName, componentName) => {
 	const {children} = props;
 	if (React.Children.count(children) !== 2)
 		return new Error('`' + componentName + '` has invalid number of children; expect exactly two');
@@ -99,6 +94,6 @@ const checkChildren = (props, propName, componentName) => {
 SplitPanel.propTypes = {
 	dataSet: PropTypes.string.isRequired,
 	children: checkChildren
-}
+}*/
 
 export default SplitPanel;

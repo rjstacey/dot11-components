@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 import styled from '@emotion/styled';
 import {useDispatch, useSelector} from 'react-redux';
@@ -6,7 +5,7 @@ import {useDispatch, useSelector} from 'react-redux';
 import {Button} from '../form';
 import {ActionButtonDropdown} from '../general';
 import {toggleTableFixed, setTableColumnShown, selectCurrentView, selectCurrentTableConfig} from '../store/appTableData';
-import type { ColumnParams, ColumnProperties } from './AppTable';
+import type { ColumnProperties, ChangeableColumnProperties } from './AppTable';
 
 const Row = styled.div`
 	margin: 5px 10px;
@@ -41,11 +40,9 @@ const Item = styled.div<ItemProps>`
 	}
 `;
 
-export {ColumnParams};
-
 export type ColumnSelectorProps = {
 	dataSet: string;
-	columns: Array<ColumnParams>;
+	columns: Array<ColumnProperties>;
 };
 
 function ColumnSelectorDropdown({dataSet, columns}: ColumnSelectorProps) {
@@ -60,8 +57,8 @@ function ColumnSelectorDropdown({dataSet, columns}: ColumnSelectorProps) {
 	const {view, tableConfig} = useSelector(selectInfo);
 
 	/* Build an array of 'selectable' column config that includes a column label */
-	const selectableColumns: Array<ColumnProperties & { key: string; label: string }> = [];
-	for (const [key, config] of Object.entries<ColumnProperties>(tableConfig.columns)) {
+	const selectableColumns: Array<ChangeableColumnProperties & { key: string; label: string }> = [];
+	for (const [key, config] of Object.entries<ChangeableColumnProperties>(tableConfig.columns)) {
 		if (!config.unselectable) {
 			const column = columns.find(c => c.key === key);
 			selectableColumns.push({
@@ -113,10 +110,5 @@ const ColumnSelector = (props: ColumnSelectorProps) =>
 	>
 		<ColumnSelectorDropdown {...props} />
 	</ActionButtonDropdown>
-
-ColumnSelector.propTypes = {
-	dataSet: PropTypes.string.isRequired,
-	columns: PropTypes.array.isRequired
-}
 
 export default ColumnSelector;

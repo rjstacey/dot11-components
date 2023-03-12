@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 
@@ -32,10 +31,6 @@ function TableViewSelector({dataSet}: TableViewSelectorProps) {
 			)}
 		</>
 	)
-}
-
-TableViewSelector.propTypes = {
-	dataSet: PropTypes.string.isRequired,
 }
 
 export default TableViewSelector;
