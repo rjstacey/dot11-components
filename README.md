@@ -1,7 +1,7 @@
 # Components for 802 Tools
 
 Various components for 802 tools:
-- data table (see (src/tabe/AppTable.md)[documentation])
+- data table (see [documentation](src/tabe/AppTable.md))
 - utility functions
 - form elements
 - modal support
