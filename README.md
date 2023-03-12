@@ -1,7 +1,7 @@
 # Components for 802 Tools
 
 Various components for 802 tools:
-- data table
+- data table (see (src/tabe/AppTable.md)[documentation])
 - utility functions
 - form elements
 - modal support
@@ -13,11 +13,6 @@ You can run:
 ### `npm start`
 
 Starts storybook.
-
-### `npm build`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
 
 ### `npm run build`
 
