@@ -2,7 +2,7 @@
 //
 // Began life here https://github.com/koalyptus/TableFilter
 //
-import type { PayloadAction, EntityId } from '@reduxjs/toolkit';
+import type { PayloadAction, EntityId, Dictionary } from '@reduxjs/toolkit';
 import { parseNumber } from '../lib';
 import type { Fields, ColumnFieldProperties, Option, GetEntityField } from './appTableData';
 
@@ -79,7 +79,7 @@ function cmpValue(comp: Comp, d: any) {
  * Applies the column filters in turn to the data.
  * Returns a list of ids that meet the filter requirements.
  */
-export function filterData<EntityType={}>(filters: Filters, getField: GetEntityField<EntityType>, entities: object, ids: Array<EntityId>): Array<EntityId> {
+export function filterData<EntityType={}>(filters: Filters, getField: GetEntityField<EntityType>, entities: Dictionary<EntityType>, ids: Array<EntityId>): Array<EntityId> {
 	let filteredIds = ids.slice();
 	const dataKeys = Object.keys(filters).filter(dataKey => dataKey !== globalFilterKey);
 	// Apply the column filters
@@ -88,26 +88,25 @@ export function filterData<EntityType={}>(filters: Filters, getField: GetEntityF
 		if (comps.length === 0)
 			continue;
 		filteredIds = filteredIds.filter(id =>
-				comps.reduce((result, comp) => result || cmpValue(comp, getField(entities[id], dataKey)), false)
-			);
+			comps.reduce((result, comp) => result || cmpValue(comp, getField(entities[id]!, dataKey)), false)
+		);
 	}
 	// Apply the global filter
 	if (filters[globalFilterKey]) {
 		const comps = filters[globalFilterKey].comps;
 		if (comps.length) {
 			const comp = comps[0];
-			filteredIds = filteredIds.filter(id => {
-				const entity = entities[id];
-				return dataKeys.reduce((result, dataKey) => result || cmpValue(comp, getField(entity, dataKey)), false)
-			});
+			filteredIds = filteredIds.filter(id =>
+				dataKeys.reduce((result, dataKey) => result || cmpValue(comp, getField(entities[id]!, dataKey)), false)
+			);
 		}
 	} 
 	return filteredIds;
 }
 
 export type Filter = {
-	options?: Array<Option>;
-	comps: Array<Comp>;
+	options?: Option[];
+	comps: Comp[];
 }
 
 export type Filters = {

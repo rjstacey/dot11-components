@@ -48,7 +48,6 @@ function Item({style, className, index, item, props, state, methods}: ItemProps)
 			aria-disabled={isDisabled}
 			aria-label={label}
 			onClick={addItem}
-			color={props.color}
 		>
 			{isNew? `Add "${label}"`:label} 
 		</div>

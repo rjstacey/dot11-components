@@ -6,3 +6,4 @@ export * from './icons';
 export * from './general';
 export * from './modals';
 export * from './store/appTableData';
+export * from './store/error';

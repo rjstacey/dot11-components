@@ -1,10 +1,10 @@
-import { configureStore, combineReducers, createSelector, ThunkAction, EntityState, Action } from '@reduxjs/toolkit';
+import { configureStore, combineReducers, createSelector, ThunkAction, EntityState, Action, PayloadAction, SliceCaseReducers } from '@reduxjs/toolkit';
 import { createLogger } from 'redux-logger';
 import { useDispatch } from 'react-redux';
 
-import {displayDate} from '../lib';
+import { displayDate } from '../lib';
 
-import {createAppTableDataSlice, SortType, AppTableDataState} from '../store/appTableData';
+import { createAppTableDataSlice, SortType, AppTableDataState } from '../store/appTableData';
 
 import { LoremIpsum } from "lorem-ipsum";
 
@@ -24,7 +24,11 @@ export const nameFields = {
 	Name: {label: 'Name'},
 };
 
-const namesSlice = createAppTableDataSlice<NameEntity, any>({name: 'names', fields: nameFields, initialState: {}});
+const namesSlice = createAppTableDataSlice({
+	name: 'names',
+	fields: nameFields,
+	initialState: {}
+});
 
 type NamesState = AppTableDataState<NameEntity>;
 
@@ -88,24 +92,40 @@ const selectDataEntities = (state: any) => (state['data'] as DataState).entities
 
 /* A selector that returns the entities with name_id mapped to Name */
 const selectEntities = createSelector(
-	selectNamesEntities,
-	selectDataEntities,
-	(nameEntities, entities) => {
-		const transformedEntities = {};
-		for (const [id, entity] of Object.entries(entities)) {
+	[selectNamesEntities,
+	selectDataEntities],
+	(namesEntities, dataEntities) => {
+		const entities: { [id: string]: DataEntity & { Name: string }} = {};
+		for (const [id, entity] of Object.entries(dataEntities)) {
 			if (!entity)
 				continue;
-			const nameEntity = nameEntities[entity.name_id];
+			const nameEntity = namesEntities[entity.name_id];
 			const Name = nameEntity? nameEntity.Name: '';
-			transformedEntities[id] = {...entity, Name};
+			entities[id] = {...entity, Name};
 		}
-		return transformedEntities;
+		return entities;
 	}
 );
 
-const dataSlice = createAppTableDataSlice<DataEntity, any>({name: 'data', fields: dataFields, initialState: {}, selectField, selectEntities});
+const initialState = {extra: false};
 
-type DataState = EntityState<DataEntity>;
+type DataState = AppTableDataState<DataEntity> & typeof initialState;
+
+const reducers: SliceCaseReducers<DataState> = {
+	setExtra(state, action: PayloadAction<boolean>) {
+		state.extra = action.payload;
+	}
+}
+
+const dataSlice = createAppTableDataSlice<DataEntity, DataState>({
+	name: 'data',
+	fields: dataFields,
+	initialState,
+	reducers,
+	selectField,
+	selectEntities
+});
+
 
 const rootReducer = combineReducers({
 	[namesSlice.name]: namesSlice.reducer,
@@ -118,11 +138,11 @@ const store = configureStore({
 	devTools: true
 });
 
-type RootState = ReturnType<typeof rootReducer>
-type AppDispatch = typeof store.dispatch
-type AppThunk<ReturnType = void> = ThunkAction<ReturnType, RootState, unknown, Action>
+type RootState = ReturnType<typeof rootReducer>;
+type AppDispatch = typeof store.dispatch;
+type AppThunk<ReturnType = void> = ThunkAction<ReturnType, RootState, unknown, Action>;
 
-export const useAppDispatch: () => AppDispatch = useDispatch
+export const useAppDispatch: () => AppDispatch = useDispatch;
 //const useAppSelector: TypedUseSelectorHook<RootState> = useSelector
 
 const randomDate = (start: Date, end: Date) =>

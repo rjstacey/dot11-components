@@ -1,17 +1,21 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { NetworkError } from '../lib/fetcher';
 
+const name = 'errMsg';
+
 export type ErrorMsg = {
 	summary: string;
 	detail: string;
 };
 
-const initialState: Array<ErrorMsg> = [];
+export type ErrorsState = ErrorMsg[];
 
-export type ErrorMsgState = typeof initialState;
+const initialState: ErrorsState = [];
 
-const slice = createSlice({
-	name: 'errMsg',
+export const selectErrors = (state: { [name]: ErrorsState }) => state[name];
+
+export const errorsSlice = createSlice({
+	name,
 	initialState,
 	reducers: {
 		setError(state, action: PayloadAction<ErrorMsg>) {
@@ -24,7 +28,7 @@ const slice = createSlice({
 	}
 });
 
-export const {clearError} = slice.actions;
+export const {clearError} = errorsSlice.actions;
 
 export function setError(summary: string, error: any) {
 	let detail: string;
@@ -43,7 +47,7 @@ export function setError(summary: string, error: any) {
 	else {
 		detail = error.toString();
 	}
-	return slice.actions.setError({summary, detail});
+	return errorsSlice.actions.setError({summary, detail});
 }
 
-export default slice.reducer;
+export default errorsSlice.reducer;

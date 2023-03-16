@@ -1,7 +1,7 @@
 
 import { parseNumber } from '../lib';
-import type { EntityId, PayloadAction } from '@reduxjs/toolkit';
-import type { Fields, GetEntityField } from './appTableData';
+import type { EntityId, Dictionary, PayloadAction } from '@reduxjs/toolkit';
+import type { Fields, GetEntityField, Option } from './appTableData';
 
 export type SortDirectionType = "NONE" | "ASC" | "DESC";
 
@@ -15,7 +15,7 @@ export type SortSettings = { [dataKey: string]: Sort };
 
 export type Sorts = {
 	settings: SortSettings;
-	by: Array<string>;
+	by: string[];
 };
 
 export const SortType = {
@@ -73,7 +73,7 @@ export const sortFunc = {
 	[SortType.DATE]: cmpDate
 }
 
-export function sortData<EntityType>(sorts: Sorts, getField: GetEntityField<EntityType>, entities: {}, ids: EntityId[]): EntityId[] {
+export function sortData<EntityType={}>(sorts: Sorts, getField: GetEntityField<EntityType>, entities: Dictionary<EntityType>, ids: EntityId[]): EntityId[] {
 	let sortedIds = ids.slice();
 	for (const dataKey of sorts.by) {
 		const {direction, type} = sorts.settings[dataKey];
@@ -81,7 +81,7 @@ export function sortData<EntityType>(sorts: Sorts, getField: GetEntityField<Enti
 			continue;
 		const cmpFunc = sortFunc[type];
 		sortedIds = sortedIds.sort(
-			(id_a, id_b) => cmpFunc(getField(entities[id_a], dataKey), getField(entities[id_b], dataKey))
+			(id_a, id_b) => cmpFunc(getField(entities[id_a]!, dataKey), getField(entities[id_b]!, dataKey))
 		);
 		if (direction === "DESC")
 			sortedIds.reverse();
@@ -89,7 +89,7 @@ export function sortData<EntityType>(sorts: Sorts, getField: GetEntityField<Enti
 	return sortedIds;
 }
 
-export function sortOptions(sort: Sort, options) {
+export function sortOptions<T extends Option>(sort: Sort, options: T[]): T[] {
 	const {direction, type} = sort;
 	let sortedOptions = options;
 

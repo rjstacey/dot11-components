@@ -3,7 +3,7 @@ import { connect, ConnectedProps } from 'react-redux';
 import {Form} from '../form';
 import {AppModal} from '.';
 
-import {clearError, ErrorMsgState} from '../store/error';
+import {clearError, selectErrors} from '../store/error';
 
 function strToHtml(s: string) {
 	return s
@@ -16,9 +16,9 @@ function strToHtml(s: string) {
 }
 
 const connector = connect(
-	(state) => {
-		const errMsgState = state['errMsg'] as ErrorMsgState;
-		const errMsg = errMsgState.length? errMsgState[0]: null;
+	(state: any) => {
+		const errors = selectErrors(state);
+		const errMsg = errors.length? errors[0]: null;
 		return {errMsg}
 	},
 	{clearError}

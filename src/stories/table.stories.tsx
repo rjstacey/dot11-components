@@ -23,12 +23,12 @@ import {
 	SplitTableButtonGroup,
 	HeaderRendererProps,
 	CellRendererProps,
-	ColumnParams
+	ColumnProperties
 } from '../table';
 
 const dataSet = 'data';
 
-const tableColumns: Array<ColumnParams> = [
+const tableColumns: Array<ColumnProperties> = [
 	{key: '__ctrl__',
 		width: 48, flexGrow: 0, flexShrink: 0},
 	{key: 'id', 
@@ -73,8 +73,8 @@ const defaultTablesConfig = {
 			Name: {shown: true, width: 200},
 			Text: {shown: true,	width: 200},
 			Date: {shown: true,	width: 200},
-			Number: {shown: true,	width: 200},
-			Status: {shown: true,	width: 200},
+			Number: {shown: true, width: 200},
+			Status: {shown: true, width: 200},
 			Derived: {shown: true, width: 200},
 			Actions: {shown: true, width: 200}
 		}
@@ -87,8 +87,8 @@ const defaultTablesConfig = {
 			Name: {unselectable: true, shown: false, width: 200},
 			Text: {shown: true,	width: 200},
 			Date: {shown: true,	width: 200},
-			Number: {shown: true,	width: 200},
-			Status: {shown: true,	width: 200},
+			Number: {shown: true, width: 200},
+			Status: {shown: true, width: 200},
 			Derived: {shown: true, width: 200},
 			Actions: {shown: true, width: 200}
 		}

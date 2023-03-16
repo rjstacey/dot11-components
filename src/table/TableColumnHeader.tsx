@@ -444,4 +444,4 @@ function TableColumnHeader({
 	)
 }
 
-export default TableColumnHeader
+export default TableColumnHeader;

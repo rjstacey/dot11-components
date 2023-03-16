@@ -2,9 +2,14 @@ import React from 'react';
 import Dropdown, {ActionButtonDropdown} from '../dropdown';
 import {Select} from '../form';
 
-const options = [
+type Option = {
+	value: number;
+	label: string;
+};
+
+const options: Option[] = [
 	{value: 1, label: 'One'},
-	{Value: 2, label: 'Two'},
+	{value: 2, label: 'Two'},
 	{value: 3, label: 'Three'},
 	{value: 4, label: 'Four'},
 	{value: 5, label: 'Five'},
@@ -36,7 +41,7 @@ function Content({close, state, setState}: ContentProps) {
 			<label>Select:
 				<Select
 					values={state.selectValues}
-					onChange={selectValues => changeState({selectValues})}
+					onChange={(selectValues: Option[]) => changeState({selectValues})}
 					options={options}
 					dropdownHeight={150}
 				/>
@@ -47,18 +52,26 @@ function Content({close, state, setState}: ContentProps) {
 	)
 }
 
-const defaultState = {
+type State = {
+	text: string;
+	selectValues: Option[];
+};
+
+const defaultState: State = {
 	text: '',
 	selectValues: [],
 }
 
-type State = typeof defaultState;
+type TemplateProps = {
+	usePortal: boolean;
+	Component: React.FC;
+}
 
 function Template({usePortal, Component, ...args}) {
 	const [state1, setState1] = React.useState<State>(defaultState);
 	const [state2, setState2] = React.useState<State>(defaultState);
 	const [state3, setState3] = React.useState<State>(defaultState);
-	let portal;
+	let portal: HTMLElement | null = null;
 	if (usePortal)
 		portal = document.querySelector('#root');
 	return (
