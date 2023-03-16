@@ -43,7 +43,7 @@ export type ColumnFieldProperties = {
 	sortDirection?: SortDirectionType;
 	dontSort?: boolean;
 	dontFilter?: boolean;
-	options?: Array<Option>;
+	options?: Option[];
 	//getField?: GetField;
 };
 
@@ -55,15 +55,10 @@ const selectors =  {};
 
 export const getAppTableDataSelectors = (dataSet: string) => selectors[dataSet];
 
-export type AppTableDataState<EntityType> = {
-	entities: Dictionary<EntityType>;
-	ids: EntityId[];
+export type AppTableDataState<EntityType = {}> = {
 	loading: boolean;
 	valid: boolean;
-} & SelectedState & ExpandedState & FiltersState & SortsState & UiState;
-
-export type AppTableDataCaseReducers<ExtraState={}, EntityType={}> = SliceCaseReducers<ExtraState & AppTableDataState<EntityType>>;
-export type AppTableDataExtraReducers<EntityType={}> = (builder: ActionReducerMapBuilder<AppTableDataState<EntityType>>, dataAdapter: EntityAdapter<EntityType>) => void;
+} & EntityState<EntityType> & SelectedState & ExpandedState & FiltersState & SortsState & UiState;
 
 /*
  * Create a redux slice suitible for AppTable rendering.
@@ -82,8 +77,8 @@ export type AppTableDataExtraReducers<EntityType={}> = (builder: ActionReducerMa
 
 export function createAppTableDataSlice<
 	EntityType = {},
-	SliceState = AppTableDataState<EntityType>,
-	Reducers extends SliceCaseReducers<SliceState> = {}
+	SliceState extends AppTableDataState<EntityType> = AppTableDataState<EntityType>,
+	Reducers extends SliceCaseReducers<SliceState> = SliceCaseReducers<SliceState>
 >({
 	name,
 	fields,
@@ -102,7 +97,7 @@ export function createAppTableDataSlice<
 	sortComparer?: Comparer<EntityType>;
 	initialState: {};
 	reducers?: ValidateSliceCaseReducers<SliceState, Reducers>;
-	extraReducers?: AppTableDataExtraReducers<EntityType>;
+	extraReducers?: (builder: ActionReducerMapBuilder<SliceState>, dataAdapter: EntityAdapter<EntityType>) => void;
 	selectField?: GetEntityField<EntityType>;
 	selectEntities?: (state: {}) => Dictionary<EntityType>;
 	selectIds?: (state: {}) => EntityId[];
@@ -146,6 +141,7 @@ export function createAppTableDataSlice<
 			},
 
 			setAll(state, action: PayloadAction<EntityType[]>) {dataAdapter.setAll(state as EntityState<EntityType>, action.payload)},
+			//setAll: dataAdapter.setAll,
 
 			setOne(state, action: PayloadAction<EntityType>) {dataAdapter.setOne(state as EntityState<EntityType>, action.payload)},
 			setMany(state, action: PayloadAction<EntityType[]>) {dataAdapter.setMany(state as EntityState<EntityType>, action.payload)},
@@ -174,7 +170,7 @@ export function createAppTableDataSlice<
 			selectedSubslice.extraReducers(builder);
 			expandedSubslice.extraReducers(builder);
 			if (extraReducers)
-				extraReducers(builder, dataAdapter);
+				extraReducers(builder as ActionReducerMapBuilder<SliceState>, dataAdapter);
 		}
 	});
 

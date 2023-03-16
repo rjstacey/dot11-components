@@ -2,7 +2,7 @@
 //
 // Began life here https://github.com/koalyptus/TableFilter
 //
-import type { PayloadAction, EntityId, Dictionary } from '@reduxjs/toolkit';
+import type { PayloadAction, EntityId, Dictionary, SliceCaseReducers } from '@reduxjs/toolkit';
 import { parseNumber } from '../lib';
 import type { Fields, ColumnFieldProperties, Option, GetEntityField } from './appTableData';
 
@@ -133,36 +133,41 @@ const name = 'filters';
 export type FiltersState = { [name]: Filters };
 
 export function createFiltersSubslice(dataSet: string, fields: Fields) {
+
+	const initialState: FiltersState = {[name]: filtersInit(fields)};
+
+	const reducers: SliceCaseReducers<FiltersState> = {
+		setFilter(state, action: PayloadAction<{dataKey: string; comps: Array<Comp>}>) {
+			const filters = state[name];
+			const {dataKey, comps} = action.payload;
+			const filter = filterCreate(filters[dataKey] || {});
+			filter.comps = comps;
+			filters[dataKey] = filter;
+		},
+		addFilter(state, action: PayloadAction<{dataKey: string} & Comp>) {
+			const filters = state[name];
+			const {dataKey, value, filterType} = action.payload;
+			filters[dataKey].comps.push({value, filterType});
+		},
+		removeFilter(state, action: PayloadAction<{dataKey: string} & Comp>) {
+			const filters = state[name];
+			const {dataKey, value, filterType} = action.payload;
+			filters[dataKey].comps = filters[dataKey].comps.filter((comp: Comp) => comp.value !== value || comp.filterType !== filterType)
+		},
+		clearFilter(state, action: PayloadAction<{dataKey: string}>) {
+			const filters = state[name];
+			const {dataKey} = action.payload;
+			filters[dataKey] = filterCreate(filters[dataKey]);
+		},
+		clearAllFilters(state) {
+			state[name] = filtersInit(state[name]);
+		}
+	};
+
 	return {
 		name,
-		initialState: {[name]: filtersInit(fields)},
-		reducers: {
-			setFilter(state: FiltersState, action: PayloadAction<{dataKey: string; comps: Array<Comp>}>) {
-				const filters = state[name];
-				const {dataKey, comps} = action.payload;
-				const filter = filterCreate(filters[dataKey] || {});
-				filter.comps = comps;
-				filters[dataKey] = filter;
-			},
-			addFilter(state: FiltersState, action: PayloadAction<{dataKey: string} & Comp>) {
-				const filters = state[name];
-				const {dataKey, value, filterType} = action.payload;
-				filters[dataKey].comps.push({value, filterType});
-			},
-			removeFilter(state: FiltersState, action: PayloadAction<{dataKey: string} & Comp>) {
-				const filters = state[name];
-				const {dataKey, value, filterType} = action.payload;
-				filters[dataKey].comps = filters[dataKey].comps.filter((comp: Comp) => comp.value !== value || comp.filterType !== filterType)
-			},
-			clearFilter(state: FiltersState, action: PayloadAction<{dataKey: string}>) {
-				const filters = state[name];
-				const {dataKey} = action.payload;
-				filters[dataKey] = filterCreate(filters[dataKey]);
-			},
-			clearAllFilters(state: FiltersState) {
-				state[name] = filtersInit(state[name]);
-			},
-		}
+		initialState,
+		reducers
 	}
 }
 
