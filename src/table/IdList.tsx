@@ -6,15 +6,12 @@ import 'draft-js/dist/Draft.css';
 
 import {ActionIcon} from '../icons';
 import {parseNumber} from '../lib';
+
 import {
-	setSelected,
-	setFilter,
-	selectIds,
-	selectEntities,
-	selectFilters,
-	selectGetField,
 	FilterType,
 	EntityId,
+	AppTableDataSelectors,
+	AppTableDataActions
 } from '../store/appTableData';
 
 const Container = styled.div`
@@ -153,39 +150,40 @@ function IdList({
 }
 
 type IdFilterProps = {
-	dataSet: string;
 	dataKey?: string;
 	style?: React.CSSProperties;
 	className?: string;
 	focusOnMount?: boolean;
+	selectors: AppTableDataSelectors;
+	actions: AppTableDataActions
 };
 
-function IdFilter({dataSet, dataKey = 'id', ...props}: IdFilterProps) {
+export function IdFilter({selectors, actions, dataKey = 'id', ...props}: IdFilterProps) {
 
 	const dispatch = useDispatch();
 
+	const {getField} = selectors;
+
 	const selectInfo = React.useCallback(state => {
-		const ids = selectIds(state, dataSet);
-		const entities = selectEntities(state, dataSet);
-		const filters = selectFilters(state, dataSet);
-		const getField = selectGetField(state, dataSet);
+		const ids = selectors.selectIds(state);
+		const entities = selectors.selectEntities(state);
+		const filter = selectors.selectFilter(state, dataKey);
 		return {
-			values: filters[dataKey].comps.map(v => v.value) || [],
-			isNumber: ids.length > 0 && typeof getField(entities[ids[0]], dataKey) === 'number',
+			values: filter.comps.map(v => v.value) || [],
+			isNumber: ids.length > 0 && typeof getField(entities[ids[0]]!, dataKey) === 'number',
 			ids,
-			entities,
-			getField,
+			entities
 		}
-	}, [dataSet, dataKey]);
+	}, [selectors, getField, dataKey]);
 
-	const {values, isNumber, ids, entities, getField} = useSelector(selectInfo);
+	const {values, isNumber, ids, entities} = useSelector(selectInfo);
 
-	const isValid = React.useCallback(value => ids.findIndex(id => getField(entities[id], dataKey) === value) !== -1, [ids, entities, dataKey, getField]);
+	const isValid = React.useCallback(value => ids.findIndex(id => getField(entities[id]!, dataKey) === value) !== -1, [ids, entities, dataKey, getField]);
 
 	const onChange = React.useCallback(values => {
 		const comps = values.map(value => ({value, filterType: FilterType.EXACT}));
-		dispatch(setFilter(dataSet, dataKey, comps));
-	}, [dispatch, dataSet, dataKey]);
+		dispatch(actions.setFilter({dataKey, comps}));
+	}, [dispatch, actions, dataKey]);
 
 	return (
 		<IdList
@@ -199,44 +197,44 @@ function IdFilter({dataSet, dataKey = 'id', ...props}: IdFilterProps) {
 }
 
 type IdSelectorProps = {
-	dataSet: string;
 	dataKey?: string;
 	style?: React.CSSProperties;
 	className?: string;
 	focusOnMount?: boolean;
+	selectors: AppTableDataSelectors;
+	actions: AppTableDataActions
 };
 
-function IdSelector({dataSet, dataKey = 'id', ...props}: IdSelectorProps) {
+export function IdSelector({selectors, actions, dataKey = 'id', ...props}: IdSelectorProps) {
 
 	const dispatch = useDispatch();
+	const {getField} = selectors;
 
 	const selectInfo = React.useCallback(state => {
-		const ids = selectIds(state, dataSet);
-		const entities = selectEntities(state, dataSet);
-		const selected = state[dataSet].selected;
-		const getField = selectGetField(state, dataSet);
+		const ids = selectors.selectIds(state);
+		const entities = selectors.selectEntities(state);
+		const selected = selectors.selectSelected(state);
 		return {
-			values: selected.map(id => getField(entities[id], dataKey)),
-			isNumber: ids.length > 0 && typeof getField(entities[ids[0]], dataKey) === 'number',
+			values: selected.map(id => getField(entities[id]!, dataKey)),
+			isNumber: ids.length > 0 && typeof getField(entities[ids[0]]!, dataKey) === 'number',
 			ids,
-			entities,
-			getField,
+			entities
 		}
-	}, [dataSet, dataKey]);
+	}, [selectors, getField, dataKey]);
 
-	const {values, isNumber, ids, entities, getField} = useSelector(selectInfo);
+	const {values, isNumber, ids, entities} = useSelector(selectInfo);
 
-	const isValid = React.useCallback(value => ids.findIndex(id => getField(entities[id], dataKey) === value) !== -1, [ids, entities, dataKey, getField]);
+	const isValid = React.useCallback((value: EntityId) => ids.findIndex(id => getField(entities[id]!, dataKey) === value) !== -1, [ids, entities, dataKey, getField]);
 
-	const onChange = React.useCallback(values => {
-		const selected = values.reduce((selected, value) => {
-			const i = ids.findIndex(id => getField(entities[id], dataKey) === value);
+	const onChange = React.useCallback((values: EntityId[]) => {
+		const selected = values.reduce((selected: EntityId[], value: EntityId) => {
+			const i = ids.findIndex(id => getField(entities[id]!, dataKey) === value);
 			if (i !== -1)
 				selected.push(ids[i]);
 			return selected;
 		}, []);
-		dispatch(setSelected(dataSet, selected));
-	}, [dispatch, dataSet, dataKey, ids, entities, getField]);
+		dispatch(actions.setSelected(selected));
+	}, [dispatch, actions, dataKey, ids, entities, getField]);
 
 	return (
 		<IdList
@@ -248,5 +246,3 @@ function IdSelector({dataSet, dataKey = 'id', ...props}: IdSelectorProps) {
 		/>
 	)
 }
-
-export {IdFilter, IdSelector}

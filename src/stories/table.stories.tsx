@@ -4,7 +4,7 @@ import { Provider } from 'react-redux';
 import {ActionIcon} from '../icons';
 import {Button} from '../form';
 
-import store, {loadData, removeRow, dataFields, useAppDispatch} from './tableStoryStore';
+import store, {loadData, removeRow, dataFields, useAppDispatch, dataSelectors, dataActions} from './tableStoryStore';
 
 import {
 	AppTable, 
@@ -36,8 +36,10 @@ const tableColumns: Array<ColumnProperties> = [
 		width: 80, flexGrow: 1, flexShrink: 1, dropdownWidth: 200,
 		headerRenderer: p =>
 			<TableColumnHeader
-				dataSet={dataSet}
-				customFilterElement=<IdFilter dataSet={dataSet} dataKey='id' />
+				//dataSet={dataSet}
+				selectors={dataSelectors}
+				actions={dataActions}
+				customFilterElement=<IdFilter /*dataSet={dataSet}*/ selectors={dataSelectors} actions={dataActions} dataKey='id' />
 				{...p}
 			/>
 	},
@@ -110,20 +112,22 @@ function tableColumnsWithControl(expandable, dispatch) {
 	if (expandable) {
 		headerRenderer = (p) =>
 			<SelectExpandHeader
-				dataSet={dataSet}
-				customSelectorElement=<IdSelector style={{width: '200px'}} dataSet={dataSet} dataKey={'id'} focusOnMount />
+				selectors={dataSelectors}
+				actions={dataActions}
+				customSelectorElement=<IdSelector style={{width: '200px'}} selectors={dataSelectors} actions={dataActions} dataKey={'id'} focusOnMount />
 				{...p}
 			/>;
-		cellRenderer = (p) => <SelectExpandCell dataSet={dataSet} {...p} />;
+		cellRenderer = (p) => <SelectExpandCell selectors={dataSelectors} actions={dataActions} {...p} />;
 	}
 	else {
 		headerRenderer = (p) =>
 			<SelectHeader
-				dataSet={dataSet}
-				customSelectorElement=<IdSelector style={{width: '200px'}} dataSet={dataSet} dataKey={'id'} focusOnMount />
+				selectors={dataSelectors}
+				actions={dataActions}
+				customSelectorElement=<IdSelector style={{width: '200px'}} selectors={dataSelectors} actions={dataActions} dataKey={'id'} focusOnMount />
 				{...p}
 			/>;
-		cellRenderer = (p) => <SelectCell dataSet={dataSet} {...p} />;
+		cellRenderer = (p) => <SelectCell selectors={dataSelectors} actions={dataActions} {...p} />;
 	}
 	columns[0] = {...columns[0], headerRenderer, cellRenderer};
 	cellRenderer = ({rowData}: {rowData: any}) => <ActionIcon type='delete' onClick={(e) => {e.stopPropagation(); dispatch(removeRow(rowData.id))}} />
@@ -136,9 +140,9 @@ export const _SplitPanel = ({expandable, numberOfRows}) => {
 	return (
 		<div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '80vh'}}>
 			<div>
-				<SplitPanelButton dataSet={dataSet} />
+				<SplitPanelButton selectors={dataSelectors} actions={dataActions} />
 			</div>
-			<SplitPanel dataSet={dataSet} >
+			<SplitPanel selectors={dataSelectors} actions={dataActions} >
 				<Panel>
 					<span>Something here...</span>
 				</Panel>
@@ -160,20 +164,35 @@ export const SplitTable = ({expandable, numberOfRows}) => {
 		<div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '80vh'}}>
 			<div style={{display: 'flex', width: '100%', justifyContent: 'space-between'}}>
 				<LoaderButton numberOfRows={numberOfRows} />
-				<SplitTableButtonGroup dataSet={dataSet} columns={columns} />
+				<SplitTableButtonGroup
+					columns={columns}
+					selectors={dataSelectors}
+					actions={dataActions}
+				/>
 			</div>
 			<div style={{display: 'flex', alignItems: 'center'}}>
-				<ShowFilters dataSet={dataSet} fields={dataFields} />
-				<GlobalFilter dataSet={dataSet} />
+				<ShowFilters
+					selectors={dataSelectors}
+					actions={dataActions}
+					fields={dataFields}
+				/>
+				<GlobalFilter
+					selectors={dataSelectors}
+					actions={dataActions}
+				/>
 			</div>
-			<SplitPanel dataSet={dataSet} >
+			<SplitPanel
+				selectors={dataSelectors}
+				actions={dataActions}
+			>
 				<Panel>
 					<AppTable
 						defaultTablesConfig={defaultTablesConfig}
 						columns={columns}
 						headerHeight={46}
 						estimatedRowHeight={56}
-						dataSet={dataSet}
+						selectors={dataSelectors}
+						actions={dataActions}
 					/>
 				</Panel>
 				<Panel>
@@ -194,14 +213,19 @@ export const NoDefaultTable = ({fixed, expandable, numberOfRows}) => {
 			<div style={{display: 'flex', width: '100%', justifyContent: 'space-between'}}>
 				<LoaderButton numberOfRows={numberOfRows} />
 			</div>
-			<ShowFilters dataSet={dataSet} fields={dataFields} />
+			<ShowFilters 
+				selectors={dataSelectors}
+				actions={dataActions}
+				fields={dataFields}
+			/>
 			<div style={{flex: 1, width: '100%'}} >
 					<AppTable
 						fixed={fixed}
 						columns={columns}
 						headerHeight={46}
 						estimatedRowHeight={56}
-						dataSet={dataSet}
+						selectors={dataSelectors}
+						actions={dataActions}
 					/>
 			</div>
 		</div>
@@ -218,7 +242,11 @@ export const FixedCenteredTable = ({expandable, numberOfRows}) => {
 			<div style={{display: 'flex', width: '100%', justifyContent: 'space-between'}}>
 				<LoaderButton numberOfRows={numberOfRows} />
 			</div>
-			<ShowFilters dataSet={dataSet} fields={dataFields} />
+			<ShowFilters
+				selectors={dataSelectors}
+				actions={dataActions}
+				fields={dataFields}
+			/>
 			<div style={{flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center'}} >
 					<AppTable
 						fitWidth
@@ -227,7 +255,8 @@ export const FixedCenteredTable = ({expandable, numberOfRows}) => {
 						//defaultTablesConfig={{'fixed': {}}}
 						headerHeight={46}
 						estimatedRowHeight={56}
-						dataSet={dataSet}
+						selectors={dataSelectors}
+						actions={dataActions}
 					/>
 			</div>
 		</div>

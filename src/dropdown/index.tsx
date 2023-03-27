@@ -64,7 +64,6 @@ type DropdownMethods = {
 	close: () => void;
 }
 
-
 function defaultSelectRenderer({props, state, methods}: RendererProps) {
 	return (
 		<Header

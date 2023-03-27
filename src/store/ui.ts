@@ -44,21 +44,21 @@ export function createUiSubslice(dataSet: string) {
 	};
 	const initialState: UiState = { [name]: initialUiState };
 
-	const reducers: SliceCaseReducers<UiState> = {
-		setProperty(state, action: PayloadAction<UiProperty>) {
+	const reducers = {
+		setProperty(state: UiState, action: PayloadAction<UiProperty>) {
 			const ui = state[name];
 			const {property, value} = action.payload;
 			ui[property] = value;
 		},
-		setUiProperties(state, action: PayloadAction<UiProperties>) {
+		setUiProperties(state: UiState, action: PayloadAction<UiProperties>) {
 			state[name] = {...state[name], ...action.payload};
 		},
-		setTableView(state, action: PayloadAction<{tableView: string}>) {
+		setTableView(state: UiState, action: PayloadAction<{tableView: string}>) {
 			const ui = state[name];
 			const {tableView} = action.payload;
 			ui.tableView = tableView;
 		},
-		setDefaultTablesConfig(state, action: PayloadAction<{tableView: string; tablesConfig: TablesConfig}>) {
+		setDefaultTablesConfig(state: UiState, action: PayloadAction<{tableView: string; tablesConfig: TablesConfig}>) {
 			const ui = state[name];
 			const {tablesConfig} = action.payload;
 			// Remove table views with no default config
@@ -98,7 +98,7 @@ export function createUiSubslice(dataSet: string) {
 					ui.tableView = Object.keys(ui.tablesConfig)[0];
 			}
 		},
-		upsertTableColumns(state, action: PayloadAction<{tableView: string | undefined; columns: Array<ChangeableColumnProperties>}>) {
+		upsertTableColumns(state: UiState, action: PayloadAction<{tableView?: string; columns: Array<ChangeableColumnProperties>}>) {
 			const ui = state[name];
 			let {tableView, columns} = action.payload;
 			if (tableView === undefined)
@@ -112,7 +112,7 @@ export function createUiSubslice(dataSet: string) {
 				tableConfig.columns[key] = {...tableConfig.columns[key], ...column}
 			}
 		},
-		adjustTableColumnWidth(state, action: PayloadAction<{tableView: string; key: string; delta: number}>) {
+		adjustTableColumnWidth(state: UiState, action: PayloadAction<{tableView?: string; key: string; delta: number}>) {
 			const ui = state[name];
 			let {tableView, key, delta} = action.payload;
 			if (!tableView)
@@ -121,7 +121,7 @@ export function createUiSubslice(dataSet: string) {
 			const column = tableConfig.columns[key];
 			column.width = Math.max(0, column.width + delta);
 		},
-		setTableColumnWidth(state, action: PayloadAction<{tableView: string; key: string; width: number}>) {
+		setTableColumnWidth(state: UiState, action: PayloadAction<{tableView?: string; key: string; width: number}>) {
 			const ui = state[name];
 			let {tableView, key, width} = action.payload;
 			if (!tableView)
@@ -130,7 +130,16 @@ export function createUiSubslice(dataSet: string) {
 			const column = tableConfig.columns[key];
 			column.width = Math.max(0, width);
 		},
-		toggleTableFixed(state, action: PayloadAction<{tableView: string; fixed: boolean}>) {
+		setTableColumnShown(state: UiState, action: PayloadAction<{tableView?: string; key: string; shown: boolean}>) {
+			const ui = state[name];
+			let {tableView, key, shown} = action.payload;
+			if (!tableView)
+				tableView = ui.tableView;
+			const tableConfig = ui.tablesConfig[tableView];
+			const column = tableConfig.columns[key];
+			column.shown = shown;
+		},
+		toggleTableFixed(state: UiState, action: PayloadAction<{tableView?: string}>) {
 			const ui = state[name];
 			let {tableView} = action.payload;
 			if (tableView === undefined)
@@ -141,7 +150,7 @@ export function createUiSubslice(dataSet: string) {
 			tableConfig.fixed = !ui.tablesConfig[tableView].fixed;
 			ui.tablesConfig[tableView] = tableConfig;
 		},
-		adjustPanelWidth(state, action: PayloadAction<{tableView: string; delta: number}>) {
+		adjustPanelWidth(state: UiState, action: PayloadAction<{tableView?: string; delta: number}>) {
 			const ui = state[name];
 			let {tableView, delta} = action.payload;
 			if (!tableView)
@@ -149,7 +158,7 @@ export function createUiSubslice(dataSet: string) {
 			const panelConfig = ui.panelsConfig[tableView];
 			panelConfig.width += delta;
 		},
-		setPanelWidth(state, action: PayloadAction<{tableView: string | undefined; width: number}>) {
+		setPanelWidth(state: UiState, action: PayloadAction<{tableView?: string | undefined; width: number}>) {
 			const ui = state[name];
 			let {tableView, width} = action.payload;
 			if (!tableView)
@@ -157,7 +166,7 @@ export function createUiSubslice(dataSet: string) {
 			const panelConfig = ui.panelsConfig[tableView];
 			panelConfig.width = width;
 		},
-		setPanelIsSplit(state, action: PayloadAction<{tableView: string; isSplit: boolean}>) {
+		setPanelIsSplit(state: UiState, action: PayloadAction<{tableView?: string; isSplit: boolean}>) {
 			const ui = state[name];
 			let {tableView, isSplit} = action.payload;
 			if (!tableView)
@@ -174,10 +183,53 @@ export function createUiSubslice(dataSet: string) {
 	}
 }
 
+export function getUiSelectors<S>(
+	selectState: (state: S) => UiState
+) {
+	/* All UI properties */
+	const selectUiProperties = (state: S) => selectState(state)[name];
+
+	/* Currently sected view */
+	const selectCurrentView = (state: S): string => selectUiProperties(state).tableView;
+
+	/* All views */
+	const selectViews = (state: S): string[] => Object.keys(selectUiProperties(state).tablesConfig);
+
+	/** Table config for the current view */
+	const selectCurrentTableConfig = (state: S): TableConfig => {
+		const {tableView, tablesConfig} = selectUiProperties(state);
+		if (tablesConfig) {
+			const tableConfig = tablesConfig[tableView];
+			if (tableConfig)
+				return tableConfig;
+		}
+		return defaultTableConfig;
+	}
+
+	/** Panel config for the current view */
+	const selectCurrentPanelConfig = (state: S): PanelConfig => {
+		const {tableView, panelsConfig} = selectUiProperties(state);
+		if (panelsConfig) {
+			const panelConfig = panelsConfig[tableView];
+			if (panelConfig)
+				return panelConfig;
+		}
+		return defaultPanelConfig;
+	}
+
+	return {
+		selectUiProperties,
+		selectCurrentView,
+		selectViews,
+		selectCurrentTableConfig,
+		selectCurrentPanelConfig,
+	}
+}
+
 /*
  * Selectors
  */
-export const selectCurrentView = (state: any, dataSet: string): string => state[dataSet].ui.tableView;
+/*export const selectCurrentView = (state: any, dataSet: string): string => state[dataSet].ui.tableView;
 
 export const selectCurrentPanelConfig = (state, dataSet: string): PanelConfig => {
 	const {tableView, panelsConfig} = state[dataSet].ui;
@@ -200,9 +252,10 @@ export const selectCurrentTableConfig = (state: any, dataSet: string): TableConf
 }
 
 export const selectViews = (state: any, dataSet: string): Array<string> => Object.keys(state[dataSet].ui.tablesConfig);
-
+*/
 
 /* Actions */
+/*
 export const setDefaultTablesConfig = (dataSet: string, tableView: string | undefined, tablesConfig: TablesConfig) =>
 	({type: dataSet + '/setDefaultTablesConfig', payload: {tableView, tablesConfig}});
 export const setTableView = (dataSet: string, tableView: string) => 
@@ -229,3 +282,4 @@ export const setPanelIsSplit = (dataSet: string, tableView: string | undefined, 
 
 export const setProperty = (dataSet: string, property: string, value: any) => 
 	({type: dataSet + '/setProperty', payload: {property, value}});
+*/

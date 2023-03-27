@@ -1,11 +1,11 @@
 import React from 'react';
-import type { ItemType, SelectProps, SelectState, SelectMethods } from './index';
+import type { ItemType, SelectInternalProps, SelectState, SelectMethods } from './index';
 
 type MultiSelectItemProps = {
 	style?: React.CSSProperties;
 	className?: string;
 	item: ItemType;
-	props: SelectProps;
+	props: SelectInternalProps;
 	state: SelectState;
 	methods: SelectMethods;
 };

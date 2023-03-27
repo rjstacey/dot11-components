@@ -2,9 +2,9 @@ import React from 'react';
 import styled from '@emotion/styled';
 import {useDispatch, useSelector} from 'react-redux';
 
-import {Button} from '../form';
-import {ActionButtonDropdown} from '../general';
-import {toggleTableFixed, setTableColumnShown, selectCurrentView, selectCurrentTableConfig} from '../store/appTableData';
+import {Button, ActionButtonDropdown} from '../form';
+
+import type { AppTableDataSelectors, AppTableDataActions } from '../store/appTableData';
 import type { ColumnProperties, ChangeableColumnProperties } from './AppTable';
 
 const Row = styled.div`
@@ -41,20 +41,20 @@ const Item = styled.div<ItemProps>`
 `;
 
 export type ColumnSelectorProps = {
-	dataSet: string;
 	columns: Array<ColumnProperties>;
+	selectors: AppTableDataSelectors<any>;
+	actions: AppTableDataActions;
 };
 
-function ColumnSelectorDropdown({dataSet, columns}: ColumnSelectorProps) {
+function ColumnSelectorDropdown({columns, selectors, actions}: ColumnSelectorProps) {
 
 	const dispatch = useDispatch();
 
-	const selectInfo = React.useCallback(state => ({
-		view: selectCurrentView(state, dataSet),
-		tableConfig: selectCurrentTableConfig(state, dataSet)
-	}), [dataSet]);
+	const view = useSelector(selectors.selectCurrentView);
+	const tableConfig = useSelector(selectors.selectCurrentTableConfig);
 
-	const {view, tableConfig} = useSelector(selectInfo);
+	const toggleCurrentTableFixed = () => dispatch(actions.toggleTableFixed({tableView: view}));
+	const setTableColumnShown = (colKey: string, shown: boolean) => dispatch(actions.setTableColumnShown({tableView: view, key: colKey, shown}));
 
 	/* Build an array of 'selectable' column config that includes a column label */
 	const selectableColumns: Array<ChangeableColumnProperties & { key: string; label: string }> = [];
@@ -78,7 +78,7 @@ function ColumnSelectorDropdown({dataSet, columns}: ColumnSelectorProps) {
 		<Row>
 			<label>Fixed width:</label>
 			<Button
-				onClick={() => dispatch(toggleTableFixed(dataSet, view))}
+				onClick={toggleCurrentTableFixed}
 				isActive={tableConfig.fixed}
 			>
 				On
@@ -93,7 +93,7 @@ function ColumnSelectorDropdown({dataSet, columns}: ColumnSelectorProps) {
 					<input
 						type='checkbox'
 						checked={col.shown}
-						onChange={() => dispatch(setTableColumnShown(dataSet, view, col.key, !col.shown))}
+						onChange={() => setTableColumnShown(col.key, !col.shown)}
 					/>
 					<span>{col.label}</span>
 				</Item>

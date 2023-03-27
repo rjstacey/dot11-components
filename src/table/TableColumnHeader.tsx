@@ -8,16 +8,18 @@ import {Button, Checkbox, Input} from '../form';
 import { Dropdown, RendererProps } from '../dropdown';
 
 import {
-	selectGetField,
+	/*selectGetField,
 	selectEntities,
 	selectIds,
 	selectFilteredIds,
-	selectSorts, selectSort, sortSet, sortOptions, SortDirection, SortType,
-	selectFilter, setFilter, addFilter, removeFilter, FilterType,
-	selectSelected,
+	selectSorts, selectSort, sortSet, */sortOptions, SortDirection, SortType,
+	/*selectFilter, setFilter, addFilter, removeFilter,*/ FilterType,
+	/*selectSelected,*/
 	SortDirectionType,
 	Sort,
-	Option
+	Option,
+	AppTableDataSelectors,
+	AppTableDataActions
 } from '../store/appTableData';
 
 const StyledCustomContainer = styled.div`
@@ -72,14 +74,18 @@ const Row = styled.div`
 `;
 
 type SortProps = {
-	dataSet: string;
+	//dataSet: string;
 	dataKey: string;
+	selectors: AppTableDataSelectors<any>;
+	actions: AppTableDataActions;
 };
 
-function SortComponent({dataSet, dataKey}: SortProps) {
-	const {direction, type} = useSelector<any, Sort>(state => state[dataSet].sorts.settings[dataKey]);
+function SortComponent({selectors, actions/*dataSet*/, dataKey}: SortProps) {
+	//const {direction, type} = useSelector(state => state[dataSet].sorts.settings[dataKey]);
+	const {direction, type} = useSelector(state => selectors.selectSort(state, dataKey));
 	const dispatch = useDispatch();
-	const setSort = React.useCallback((direction: SortDirectionType) => dispatch(sortSet(dataSet, dataKey, direction)), [dispatch, dataSet, dataKey]);
+	//const setSort = React.useCallback((direction: SortDirectionType) => dispatch(sortSet(dataSet, dataKey, direction)), [dispatch, dataSet, dataKey]);
+	const setSort = React.useCallback((direction: SortDirectionType) => dispatch(actions.setSortDirection({dataKey, direction})), [dispatch, actions, dataKey]);
 	return (
 		<Row>
 			<label>Sort:</label>
@@ -110,14 +116,17 @@ function SortComponent({dataSet, dataKey}: SortProps) {
 }
 
 type FilterProps = {
-	dataSet: string;
+	//dataSet: string;
+	selectors: AppTableDataSelectors<any>;
+	actions: AppTableDataActions;
 	dataKey: string;
 	dataRenderer?: (value: any) => string;
 	customFilterElement?: React.ReactNode;
 };
 
 function FilterComponent({
-	dataSet,
+	selectors,
+	actions /*dataSet*/,
 	dataKey,
 	dataRenderer,
 	customFilterElement,
@@ -128,38 +137,39 @@ function FilterComponent({
 	const dispatch = useDispatch();
 
 	const selectInfo = React.useCallback(state => ({
-		sort: selectSort(state, dataSet, dataKey),
-		filter: selectFilter(state, dataSet, dataKey),
-		selected: selectSelected(state, dataSet),
-		entities: selectEntities(state, dataSet),
-		getField: selectGetField(state, dataSet)
-	}), [dataSet, dataKey]);
+		sort: selectors.selectSort(state, dataKey), //selectSort(state, dataSet, dataKey),
+		filter: selectors.selectFilter(state, dataKey), //selectFilter(state, dataSet, dataKey),
+		selected: selectors.selectSelected(state), //selectSelected(state, dataSet),
+		entities: selectors.selectEntities(state), //selectEntities(state, dataSet),
+		getField: selectors.getField, //selectGetField(state, dataSet)
+	}), [selectors /*dataSet*/, dataKey]);
 
 	const {sort, filter, selected, entities, getField} = useSelector(selectInfo);
 
 	const selectValues = React.useCallback(state => {
-		const filter = selectFilter(state, dataSet, dataKey);
+		const filter = selectors.selectFilter(state, dataKey); //selectFilter(state, dataSet, dataKey);
 		if (!filter)
 			return [];
-		let ids = selectIds(state, dataSet);
+		let ids = selectors.selectIds(state); //selectIds(state, dataSet);
 		if (filter.comps.length === 0)
-			ids = selectFilteredIds(state, dataSet);
-		const getField = selectGetField(state, dataSet);
-		const entities = selectEntities(state, dataSet);
-		return [...new Set(ids.map(id => getField(entities[id], dataKey)))];
-	}, [dataSet, dataKey]);
+			ids = selectors.selectFilteredIds(state); //selectFilteredIds(state, dataSet);
+		const getField = selectors.getField; //selectGetField(state, dataSet);
+		const entities = selectors.selectEntities(state); //selectEntities(state, dataSet);
+		return [...new Set(ids.map(id => getField(entities[id]!, dataKey)))];
+	}, [selectors /*dataSet*/, dataKey]);
 
 	const values = useSelector(selectValues);
 
 	const filterSelected = React.useCallback(() => {
-		const comps = selected.map(id => ({value: getField(entities[id], dataKey), filterType: FilterType.EXACT}));
-		dispatch(setFilter(dataSet, dataKey, comps));
-	}, [dispatch, dataSet, dataKey, selected, entities, getField]);
+		const comps = selected.map(id => ({value: getField(entities[id]!, dataKey), filterType: FilterType.EXACT}));
+		//dispatch(setFilter(dataSet, dataKey, comps));
+		dispatch(actions.setFilter({dataKey, comps}));
+	}, [dispatch, actions/*dataSet*/, dataKey, selected, entities, getField]);
 
 	const isFilterSelected = React.useMemo(() => {
 		if (!filter)
 			return false;
-		const list = selected.map(id => getField(entities[id], dataKey));
+		const list = selected.map(id => getField(entities[id]!, dataKey));
 		return filter.comps.map(comp => comp.value).join() === list.join();
 	}, [filter, dataKey, selected, entities, getField]);
 
@@ -247,11 +257,13 @@ function FilterComponent({
 		(item) => {
 			setSearch('');
 			if (isItemSelected(item))
-				dispatch(removeFilter(dataSet, dataKey, item.value, item.type));
+				//dispatch(removeFilter(dataSet, dataKey, item.value, item.type));
+				dispatch(actions.removeFilter({dataKey, value: item.value, filterType: item.type}));
 			else
-				dispatch(addFilter(dataSet, dataKey, item.value, item.type));
+				//dispatch(addFilter(dataSet, dataKey, item.value, item.type));
+				dispatch(actions.addFilter({dataKey, value: item.value, filterType: item.type}));
 		},
-		[setSearch, isItemSelected, dispatch, dataSet, dataKey]
+		[setSearch, isItemSelected, dispatch, actions/*dataSet*/, dataKey]
 	);
 
 	const onInputKey = React.useCallback(
@@ -284,7 +296,7 @@ function FilterComponent({
 					Selected
 				</Button>
 				<Button
-					onClick={() => dispatch(setFilter(dataSet, dataKey, []))}
+					onClick={() => dispatch(actions.setFilter(/*dataSet,*/ {dataKey, comps: []}))}
 					isActive={filter && filter.comps.length === 0}
 				>
 					Clear
@@ -355,36 +367,40 @@ const Label = styled.label`
 type TableColumnHeaderProps = {
 	className?: string;
 	style?: React.CSSProperties;
-	dataSet: string;
 	dataKey: string;
 	label?: string;
 	dataRenderer?: (value: any) => string;
 	anchorEl: HTMLElement | null;
 	customFilterElement?: React.ReactNode;
 	isId?: boolean;
+	//dataSet: string;
+	selectors: AppTableDataSelectors<any>;
+	actions: AppTableDataActions;
 };
 
 function TableColumnHeader({
 	className,
 	style,
-	dataSet,		// Identifies the dataset in the store
+	//dataSet,		// Identifies the dataset in the store
 	dataKey,		// Identifies the data element in the row object
 	label,			// Column label
 	dataRenderer,	// Optional function to render the data element
 	anchorEl,
 	customFilterElement,	// Custom filter element for dropdown
 	isId,			// Identifies the data table ID column; enables "filter selected"
+	selectors,
+	actions
 }: TableColumnHeaderProps) {
 	const selectInfo = React.useCallback((state) => {
-		const sorts = selectSorts(state, dataSet);
-		const filter = selectFilter(state, dataSet, dataKey);
+		const sorts = selectors.selectSorts(state); //selectSorts(state, dataSet);
+		const filter = selectors.selectFilter(state, dataKey); //selectFilter(state, dataSet, dataKey);
 		return {
 			sort: sorts.settings[dataKey],
 			isSorted: sorts.by.includes(dataKey),
 			filter: filter,
 			isFiltered: filter && filter.comps.length > 0,
 		}
-	}, [dataSet, dataKey]);
+	}, [selectors /*dataSet*/, dataKey]);
 
 	const {sort, isSorted, filter, isFiltered} = useSelector(selectInfo);
 
@@ -417,12 +433,16 @@ function TableColumnHeader({
 		<>
 			{sort &&
 				<SortComponent
-					dataSet={dataSet}
+					//dataSet={dataSet}
+					selectors={selectors}
+					actions={actions}
 					dataKey={dataKey}
 				/>}
 			{filter &&
 				<FilterComponent
-					dataSet={dataSet}
+					//dataSet={dataSet}
+					selectors={selectors}
+					actions={actions}
 					dataKey={dataKey}
 					dataRenderer={dataRenderer}
 					customFilterElement={customFilterElement}

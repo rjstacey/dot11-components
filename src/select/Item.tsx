@@ -1,12 +1,12 @@
 import React from 'react';
-import type { ItemType, SelectProps, SelectState, SelectMethods } from './index';
+import type { ItemType, SelectInternalProps, SelectState, SelectMethods } from './index';
 
 type ItemProps = {
 	style?: React.CSSProperties;
 	className?: string;
 	index: number;
 	item: ItemType;
-	props: SelectProps;
+	props: SelectInternalProps;
 	state: SelectState;
 	methods: SelectMethods;
 };

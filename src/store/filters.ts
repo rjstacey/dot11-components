@@ -79,7 +79,7 @@ function cmpValue(comp: Comp, d: any) {
  * Applies the column filters in turn to the data.
  * Returns a list of ids that meet the filter requirements.
  */
-export function filterData<EntityType={}>(filters: Filters, getField: GetEntityField<EntityType>, entities: Dictionary<EntityType>, ids: Array<EntityId>): Array<EntityId> {
+export function filterData<T>(filters: Filters, getField: GetEntityField<T>, entities: Dictionary<T>, ids: EntityId[]): EntityId[] {
 	let filteredIds = ids.slice();
 	const dataKeys = Object.keys(filters).filter(dataKey => dataKey !== globalFilterKey);
 	// Apply the column filters
@@ -110,7 +110,7 @@ export type Filter = {
 }
 
 export type Filters = {
-	[key: string]: Filter;
+	[dataKey: string]: Filter;
 };
 
 const filterCreate = ({options}: ColumnFieldProperties): Filter => ({
@@ -136,30 +136,30 @@ export function createFiltersSubslice(dataSet: string, fields: Fields) {
 
 	const initialState: FiltersState = {[name]: filtersInit(fields)};
 
-	const reducers: SliceCaseReducers<FiltersState> = {
-		setFilter(state, action: PayloadAction<{dataKey: string; comps: Array<Comp>}>) {
+	const reducers = {
+		setFilter(state: FiltersState, action: PayloadAction<{dataKey: string; comps: Comp[]}>) {
 			const filters = state[name];
 			const {dataKey, comps} = action.payload;
 			const filter = filterCreate(filters[dataKey] || {});
 			filter.comps = comps;
 			filters[dataKey] = filter;
 		},
-		addFilter(state, action: PayloadAction<{dataKey: string} & Comp>) {
+		addFilter(state: FiltersState, action: PayloadAction<{dataKey: string} & Comp>) {
 			const filters = state[name];
 			const {dataKey, value, filterType} = action.payload;
 			filters[dataKey].comps.push({value, filterType});
 		},
-		removeFilter(state, action: PayloadAction<{dataKey: string} & Comp>) {
+		removeFilter(state: FiltersState, action: PayloadAction<{dataKey: string} & Comp>) {
 			const filters = state[name];
 			const {dataKey, value, filterType} = action.payload;
 			filters[dataKey].comps = filters[dataKey].comps.filter((comp: Comp) => comp.value !== value || comp.filterType !== filterType)
 		},
-		clearFilter(state, action: PayloadAction<{dataKey: string}>) {
+		clearFilter(state: FiltersState, action: PayloadAction<{dataKey: string}>) {
 			const filters = state[name];
 			const {dataKey} = action.payload;
 			filters[dataKey] = filterCreate(filters[dataKey]);
 		},
-		clearAllFilters(state) {
+		clearAllFilters(state: FiltersState) {
 			state[name] = filtersInit(state[name]);
 		}
 	};
@@ -171,14 +171,27 @@ export function createFiltersSubslice(dataSet: string, fields: Fields) {
 	}
 }
 
+export function getFiltersSelectors<S>(
+	selectState: (state: S) => FiltersState
+) {
+	return {
+		/** All filters */
+		selectFilters: (state: S) => selectState(state)[name],
+		/** The filter for @param dataKey */
+		selectFilter: (state: S, dataKey: string) => selectState(state)[name][dataKey],
+		/** The global filter */
+		selectGlobalFilter: (state: S) => selectState(state)[name][globalFilterKey]
+	}
+}
+
 /* Actions */
-export const setFilter = (dataSet: string, dataKey: string, comps: Array<Comp>) => ({type: dataSet + '/setFilter', payload: {dataKey, comps}});
-export const addFilter = (dataSet: string, dataKey: string, value: any, filterType: number) => ({type: dataSet + '/addFilter', payload: {dataKey, value, filterType}});
-export const removeFilter = (dataSet: string, dataKey: string, value: any, filterType: number) => ({type: dataSet + '/removeFilter', payload: {dataKey, value, filterType}});
-export const clearFilter = (dataSet: string, dataKey: string) => ({type: dataSet + '/clearFilter', payload: {dataKey}});
-export const clearAllFilters = (dataSet: string) => ({type: dataSet + '/clearAllFilters'});
+//export const setFilter = (dataSet: string, dataKey: string, comps: Array<Comp>) => ({type: dataSet + '/setFilter', payload: {dataKey, comps}});
+//export const addFilter = (dataSet: string, dataKey: string, value: any, filterType: number) => ({type: dataSet + '/addFilter', payload: {dataKey, value, filterType}});
+//export const removeFilter = (dataSet: string, dataKey: string, value: any, filterType: number) => ({type: dataSet + '/removeFilter', payload: {dataKey, value, filterType}});
+//export const clearFilter = (dataSet: string, dataKey: string) => ({type: dataSet + '/clearFilter', payload: {dataKey}});
+//export const clearAllFilters = (dataSet: string) => ({type: dataSet + '/clearAllFilters'});
 
 /* Selectors */
- export const selectFilters = (state, dataSet: string): Filters => state[dataSet][name];
- export const selectFilter = (state, dataSet: string, dataKey: string): Filter | undefined => state[dataSet][name][dataKey];
+ //export const selectFilters = (state, dataSet: string): Filters => state[dataSet][name];
+ //export const selectFilter = (state, dataSet: string, dataKey: string): Filter | undefined => state[dataSet][name][dataKey];
  

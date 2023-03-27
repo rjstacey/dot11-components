@@ -1,32 +1,30 @@
 import React from 'react';
-import {useDispatch, useSelector} from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
-import {Button} from '../form';
-import {setTableView, selectCurrentView, selectViews} from '../store/appTableData';
+import { Button } from '../form';
+
+import type { AppTableDataSelectors, AppTableDataActions } from '../store/appTableData';
 
 type TableViewSelectorProps = {
-	dataSet: string;
+	selectors: AppTableDataSelectors<any>;
+	actions: AppTableDataActions;
 };
 
-function TableViewSelector({dataSet}: TableViewSelectorProps) {
+function TableViewSelector({selectors, actions}: TableViewSelectorProps) {
 	const dispatch = useDispatch();
 
-	const selectInfo = React.useCallback(state => ({
-		currentView: selectCurrentView(state, dataSet),
-		allViews: selectViews(state, dataSet)
-	}), [dataSet]);
-
-	const {currentView, allViews} = useSelector(selectInfo);
+	const currentView = useSelector(selectors.selectCurrentView);
+	const allViews = useSelector(selectors.selectViews);
 
 	return (
 		<>
-			{allViews.map(v => 
+			{allViews.map(view => 
 				<Button
-					key={v}
-					isActive={currentView === v}
-					onClick={() => dispatch(setTableView(dataSet, v))}
+					key={view}
+					isActive={currentView === view}
+					onClick={() => dispatch(actions.setTableView({tableView: view}))}
 				>
-					{v}
+					{view}
 				</Button>
 			)}
 		</>

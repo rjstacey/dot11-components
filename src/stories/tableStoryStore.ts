@@ -1,10 +1,10 @@
-import { configureStore, combineReducers, createSelector, ThunkAction, EntityState, Action, PayloadAction, SliceCaseReducers } from '@reduxjs/toolkit';
+import { configureStore, combineReducers, createSelector, ThunkAction, EntityState, Action, PayloadAction, SliceCaseReducers, Store } from '@reduxjs/toolkit';
 import { createLogger } from 'redux-logger';
 import { useDispatch } from 'react-redux';
 
 import { displayDate } from '../lib';
 
-import { createAppTableDataSlice, SortType, AppTableDataState } from '../store/appTableData';
+import { createAppTableDataSlice, getAppTableDataSelectors, SortType, AppTableDataState } from '../store/appTableData';
 
 import { LoremIpsum } from "lorem-ipsum";
 
@@ -27,7 +27,8 @@ export const nameFields = {
 const namesSlice = createAppTableDataSlice({
 	name: 'names',
 	fields: nameFields,
-	initialState: {}
+	initialState: {},
+	reducers: {}
 });
 
 type NamesState = AppTableDataState<NameEntity>;
@@ -111,25 +112,23 @@ const initialState = {extra: false};
 
 type DataState = AppTableDataState<DataEntity> & typeof initialState;
 
-const reducers: SliceCaseReducers<DataState> = {
-	setExtra(state, action: PayloadAction<boolean>) {
-		state.extra = action.payload;
-	}
-}
-
-const dataSlice = createAppTableDataSlice<DataEntity, DataState>({
+const dataSlice = createAppTableDataSlice({
 	name: 'data',
 	fields: dataFields,
 	initialState,
-	reducers,
-	selectField,
-	selectEntities
+	//selectId: (entity: DataEntity) => entity.id,
+	reducers: {
+		setExtra(state, action: PayloadAction<boolean>) {
+			state.extra = action.payload;
+		}
+	},
 });
 
+const {getSuccess, setExtra} = dataSlice.actions;
 
 const rootReducer = combineReducers({
-	[namesSlice.name]: namesSlice.reducer,
-	[dataSlice.name]: dataSlice.reducer,
+	names: namesSlice.reducer,
+	data: dataSlice.reducer,
 });
 
 const store = configureStore({
@@ -145,6 +144,10 @@ type AppThunk<ReturnType = void> = ThunkAction<ReturnType, RootState, unknown, A
 export const useAppDispatch: () => AppDispatch = useDispatch;
 //const useAppSelector: TypedUseSelectorHook<RootState> = useSelector
 
+export const dataSelectors = getAppTableDataSelectors((state: RootState) => state.data)
+export const dataActions = dataSlice.actions;
+
+
 const randomDate = (start: Date, end: Date) =>
 	new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
 
@@ -158,7 +161,7 @@ const lorem = new LoremIpsum({
 const MaxNames = 4;
 
 
-const genData = (n: number): Array<DataEntity> =>
+const genData = (n: number): DataEntity[] =>
 	new Array(n)
 		.fill(true)
 		.map((r, i) => ({
@@ -170,7 +173,7 @@ const genData = (n: number): Array<DataEntity> =>
 			Status: randomStatus()
 		}));
 
-const genNames = (): Array<NameEntity> =>
+const genNames = (): NameEntity[] =>
 	new Array(MaxNames)
 		.fill(true)
 		.map((r, i) => ({

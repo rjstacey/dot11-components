@@ -8,6 +8,7 @@ import SliderSwitch from './SliderSwitch';
 import Button from './Button';
 import ButtonGroup from './ButtonGroup';
 import ActionButton from './ActionButton';
+import {Dropdown, ActionButtonDropdown} from '../dropdown';
 
 export * from './Form';
 
@@ -21,5 +22,7 @@ export {
 	SliderSwitch,
 	Button,
 	ButtonGroup,
-	ActionButton
+	ActionButton,
+	Dropdown,
+	ActionButtonDropdown
 };

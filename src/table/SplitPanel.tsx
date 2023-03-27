@@ -1,27 +1,28 @@
-//import PropTypes from 'prop-types';
 import React from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 import {ActionButton} from '../form';
-import {setPanelWidth, setPanelIsSplit, selectCurrentPanelConfig} from '../store/appTableData';
+//import {setPanelWidth, setPanelIsSplit, selectCurrentPanelConfig} from '../store/appTableData';
+import type { AppTableDataSelectors, AppTableDataActions } from '../store/appTableData';
 
 import ColumnResizer from './ColumnResizer';
 
 interface SplitPanelButtonProps extends React.ComponentProps<typeof ActionButton> {
-	dataSet: string;
 	title?: string;
+	selectors: AppTableDataSelectors;
+	actions: AppTableDataActions;
 }
-export function SplitPanelButton({dataSet, title, ...otherProps}: SplitPanelButtonProps) {
+
+export function SplitPanelButton({title, selectors, actions, ...otherProps}: SplitPanelButtonProps) {
 	const dispatch = useDispatch();
-	const selectPanelConfig = React.useCallback(state => selectCurrentPanelConfig(state, dataSet), [dataSet]);
-	let {isSplit} = useSelector(selectPanelConfig);
-	const setIsSplit = (isSplit) => dispatch(setPanelIsSplit(dataSet, undefined, isSplit));
+	const {isSplit} = useSelector(selectors.selectCurrentPanelConfig);
+	const toggleIsSplit = () => dispatch(actions.setPanelIsSplit({isSplit: !isSplit}));
 
 	return (
 		<ActionButton
 			name='book-open'
 			title={title || 'Show detail'}
 			isActive={isSplit}
-			onClick={() => setIsSplit(!isSplit)}
+			onClick={toggleIsSplit}
 			{...otherProps}
 		/>
 	)
@@ -34,17 +35,18 @@ interface PanelProps extends React.HTMLProps<HTMLDivElement> {
 export const Panel = ({children, ...otherProps}: PanelProps) => <div {...otherProps} >{children}</div>;
 
 interface SplitPanelProps {
-	dataSet: string;
 	style?: React.CSSProperties;
 	className?: string;
+	selectors: AppTableDataSelectors;
+	actions: AppTableDataActions;
 	children: [React.ReactElement<PanelProps>, React.ReactElement<PanelProps>];
 }
 
-export function SplitPanel({dataSet, style, children, ...otherProps}: SplitPanelProps) {
+export function SplitPanel({style, selectors, actions, children, ...otherProps}: SplitPanelProps) {
 	const dispatch = useDispatch();
 	const ref = React.useRef<HTMLDivElement>(null);
-	const selectPanelConfig = React.useCallback(state => selectCurrentPanelConfig(state, dataSet), [dataSet]);
-	let {isSplit, width} = useSelector(selectPanelConfig);
+	let {isSplit, width} = useSelector(selectors.selectCurrentPanelConfig);
+	const setPanelWidth = (width: number) => dispatch(actions.setPanelWidth({width}))
 
 	let content; 
 	if (isSplit) {
@@ -54,7 +56,7 @@ export function SplitPanel({dataSet, style, children, ...otherProps}: SplitPanel
 		const rightStyle = {...children[1].props.style, flex: `${(1 - width)*100}%`};
 		const onDrag = (event, {x, deltaX}) => {
 			const b = (ref.current as HTMLDivElement).getBoundingClientRect();	// only called after ref established
-			dispatch(setPanelWidth(dataSet, undefined, (x - b.x)/(b.width - 5)));
+			setPanelWidth((x - b.x)/(b.width - 5));
 		};
 		content =
 			<>
@@ -78,22 +80,5 @@ export function SplitPanel({dataSet, style, children, ...otherProps}: SplitPanel
 		</div>
 	)
 }
-
-/*const checkChildren = (props, propName, componentName) => {
-	const {children} = props;
-	if (React.Children.count(children) !== 2)
-		return new Error('`' + componentName + '` has invalid number of children; expect exactly two');
-	let error;
-	React.Children.forEach(children, (el) => {
-		if (el.type !== Panel)
-			error = new Error('`' + componentName + '` has invalid child; expect only Panel children')
-	});
-	return error;
-}
-
-SplitPanel.propTypes = {
-	dataSet: PropTypes.string.isRequired,
-	children: checkChildren
-}*/
 
 export default SplitPanel;

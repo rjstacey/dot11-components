@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import {Icon} from '../icons';
+import { Icon } from '../icons';
 
 import Dropdown from './Dropdown';
 import MultiSelectItem from './MultiSelectItem';
@@ -12,12 +12,12 @@ import {debounce} from '../lib';
 
 import './index.css';
 
-const Content = (props) => <div className='dropdown-select-content' {...props} />
-const Loading = (props) => <div className='dropdown-select-loading' {...props} />
-const Clear = (props) => <div className='dropdown-select-clear-all' {...props} />
-const Separator = (props) => <div className='dropdown-select-separator' {...props} />
-const DropdownHandle = (props) => <Icon className='dropdown-select-handle' type='handle' {...props}/>
-const Placeholder = (props) => <div className='dropdown-select-placeholder' {...props} />
+const Content = (props: React.ComponentProps<"div">) => <div className='dropdown-select-content' {...props} />
+const Loading = (props: React.ComponentProps<"div">) => <div className='dropdown-select-loading' {...props} />
+const Clear = (props: React.ComponentProps<"div">) => <div className='dropdown-select-clear-all' {...props} />
+const Separator = (props: React.ComponentProps<"div">) => <div className='dropdown-select-separator' {...props} />
+const DropdownHandle = (props: React.ComponentProps<typeof Icon>) => <Icon className='dropdown-select-handle' type='handle' {...props}/>
+const Placeholder = (props: React.ComponentProps<"div">) => <div className='dropdown-select-placeholder' {...props} />
 const NoData = ({props}) => <div className='dropdown-select-no-data'>{props.noDataLabel}</div>
 
 function defaultContentRenderer({props, state, methods}: RendererProps): React.ReactNode {
@@ -49,12 +49,11 @@ function defaultCreateOption({props, state, methods}: RendererProps): ItemType {
 	}
 }
 
-
 export type ItemType = any; //{ [key: string]: any} | {};
 
 export type RendererProps = {props: any, state: SelectState, methods: SelectMethods};
 
-export type SelectProps = typeof Select.defaultProps & {
+export type SelectInternalProps = SelectDefaultProps & {
 	values: ItemType[];
 	onChange: (values: ItemType[]) => void;
 	options: ItemType[];
@@ -66,55 +65,61 @@ export type SelectProps = typeof Select.defaultProps & {
 	portal?: Element | null;
 
 	dropdownWidth?: number;
+};
 
-	/*onRequestClose?: () => void,
-	onRequestOpen?: () => void;
-	createOption?: (search: string) => any;
+type SelectDefaultProps = {
+	onChange: (values: ItemType[]) => void;
 
-	placeholder?: string;
-	addPlaceholder?: string;
-	loading?: boolean;
-	multi?: boolean;
-	create?: boolean;
-	clearable?: boolean;
-	searchable?: boolean;
-	backspaceDelete?: boolean;
-	readOnly?: boolean;
+	onRequestOpen: () => void;
+	onRequestClose: () => void;
+	createOption: typeof defaultCreateOption;
+	placeholder: string;
+	addPlaceholder: string;
+	loading: boolean;
+	multi: boolean;
+	create: boolean;
+	clearable: boolean;
+	searchable: boolean;
+	backspaceDelete: boolean;
+	readOnly: boolean;
+	closeOnScroll: boolean;
+	closeOnBlur: boolean;
+	clearOnSelect: boolean;
+	clearOnBlur: boolean;
+	keepOpen: boolean;
+	keepSelectedInList: boolean;
+	autoFocus: boolean;
 
-	closeOnScroll?: boolean;
-	closeOnSelect?: boolean;
-	closeOnBlur?: boolean;
-	clearOnBlur?: boolean;
-	keepOpen?: boolean,
-	keepSelectedInList?: boolean;
-	autoFocus?: boolean;
+	labelField: string;
+	valueField: string;
+	searchBy: null,
+	sortBy: null,
+	valuesEqual: (a: ItemType, b: ItemType) => boolean;
 
-	labelField?: string;
-	valueField?: string;
-	searchBy?: string;
-	sortBy?: string;
-	valuesEqual?: (item1: any, item2: any) => boolean;
+	handle: boolean;
+	separator: boolean;
+	noDataLabel: string;
+	dropdownGap: number;
+	dropdownHeight: number;
+	dropdownPosition: 'bottom' | 'top' | 'auto';
+	dropdownAlign: 'left' | 'right';
+	estimatedItemHeight: number;
 
-	handle?: boolean;
-	separator?: boolean;
-	noDataLabel?: boolean;
+	/* Select children */
+	contentRenderer: typeof defaultContentRenderer;
 
-	dropdownGap?: number;
-	dropdownHeight?: number;
-	dropdownPosition?: 'auto' | 'bottom' | 'top';
-	dropdownAlign?: 'left' | 'right';
-	dropdownWidth?: number;
-	estimatedItemHeight?: number;
+	/* Content children */
+	selectItemRenderer: (props: {item: ItemType} & RendererProps) => React.ReactNode;
+	multiSelectItemRenderer: (props: {item: ItemType} & RendererProps) => React.ReactNode;
+	inputRenderer: (props: {inputRef: React.RefObject<HTMLInputElement>} & RendererProps) => React.ReactNode;
 
+	/* Dropdown */
+	dropdownRenderer: (props: RendererProps) => React.ReactNode;
 
-	contentRenderer?: (props: RendererProps) => React.ReactNode;
-	selectItemRenderer?: (props: {item: any} & RendererProps) => React.ReactNode;
-	multiSelectItemRenderer?: (props: {item: any} & RendererProps) => React.ReactNode;
-	inputRenderer?: (props: {inputRef: React.RefObject<HTMLInputElement>} & RendererProps) => React.ReactNode;
-
-	dropdownRenderer?: (props: RendererProps) => React.ReactNode;
-	itemRenderer?: (props: {item: any, className?: string} & RendererProps) => React.ReactNode;
-	noDataRenderer?: (props: SelectProps) => React.ReactNode;*/
+	/* Dropdown children */
+	addItemRenderer: typeof defaultAddItemRenderer;
+	itemRenderer: typeof defaultItemRenderer;
+	noDataRenderer: (props: RendererProps) => React.ReactNode;
 };
 
 export type SelectState = {
@@ -140,9 +145,9 @@ export type SelectMethods = {
 	searchResults: () => ItemType[];
 };
 
-class Select extends React.Component<SelectProps, SelectState> {
+class Select extends React.Component<SelectInternalProps, SelectState> {
 
-	constructor(props) {
+	constructor(props: SelectInternalProps) {
 		super(props);
 
 		this.state = {
@@ -189,7 +194,7 @@ class Select extends React.Component<SelectProps, SelectState> {
 		this.updateSelectBounds();
 	}
 
-	componentDidUpdate(prevProps, prevState) {
+	componentDidUpdate(prevProps: SelectInternalProps, prevState: SelectState) {
 		const {props, state} = this;
 
 		if (prevProps.options !== props.options ||
@@ -601,7 +606,8 @@ class Select extends React.Component<SelectProps, SelectState> {
 		)
 	}
 
-	static defaultProps = {
+	static defaultProps: SelectDefaultProps = {
+		onChange: () => undefined,
 		onRequestOpen: () => undefined,
 		onRequestClose: () => undefined,
 		createOption: defaultCreateOption,
@@ -641,12 +647,12 @@ class Select extends React.Component<SelectProps, SelectState> {
 		contentRenderer: defaultContentRenderer,
 	
 		/* Content children */
-		selectItemRenderer: (props: {item: ItemType} & RendererProps): React.ReactNode => <SelectItem {...props} />,
-		multiSelectItemRenderer: (props: {item: ItemType} & RendererProps): React.ReactNode => <MultiSelectItem {...props} />,
-		inputRenderer: (props: {inputRef: React.RefObject<HTMLInputElement>} & RendererProps): React.ReactNode => <Input {...props} />,
+		selectItemRenderer: (props) => <SelectItem {...props} />,
+		multiSelectItemRenderer: (props) => <MultiSelectItem {...props} />,
+		inputRenderer: (props) => <Input {...props} />,
 	
 		/* Dropdown */
-		dropdownRenderer: (props: RendererProps): React.ReactNode => <Dropdown {...props} />,
+		dropdownRenderer: (props) => <Dropdown {...props} />,
 	
 		/* Dropdown children */
 		addItemRenderer: defaultAddItemRenderer,
@@ -655,4 +661,6 @@ class Select extends React.Component<SelectProps, SelectState> {
 	};
 }
 
-export default Select;
+export type SelectProps = JSX.LibraryManagedAttributes<typeof Select, SelectInternalProps>;
+
+export default (props: SelectProps) => <Select {...props} />;

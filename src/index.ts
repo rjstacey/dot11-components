@@ -5,5 +5,6 @@ export * from './modals';
 export * from './icons';
 export * from './general';
 export * from './modals';
+export * from './table';
 export * from './store/appTableData';
 export * from './store/error';

@@ -8,9 +8,9 @@ export function createSelectedSubslice(dataSet: string) {
 
 	const initialState: SelectedState = {[name]: []};
 
-	const reducers: SliceCaseReducers<SelectedState> = {
-		setSelected(state, action: PayloadAction<Array<EntityId>>) {state[name] = action.payload},
-		toggleSelected(state, action: PayloadAction<Array<EntityId>>) {
+	const reducers = {
+		setSelected(state: SelectedState, action: PayloadAction<EntityId[]>) {state[name] = action.payload},
+		toggleSelected(state: SelectedState, action: PayloadAction<EntityId[]>) {
 			const list = state[name];
 			for (let id of action.payload) {
 				const i = list.indexOf(id);
@@ -40,6 +40,15 @@ export function createSelectedSubslice(dataSet: string) {
 		initialState,
 		reducers,
 		extraReducers
+	}
+}
+
+export function getSelectedSelectors<S>(
+	selectState: (state: S) => SelectedState
+) {
+	return {
+		/** The list of ids that represent selected rows */
+		selectSelected: (state: S) => selectState(state)[name]
 	}
 }
 

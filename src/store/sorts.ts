@@ -138,13 +138,9 @@ function sortsInit(fields: Fields): Sorts {
 		const direction = field.sortDirection || "NONE";
 		if (!Object.values(SortDirection).includes(direction))
 			console.error(`Invalid sort direction ${direction} for dataKey=${dataKey}`);
-		//const {getField} = field;
-		//if (getField && typeof getField !== 'function')
-		//	console.error(`Invalid getField; needs to be a function getField(rowData, dataKey)`);
 		settings[dataKey] = {
 			type,
 			direction,
-		//	getField
 		};
 	}
 	return {by: [], settings};
@@ -158,7 +154,7 @@ export const createSortsSubslice = (dataSet: string, fields: Fields) => {
 
 	const initialState: SortsState = {[name]: sortsInit(fields)};
 
-	const reducers: SliceCaseReducers<SortsState> = {
+	const reducers = {
 		setSortDirection(state: SortsState, action: PayloadAction<{dataKey: string, direction: SortDirectionType}>) {
 			const {dataKey, direction} = action.payload;
 			state[name] = setSort(state[name], dataKey, direction);
@@ -172,9 +168,20 @@ export const createSortsSubslice = (dataSet: string, fields: Fields) => {
 	}
 }
 
+export function getSortsSelectors<S>(
+	selectState: (state: S) => SortsState
+) {
+	return {
+		/** All sorts. Has shape {by, settings} */
+		selectSorts: (state: S) => selectState(state)[name],
+		/** The sort for @param dataKey */
+		selectSort: (state: S, dataKey: string) => selectState(state)[name].settings[dataKey]
+	}
+}
+
 /* Actions */
-export const sortSet = (dataSet: string, dataKey: string, direction: SortDirectionType) => ({type: dataSet + '/setSortDirection', payload: {dataKey, direction}});
+//export const sortSet = (dataSet: string, dataKey: string, direction: SortDirectionType) => ({type: dataSet + '/setSortDirection', payload: {dataKey, direction}});
 
 /* Selectors */
-export const selectSorts = (state: {}, dataSet: string): Sorts => state[dataSet][name];
-export const selectSort = (state: {}, dataSet: string, dataKey: string): Sort | undefined => state[dataSet][name].settings[dataKey];
+//export const selectSorts = (state: {}, dataSet: string): Sorts => state[dataSet][name];
+//export const selectSort = (state: {}, dataSet: string, dataKey: string): Sort | undefined => state[dataSet][name].settings[dataKey];

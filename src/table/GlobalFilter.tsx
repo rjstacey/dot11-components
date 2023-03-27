@@ -3,20 +3,21 @@ import {useDispatch, useSelector} from 'react-redux';
 
 import {Input} from '../form';
 
-import {selectFilter, setFilter, FilterType, globalFilterKey} from '../store/appTableData';
+import {FilterType, globalFilterKey, AppTableDataSelectors, AppTableDataActions} from '../store/appTableData';
 
 interface GlobalFilterProps extends React.ComponentProps<typeof Input> {
-	dataSet: string;
+	selectors: AppTableDataSelectors<any>;
+	actions: AppTableDataActions;
 }
 
 function GlobalFilter({
-	dataSet,
+	selectors,
+	actions,
 	...otherProps
 }: GlobalFilterProps) {
 	const inputRef = React.useRef<HTMLInputElement>(null);
 	const dispatch = useDispatch();
-	const selectGlobalFilter = React.useCallback(state => selectFilter(state, dataSet, globalFilterKey), [dataSet]);
-	const globalFilter = useSelector(selectGlobalFilter);
+	const globalFilter = useSelector(selectors.selectGlobalFilter);
 	const value = (globalFilter && globalFilter.comps.length > 0)? globalFilter.comps[0].value: '';
 
 	React.useEffect(() => {
@@ -43,7 +44,7 @@ function GlobalFilter({
 				catch (err) {}
 			}
 		}
-		dispatch(setFilter(dataSet, globalFilterKey, [comp]));
+		dispatch(actions.setFilter({dataKey: globalFilterKey, comps: [comp]}));
 	};
 
 	return (

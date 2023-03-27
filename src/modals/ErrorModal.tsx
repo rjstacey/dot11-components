@@ -1,5 +1,5 @@
 import React from 'react';
-import { connect, ConnectedProps } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import {Form} from '../form';
 import {AppModal} from '.';
 
@@ -15,25 +15,19 @@ function strToHtml(s: string) {
 		.join('<br />')
 }
 
-const connector = connect(
-	(state: any) => {
-		const errors = selectErrors(state);
-		const errMsg = errors.length? errors[0]: null;
-		return {errMsg}
-	},
-	{clearError}
-);
+function ErrorModal() {
+	const dispatch = useDispatch();
+	const errors = useSelector(selectErrors);
+	const errMsg = errors.length? errors[0]: null;
 
-type ErrorModalProps = ConnectedProps<typeof connector>;
-
-function ErrorModal({errMsg, clearError}: ErrorModalProps) {
-	let summary: string = '',
-		detail: string = '';
+	let summary = '',
+		detail = '';
 	if (errMsg) {
 		summary = errMsg.summary;
 		if (errMsg.detail)
 			detail = errMsg.detail;
 	}
+
 	return (
 		<AppModal
 			isOpen={errMsg !== null}
@@ -41,7 +35,7 @@ function ErrorModal({errMsg, clearError}: ErrorModalProps) {
 		>
 			<Form
 				title={summary}
-				submit={clearError}
+				submit={() => dispatch(clearError())}
 			>
 				{detail && <p dangerouslySetInnerHTML={{__html: strToHtml(detail)}} />}
 			</Form>
@@ -49,4 +43,4 @@ function ErrorModal({errMsg, clearError}: ErrorModalProps) {
 	)
 }
 
-export default connector(ErrorModal);
+export default ErrorModal;

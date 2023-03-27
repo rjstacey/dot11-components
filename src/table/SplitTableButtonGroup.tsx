@@ -4,21 +4,23 @@ import TableViewSelector from './TableViewSelector';
 import TableColumnSelector from './TableColumnSelector';
 import {SplitPanelButton} from './SplitPanel';
 
-import type {ColumnProperties} from './AppTable';
+import type { ColumnProperties } from './AppTable';
+import type { AppTableDataSelectors, AppTableDataActions } from '../store/appTableData';
 
 type SplitTableButtonGroupProps = {
-	dataSet: string;
 	columns: Array<ColumnProperties>;
+	selectors: AppTableDataSelectors;
+	actions: AppTableDataActions;
 }
 
-export function SplitTableButtonGroup({dataSet, columns}: SplitTableButtonGroupProps) {
+export function SplitTableButtonGroup({columns, selectors, actions}: SplitTableButtonGroupProps) {
 	return (
 		<ButtonGroup>
 			<div>Table view</div>
 			<div style={{display: 'flex', justifyContent: 'center'}}>
-				<TableViewSelector dataSet={dataSet} />
-				<TableColumnSelector dataSet={dataSet} columns={columns} />
-				<SplitPanelButton dataSet={dataSet} />
+				<TableViewSelector selectors={selectors} actions={actions} />
+				<TableColumnSelector columns={columns} selectors={selectors} actions={actions} />
+				<SplitPanelButton selectors={selectors} actions={actions} />
 			</div>
 		</ButtonGroup>
 	)

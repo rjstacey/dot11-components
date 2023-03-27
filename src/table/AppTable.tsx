@@ -1,5 +1,6 @@
 import React from 'react';
 import {useDispatch, useSelector} from 'react-redux';
+import type {Action} from '@reduxjs/toolkit';
 import styled from '@emotion/styled';
 import {VariableSizeGrid as Grid} from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
@@ -10,21 +11,18 @@ import ColumnHeader from './TableColumnHeader';
 
 import {debounce, getScrollbarSize} from '../lib';
 
-import {
-	setSelected,
-	setDefaultTablesConfig,
-	adjustTableColumnWidth,
-	selectEntities,
-	selectGetField,
-	selectSortedFilteredIds,
+import type {
 	EntityId,
+	Dictionary,
 	GetEntityField,
 	TablesConfig,
 	TableConfig,
-	ChangeableColumnProperties
+	ChangeableColumnProperties,
+	AppTableDataActions,
+	AppTableDataSelectors,
 } from '../store/appTableData';
 
-export type {EntityId, GetEntityField};
+export type {EntityId, Dictionary, GetEntityField};
 
 export type HeaderRendererProps = {
 	anchorEl: HTMLElement | null;
@@ -36,7 +34,7 @@ export type HeaderRendererProps = {
 export type CellRendererProps = {
 	dataKey: string;
 	rowId: EntityId;
-	rowData: object;
+	rowData: { [k: string]: unknown };
 }
 
 export type ColumnProperties = {
@@ -56,7 +54,7 @@ export type {ChangeableColumnProperties, TablesConfig};
 export type RowGetterProps = {
 	rowIndex: number;
 	rowId: EntityId;
-	entities: { [key: string]: object };
+	entities: Dictionary<unknown>;
 	ids: EntityId[];
 };
 
@@ -64,13 +62,14 @@ export type AppTableProps<EntityType> = {
 	fitWidth?: boolean;
 	fixed?: boolean;
 	columns: Array<ColumnProperties>,
-	dataSet: string;
 	rowGetter?: (props: RowGetterProps) => EntityType;
 	headerHeight: number;
 	estimatedRowHeight: number;
 	measureRowHeight?: boolean;
 	defaultTablesConfig?: TablesConfig;
 	gutterSize?: number,
+	selectors: AppTableDataSelectors,
+	actions: AppTableDataActions
 };
 
 const scrollbarSize = getScrollbarSize();
@@ -130,18 +129,18 @@ const NoGrid = styled.div`
 /*
  * Key down handler for Grid (when focused)
  */
-const useKeyDown = (dataSet: string, selected: Array<EntityId>, ids: Array<EntityId>, dispatch: ReturnType<typeof useDispatch>, gridRef: Grid | null) => 
+const useKeyDown = (actions: AppTableDataActions, selected: EntityId[], ids: EntityId[], dispatch: ReturnType<typeof useDispatch>, gridRef: Grid | null) =>
 	React.useCallback((event: React.KeyboardEvent) => {
 
 		const selectAndScroll = (i: number) => {
-			dispatch(setSelected(dataSet, [ids[i]]));
+			dispatch(actions.setSelected([ids[i]]));
 			if (gridRef)
 				gridRef.scrollToItem({rowIndex: i});
 		}
 
 		// Ctrl-A selects all
 		if ((event.ctrlKey || event.metaKey) && event.key === 'a') {
-			dispatch(setSelected(dataSet, ids));
+			dispatch(actions.setSelected(ids));
 			event.preventDefault();
 		}
 		else if (event.key === 'Home') {
@@ -183,9 +182,9 @@ const useKeyDown = (dataSet: string, selected: Array<EntityId>, ids: Array<Entit
 
 			selectAndScroll(i);
 		}
-	}, [dataSet, selected, ids, dispatch, gridRef]);
+	}, [actions, selected, ids, dispatch, gridRef]);
 
-const useRowClick = (dataSet: string, selected: Array<EntityId>, ids: Array<EntityId>, dispatch) => 
+const useRowClick = (actions: AppTableDataActions, selected: EntityId[], ids: EntityId[], dispatch) => 
 	React.useCallback(({event, rowIndex}: {event: React.MouseEvent, rowIndex: number}) => {
 
 		let newSelected = selected.slice();
@@ -223,8 +222,8 @@ const useRowClick = (dataSet: string, selected: Array<EntityId>, ids: Array<Enti
 		else {
 			newSelected = [id];
 		}
-		dispatch(setSelected(dataSet, newSelected));
-	}, [dataSet, selected, ids, dispatch]);
+		dispatch(actions.setSelected(newSelected));
+	}, [actions, selected, ids, dispatch]);
 
 type GridSizing = {
 	resetIndex: number;
@@ -242,7 +241,8 @@ function AppTableSized<EntityType>({
 	gutterSize = 5,
 	estimatedRowHeight,
 	measureRowHeight = false,
-	dataSet,
+	selectors,
+	actions,
 	...props
 }: AppTableSizedProps<EntityType>) {
 	const gridRef = React.useRef<Grid>(null);
@@ -306,34 +306,22 @@ function AppTableSized<EntityType>({
 	}, [props.defaultTablesConfig, props.columns, props.fixed]);
 
 	React.useEffect(() => {
-		dispatch(setDefaultTablesConfig(dataSet, defaultTableView, defaultTablesConfig));
-	}, [dispatch, dataSet, defaultTableView, defaultTablesConfig]);
+		dispatch(actions.setDefaultTablesConfig({tableView: defaultTableView, tablesConfig: defaultTablesConfig}));
+	}, [dispatch, actions, defaultTableView, defaultTablesConfig]);
 
-	const selectInfo = React.useCallback(state => {
-		const {selected, expanded, loading} = state[dataSet];
-		const {tablesConfig, tableView} = state[dataSet].ui;
-		return {
-			selected,
-			expanded,
-			loading,
-			ids: selectSortedFilteredIds(state, dataSet),
-			entities: selectEntities(state, dataSet),
-			getField: selectGetField(state, dataSet),
-			tablesConfig,
-			tableView
-		}
-	}, [dataSet]);
-
-	const {selected, expanded, loading, ids, entities, getField, tablesConfig, tableView} = useSelector(selectInfo);
+	const {selected, expanded, loading} = useSelector(selectors.selectState);
+	const ids = useSelector(selectors.selectSortedFilteredIds);
+	const entities = useSelector(selectors.selectEntities);
+	const {tablesConfig, tableView} = useSelector(selectors.selectUiProperties);
+	const {getField} = selectors;
 
 	const tableConfig = tablesConfig[tableView] || defaultTablesConfig[defaultTableView];
 
-	const adjustColumnWidth = React.useCallback((key: string, deltaX: number) => {
-		dispatch(adjustTableColumnWidth(dataSet, tableView, key, deltaX));
-		//dispatch(setTableColumnWidth(dataSet, tableView, key, width));
+	const adjustColumnWidth = React.useCallback((key: string, delta: number) => {
+		dispatch(actions.adjustTableColumnWidth({tableView, key, delta}));
 		if (gridRef.current)
 			gridRef.current.resetAfterColumnIndex(0, true);
-	}, [dispatch, dataSet, tableView]);
+	}, [dispatch, actions, tableView]);
 
 	// Sync the table header scroll position with that of the table body
 	const onScroll = ({scrollLeft, scrollTop}) => {
@@ -341,9 +329,9 @@ function AppTableSized<EntityType>({
 			headerRef.current.scrollLeft = scrollLeft;
 	};
 
-	const onKeyDown = useKeyDown(dataSet, selected, ids, dispatch, gridRef.current);
+	const onKeyDown = useKeyDown(actions, selected, ids, dispatch, gridRef.current);
 
-	const onRowClick = useRowClick(dataSet, selected, ids, dispatch);
+	const onRowClick = useRowClick(actions, selected, ids, dispatch);
 
 	const fixed = tableConfig.fixed;
 	const {columns, totalWidth} = React.useMemo(() => {
@@ -415,7 +403,7 @@ function AppTableSized<EntityType>({
 				fixed={fixed}
 				columns={columns}
 				adjustColumnWidth={adjustColumnWidth}
-				defaultHeaderCellRenderer={(p) => <ColumnHeader dataSet={dataSet} {...p}/>}
+				defaultHeaderCellRenderer={(p) => <ColumnHeader /*dataSet={dataSet}*/ actions={actions} selectors={selectors} {...p}/>}
 			/>
 		</Table>
 	)

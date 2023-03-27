@@ -5,14 +5,11 @@ import styled from '@emotion/styled';
 import {ActionIcon} from '../icons';
 
 import {
-	removeFilter,
-	clearAllFilters,
-	selectFilters,
-	selectIds,
-	selectSortedFilteredIds,
 	globalFilterKey,
 	Fields,
-	Filter,
+	Filters,
+	AppTableDataSelectors,
+	AppTableDataActions
 } from '../store/appTableData';
 
 const ActiveFilterLabel = styled.label`
@@ -53,9 +50,19 @@ const ActiveFilter = ({children, remove}: ActiveFilterProps) =>
 		<ActionIcon style={{minWidth: 16}} type='clear' onClick={remove} />
 	</ActiveFilterContainer>
 
-function renderActiveFilters({fields, filters, removeFilter, clearAllFilters}) {
-	let elements: Array<React.ReactNode> = [];
-	for (const [dataKey, filter] of Object.entries<Filter>(filters)) {
+function renderActiveFilters({
+	fields,
+	filters,
+	removeFilter,
+	clearAllFilters
+}: {
+	fields: Fields;
+	filters: Filters;
+	removeFilter: (dataKey: string, value: any, filterType: number) => void;
+	clearAllFilters: () => void;
+}) {
+	let elements: React.ReactNode[] = [];
+	for (const [dataKey, filter] of Object.entries(filters)) {
 		if (dataKey === globalFilterKey)
 			continue;
 		if (!fields[dataKey]) {
@@ -127,31 +134,29 @@ type ShowFiltersProps = {
 	style?: React.CSSProperties;
 	className?: string;
 	fields: Fields;
-	dataSet: string;
+	selectors: AppTableDataSelectors,
+	actions: AppTableDataActions,
 };
 
 function ShowFilters({
 	style,
 	className,
 	fields,
-	dataSet
+	selectors,
+	actions
 }: ShowFiltersProps) {
 	const dispatch = useDispatch();
 
-	const selectfiltersInfo = React.useCallback((state) => ({
-		totalRows: selectIds(state, dataSet).length,
-		shownRows: selectSortedFilteredIds(state, dataSet).length,
-		filters: selectFilters(state, dataSet)
-	}), [dataSet]);
-
-	const {filters, totalRows, shownRows} = useSelector(selectfiltersInfo);
+	const totalRows = useSelector(selectors.selectIds).length;
+	const shownRows = useSelector(selectors.selectSortedFilteredIds).length;
+	const filters = useSelector(selectors.selectFilters);
 
 	const activeFilterElements = React.useMemo(() => {
-		const dispatchRemoveFilter = (dataKey, value, filterType) => dispatch(removeFilter(dataSet, dataKey, value, filterType));
-		const dispatchClearAllFilters = () => dispatch(clearAllFilters(dataSet));
+		const removeFilter = (dataKey: string, value: any, filterType: number) => dispatch(actions.removeFilter({dataKey, value, filterType}));
+		const clearAllFilters = () => dispatch(actions.clearAllFilters());
 
-		return renderActiveFilters({fields, filters, removeFilter: dispatchRemoveFilter, clearAllFilters: dispatchClearAllFilters});
-	}, [dataSet, fields, filters, dispatch]);
+		return renderActiveFilters({fields, filters, removeFilter, clearAllFilters});
+	}, [actions, fields, filters, dispatch]);
 
 	return (
 		<FiltersContainer

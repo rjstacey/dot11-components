@@ -1,26 +1,27 @@
-import {createSlice, createEntityAdapter, createSelector, Selector} from '@reduxjs/toolkit';
+import { createSlice, createEntityAdapter } from '@reduxjs/toolkit';
 import type {
 	EntityId,
 	Comparer,
 	IdSelector,
 	PayloadAction,
 	Dictionary,
+	Update,
 	SliceCaseReducers,
 	ValidateSliceCaseReducers,
 	EntityState,
-	Update,
 	ActionReducerMapBuilder,
-	EntityAdapter
+	EntityAdapter,
 } from '@reduxjs/toolkit';
+import { createSelector } from 'reselect';	/* Use older version; the newer version does not handle typescript generics well */
 
-import {selectSorts, sortData, SortDirectionType} from './sorts';
-import {selectFilters, filterData} from './filters';
+import { sortData, SortDirectionType} from './sorts';
+import { filterData } from './filters';
 
-import { createSelectedSubslice, SelectedState } from './selected'
-import { createExpandedSubslice, ExpandedState } from './expanded'
-import { createFiltersSubslice, FiltersState, Filters } from './filters'
-import { createSortsSubslice, SortsState, Sorts } from './sorts'
-import { createUiSubslice, UiState } from './ui'
+import { createSelectedSubslice, getSelectedSelectors, SelectedState } from './selected'
+import { createExpandedSubslice, getExpandedSelectors, ExpandedState  } from './expanded'
+import { createFiltersSubslice, getFiltersSelectors, FiltersState } from './filters'
+import { createSortsSubslice, getSortsSelectors, SortsState } from './sorts'
+import { createUiSubslice, getUiSelectors, UiState } from './ui'
 
 export * from './selected';
 export * from './expanded';
@@ -28,9 +29,9 @@ export * from './filters';
 export * from './sorts';
 export * from './ui';
 
-export { EntityId };
+export { EntityId, Dictionary };
 
-export type GetEntityField<EntityType = {}> = (entity: EntityType, dataKey: string) => any;
+export type GetEntityField<EntityType> = (entity: EntityType, dataKey: string) => any;
 
 export type Option = {
 	value: any;
@@ -44,21 +45,110 @@ export type ColumnFieldProperties = {
 	dontSort?: boolean;
 	dontFilter?: boolean;
 	options?: Option[];
-	//getField?: GetField;
+	dataRenderer?: (value: any) => string | number;
 };
 
 export type Fields = {
 	[dataKey: string]: ColumnFieldProperties;
 };
 
-const selectors =  {};
-
-export const getAppTableDataSelectors = (dataSet: string) => selectors[dataSet];
-
-export type AppTableDataState<EntityType = {}> = {
+type LoadingState = {
 	loading: boolean;
 	valid: boolean;
-} & EntityState<EntityType> & SelectedState & ExpandedState & FiltersState & SortsState & UiState;
+};
+
+export type AppTableDataState<EntityType> =
+	EntityState<EntityType> &
+	LoadingState &
+	SelectedState &
+	ExpandedState &
+	FiltersState &
+	SortsState &
+	UiState;
+
+export function getAppTableDataSelectors<S, T>(
+	selectState: (state: S) => AppTableDataState<T>,
+	selectEntities?: (state: S) => Dictionary<T>,
+	getField?: (entity: T, dataKey: string) => any
+) {
+
+	const selectIds = (state: S) => selectState(state).ids;
+	const selectFilters = (state: S) => selectState(state).filters;
+	const selectSorts = (state: S) => selectState(state).sorts;
+
+	if (!selectEntities)
+		selectEntities = (state: S) => selectState(state).entities as Dictionary<T>;
+
+	if (!getField)
+		getField = (entity: T, dataKey: string) => entity[dataKey];
+
+	/** returns array of filtered ids */
+	const selectFilteredIds: (state: S) => EntityId[] = createSelector(
+		selectFilters,
+		selectEntities,
+		selectIds,
+		(filters, entities, ids) => filterData(filters, getField!, entities, ids)
+	);
+
+	/** returns array of sorted ids */
+	const selectSortedIds: (state: S) => EntityId[] = createSelector(
+		[selectSorts,
+		selectEntities,
+		selectIds],
+		(sorts, entities, ids) => sortData(sorts, getField!, entities, ids)
+	);
+
+	/** returns array of sorted and filtered ids */
+	const selectSortedFilteredIds: (state: S) => EntityId[] = createSelector(
+		[selectSorts,
+		selectEntities,
+		selectFilteredIds],
+		(sorts, entities, ids) => sortData(sorts, getField!, entities, ids)
+	);
+
+	/** Returns a list of unique values for a particular field */
+	function uniqueFieldValues(entities: Dictionary<T>, ids: EntityId[], dataKey: string): any[] {
+		let values = ids.map(id => getField!(entities[id]!, dataKey));
+		return [...new Set(values.map(v => v !== null? v: ''))];
+	}
+	
+	const selectDataKey = (state: unknown, dataKey: string) => dataKey; 
+
+	/** Generate an array of all the unique field values */
+	const selectAllFieldValues: (state: S, dataKey: string) => EntityId[] = createSelector(
+		[selectEntities,
+		selectSortedIds,
+		selectDataKey],
+		uniqueFieldValues
+	);
+
+	/** Generate an array of unique values for the currently filtered entries */
+	const selectAvailableFieldValues: (state: S, dataKey: string) => EntityId[] = createSelector(
+		[selectEntities,
+		selectSortedFilteredIds,
+		selectDataKey],
+		uniqueFieldValues
+	);
+
+	return {
+		getField,
+		selectState,
+		selectIds,
+		selectEntities,
+		selectSortedIds,
+		selectFilteredIds,
+		selectSortedFilteredIds,
+		selectAllFieldValues,
+		selectAvailableFieldValues,
+		...getSelectedSelectors(selectState),
+		...getExpandedSelectors(selectState),
+		...getFiltersSelectors(selectState),
+		...getSortsSelectors(selectState),
+		...getUiSelectors(selectState),
+	}
+}
+
+export type AppTableDataSelectors<S = any, T = any> = ReturnType<typeof getAppTableDataSelectors<S, T>>;
 
 /*
  * Create a redux slice suitible for AppTable rendering.
@@ -76,34 +166,28 @@ export type AppTableDataState<EntityType = {}> = {
  */
 
 export function createAppTableDataSlice<
-	EntityType = {},
-	SliceState extends AppTableDataState<EntityType> = AppTableDataState<EntityType>,
-	Reducers extends SliceCaseReducers<SliceState> = SliceCaseReducers<SliceState>
+	T = any,
+	ExtraState = {},
+	Reducers extends SliceCaseReducers<ExtraState & AppTableDataState<T>> = SliceCaseReducers<ExtraState & AppTableDataState<T>>,
 >({
 	name,
 	fields,
 	selectId,
 	sortComparer,
-	initialState: partialInitialState,
+	initialState,
 	reducers,
 	extraReducers,
-	selectField,	/** optional: derive fields from other EntityType fields */
-	selectEntities,	/** optional: Overload selectEntities */
-	selectIds		/** optional: Overload selectIds */
 }: {
 	name: string;
 	fields: Fields;
-	selectId?: IdSelector<EntityType>;
-	sortComparer?: Comparer<EntityType>;
-	initialState: {};
-	reducers?: ValidateSliceCaseReducers<SliceState, Reducers>;
-	extraReducers?: (builder: ActionReducerMapBuilder<SliceState>, dataAdapter: EntityAdapter<EntityType>) => void;
-	selectField?: GetEntityField<EntityType>;
-	selectEntities?: (state: {}) => Dictionary<EntityType>;
-	selectIds?: (state: {}) => EntityId[];
+	selectId?: IdSelector<T>;
+	sortComparer?: Comparer<T>;
+	initialState: ExtraState;
+	reducers: ValidateSliceCaseReducers<ExtraState & AppTableDataState<T>, Reducers>;
+	extraReducers?: (builder: ActionReducerMapBuilder<ExtraState & AppTableDataState<T>>, dataAdapter: EntityAdapter<T>) => void;
 }) {
 
-	const dataAdapter = createEntityAdapter<EntityType>(
+	const dataAdapter = createEntityAdapter<T>(
 		Object.assign({}, selectId? {selectId}: {}, sortComparer? {sortComparer}: {})
 	);
 
@@ -113,232 +197,87 @@ export function createAppTableDataSlice<
 	const sortsSubslice = createSortsSubslice(name, fields);
 	const uiSubslice = createUiSubslice(name);
 
-	const initialState = dataAdapter.getInitialState({
-		loading: false,
-		valid: false,
-		...selectedSubslice.initialState,
-		...expandedSubslice.initialState,
-		...filtersSubslice.initialState,
-		...sortsSubslice.initialState,
-		...uiSubslice.initialState,
-		...partialInitialState,
-	});
+	const entityReducers: {
+		/** Indicate that a data set load is pending (flag as `loading`) */
+		getPending(state: AppTableDataState<T>): void,
+		/** Load data set load and indicate successful (flag as `valid` and not `loading`) */
+		getSuccess(state: AppTableDataState<T>, action: PayloadAction<T[]>): void,
+		/** Data set load failed (flag as not `loading`) */
+		getFailure(state: AppTableDataState<T>): void,
+		setAll(state: EntityState<T>, action: PayloadAction<T[]>): void,
+		setOne(state: EntityState<T>, action: PayloadAction<T>): void,
+		setMany(state: EntityState<T>, action: PayloadAction<T[]>): void,
+		addOne(state: EntityState<T>, action: PayloadAction<T>): void,
+		addMany(state: EntityState<T>, action: PayloadAction<T[]>): void,
+		updateOne(state: EntityState<T>, action: PayloadAction<Update<T>>): void,
+		updateMany(state: EntityState<T>, action: PayloadAction<Update<T>[]>): void,
+		upsertOne(state: EntityState<T>, action: PayloadAction<T>): void,
+		upsertMany(state: EntityState<T>, action: PayloadAction<T[]>): void,
+		removeOne(state: EntityState<T>, action: PayloadAction<EntityId>): void,
+		removeMany(state: EntityState<T>, action: PayloadAction<EntityId[]>): void,
+		removeAll(state: EntityState<T>): void
+	} = {
+		getPending(state) {
+			state.loading = true;
+		},
+		getSuccess(state, action) {
+			state.loading = false;
+			state.valid = true;
+			dataAdapter.setAll(state, action.payload);
+		},
+		getFailure(state) {
+			state.loading = false;
+		},
+
+		setAll: dataAdapter.setAll,
+		setOne: dataAdapter.setOne,
+		setMany: dataAdapter.setMany,
+
+		addOne: dataAdapter.addOne,
+		addMany: dataAdapter.addMany,
+
+		updateOne: dataAdapter.updateOne,
+		updateMany: dataAdapter.updateMany,
+
+		upsertOne: dataAdapter.upsertOne,
+		upsertMany: dataAdapter.upsertMany,
+
+		removeOne: dataAdapter.removeOne,
+		removeMany: dataAdapter.removeMany,
+		removeAll: dataAdapter.removeAll,
+	}
 
 	const slice = createSlice({
 		name,
-		initialState,
+		initialState: dataAdapter.getInitialState({
+			loading: false,
+			valid: false,
+			...selectedSubslice.initialState,
+			...expandedSubslice.initialState,
+			...filtersSubslice.initialState,
+			...sortsSubslice.initialState,
+			...uiSubslice.initialState,
+			...initialState,
+		}) as ExtraState & AppTableDataState<T>,
 		reducers: {
-			getPending(state) {
-				state.loading = true;
-			},
-  			getSuccess(state, action: PayloadAction<EntityType[]>) {
-				state.loading = false;
-				state.valid = true;
-				dataAdapter.setAll(state as EntityState<EntityType>, action.payload);
-			},
-			getFailure(state) {
-				state.loading = false;
-			},
-
-			setAll(state, action: PayloadAction<EntityType[]>) {dataAdapter.setAll(state as EntityState<EntityType>, action.payload)},
-			//setAll: dataAdapter.setAll,
-
-			setOne(state, action: PayloadAction<EntityType>) {dataAdapter.setOne(state as EntityState<EntityType>, action.payload)},
-			setMany(state, action: PayloadAction<EntityType[]>) {dataAdapter.setMany(state as EntityState<EntityType>, action.payload)},
-
-			addOne(state, action: PayloadAction<EntityType>) {dataAdapter.addOne(state as EntityState<EntityType>, action.payload)},
-			addMany(state, action: PayloadAction<Array<EntityType>>) {dataAdapter.addMany(state as EntityState<EntityType>, action.payload)},
-
-			updateOne(state, action: PayloadAction<Update<EntityType>>) {dataAdapter.updateOne(state as EntityState<EntityType>, action.payload)},
-			updateMany(state, action: PayloadAction<Update<EntityType>[]>) {dataAdapter.updateMany(state as EntityState<EntityType>, action.payload)},
-
-			upsertOne(state, action: PayloadAction<EntityType>) {dataAdapter.upsertOne(state as EntityState<EntityType>, action.payload)},
-			upsertMany(state, action: PayloadAction<Array<EntityType>>) {dataAdapter.upsertMany(state as EntityState<EntityType>, action.payload)},
-
-			removeOne(state, action: PayloadAction<EntityId>) {dataAdapter.removeOne(state as EntityState<EntityType>, action.payload)},
-			removeMany(state, action: PayloadAction<EntityId[]>) {dataAdapter.removeMany(state as EntityState<EntityType>, action.payload)},
-			removeAll(state) {dataAdapter.removeAll(state as EntityState<EntityType>)},
-
+			...reducers,
+			...entityReducers,
 			...selectedSubslice.reducers,
 			...expandedSubslice.reducers,
 			...filtersSubslice.reducers,
 			...sortsSubslice.reducers,
 			...uiSubslice.reducers,
-			...reducers,
 		},
-		extraReducers: builder => {
+		extraReducers: (builder: ActionReducerMapBuilder<ExtraState & AppTableDataState<T>>) => {
 			selectedSubslice.extraReducers(builder);
 			expandedSubslice.extraReducers(builder);
 			if (extraReducers)
-				extraReducers(builder as ActionReducerMapBuilder<SliceState>, dataAdapter);
+				extraReducers(builder, dataAdapter);
 		}
 	});
 
-	if (!selectField)
-		selectField = (entity, dataKey) => entity[dataKey];
-
-	//type Selector<Return> = (state: {}) => Return;
-
-	const selectState = (state: {}) => state[name] as typeof initialState;
-
-	if (!selectIds)
-		selectIds = (state) => selectState(state).ids;
-
-	if (!selectEntities)
-		selectEntities = (state) => selectState(state).entities;
-
-	const selectFilters = (state: {}) => selectState(state).filters;
-	const selectSorts = (state: {}) => selectState(state).sorts;
-
-	const getField = selectField;
-
-
-	/** returns array of filtered ids */
-	const selectFilteredIds: Selector<{}, EntityId[]> = createSelector<any, EntityId[]>(
-		[selectFilters,
-		selectEntities,
-		selectIds],
-		(filters, entities, ids) => filterData(filters, getField, entities, ids)
-	);
-
-	/** returns array of sorted ids */
- 	const selectSortedIds = createSelector(
-		[selectSorts,
-		selectEntities,
-		selectIds],
-		(sorts, entities, ids) => sortData(sorts, getField, entities, ids)
-	);
-
-	/** returns array of sorted and filtered ids */
-	const selectSortedFilteredIds = createSelector(
-		[selectSorts,
-		selectEntities,
-		selectFilteredIds],
-		(sorts, entities, ids) => sortData(sorts, getField, entities, ids)
-	);
-
-	/** Returns a list of unique values for a particular field */
-	function uniqueFieldValues(entities: {}, ids: EntityId[], dataKey: string): any[] {
-		let values = ids.map(id => getField(entities[id]!, dataKey));
-		return [...new Set(values.map(v => v !== null? v: ''))];
-	}
-
-	/** Generate an array of all the unique field values */
-	const selectAllFieldValues = createSelector<any, any[]>(
-		[selectEntities,
-		selectSortedIds,
-		selectDataKey],
-		uniqueFieldValues
-	);
-
-	/** Generate an array of unique values for the currently filtered entries */
-	const selectAvailableFieldValues = createSelector<any, any[]>(
-		[selectEntities,
-		selectSortedFilteredIds,
-		selectDataKey],
-		uniqueFieldValues
-	);
-
-	const appTableDataMethods = {
-		selectState,
-		selectIds,
-		selectEntities,
-		selectFilters,
-		selectSorts,
-		selectFilteredIds,
-		selectSortedIds,
-		selectSortedFilteredIds,
-		selectAllFieldValues,
-		selectAvailableFieldValues,
-		selectSelectedIds: (state: {}) => selectState(state).selected,
-		selectExpandedIds: (state: {}) => selectState(state).expanded,
-		selectUiProperties: (state: {}) => selectState(state).ui,
-
-		...slice.actions,
-	}
-
-	selectors[name] = {
-		getField: selectField,
-		getId: selectId || ((entity: any): EntityId => entity.id),
-		selectIds,
-		selectEntities
-	};
-
-	return {...slice, appTableDataMethods};
+	return slice;
 }
 
-export type AppTableDataMethods = ReturnType<typeof createAppTableDataSlice>['appTableDataMethods'];
+export type AppTableDataActions = ReturnType<typeof createAppTableDataSlice<any>>['actions'];
 
-export const selectEntities = (state, dataSet: string) => selectors[dataSet].selectEntities(state);
-export const selectIds = (state, dataSet: string): EntityId[] => selectors[dataSet].selectIds(state);
-export const selectGetField = (state, dataSet: string): GetEntityField => selectors[dataSet].getField;
-export const selectGetId = (state, dataSet: string) => selectors[dataSet].getId;
-const selectDataKey = (state, dataSet: string, dataKey: string) => dataKey;
-
-/*
- * selectFilteredIds(state, dataSet)
- * returns array of filtered ids
- */
-export const selectFilteredIds: (state: {}, dataSet: string) => EntityId[] = createSelector<any, EntityId[]>(
-	[selectFilters,
-	selectGetField,
-	selectEntities,
-	selectIds],
-	filterData
-);
-
-/*
- * selectSortedIds(state, dataSet)
- * returns array of sorted ids
- */
-export const selectSortedIds: (state: {}, dataSet: string) => EntityId[] = createSelector<any, EntityId[]>(
-	[selectSorts,
-	selectGetField,
-	selectEntities,
-	selectIds],
-	sortData
-);
-
-/*
- * selectSortedFilteredIds(state, dataSet)
- * returns array of sorted and filtered ids
- */
-export const selectSortedFilteredIds: (state: {}, dataSet: string) => EntityId[] = createSelector<any,EntityId[]>(
-	[selectSorts,
-	selectGetField,
-	selectEntities,
-	selectFilteredIds],
-	sortData
-);
-
-/*
- * Returns a list of unique values for a particular field
- */
-function uniqueFieldValues(getField: GetEntityField, entities: {}, ids: EntityId[], dataKey: string): any[] {
-	let values = ids.map(id => getField(entities[id], dataKey));
-	return [...new Set(values.map(v => v !== null? v: ''))];
-}
-
-/*
- * selectAllFieldOptions(state, dataSet, dataKey) selector
- * Generate an array of all the unique field values
- */
-export const selectAllFieldValues: (state: {}, dataSet: string, dataKey: string) => any[] = createSelector<any, any[]>(
-	[selectGetField,
-	selectEntities,
-	selectSortedIds,
-	selectDataKey],
-	uniqueFieldValues
-);
-
-/*
- * selectAvailableFieldOptions(state, dataSet, dataKey)
- * Generate an array of unique values for the currently filtered entries
- */
-export const selectAvailableFieldValues: (state: {}, dataSet: string, dataKey: string) => any[] = createSelector<any, any[]>(
-	[selectGetField,
-	selectEntities,
-	selectSortedFilteredIds,
-	selectDataKey],
-	uniqueFieldValues
-);

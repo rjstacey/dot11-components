@@ -2,7 +2,7 @@ import React from 'react';
 import {areEqual} from 'react-window';
 import styled from '@emotion/styled';
 
-import type { EntityId, GetEntityField, ColumnProperties, RowGetterProps } from './AppTable';
+import type { EntityId, Dictionary, GetEntityField, ColumnProperties, RowGetterProps } from './AppTable';
 
 const OuterRow = styled.div`
 	overflow: hidden;
@@ -26,12 +26,12 @@ type PureTableRowProps = {
 	gutterSize: number;
 	rowIndex: number;
 	rowId: EntityId;
-	rowData: object;
+	rowData: { [k: string]: unknown };
 	isSelected: boolean;
 	isExpanded: boolean;
 	fixed: boolean;
 	columns: ColumnProperties[];
-	getField: GetEntityField;
+	getField: GetEntityField<{}>;
 	estimatedRowHeight: number;
 	onRowHeightChange: (rowIndex: number, height: number) => void;
 	onClick?: (event: React.MouseEvent) => void;
@@ -116,14 +116,14 @@ const TableRow = React.memo(PureTableRow, areEqual);
 
 export type AppTableRowData = {
 	gutterSize: number;
-	entities: { [key: string]: object },
+	entities: Dictionary<unknown>,
 	ids: EntityId[];
 	selected: EntityId[];
 	expanded: EntityId[];
 	fixed: boolean;
 	columns: ColumnProperties[];
 	getRowData?: (props: RowGetterProps) => any;
-	getField: GetEntityField;
+	getField: GetEntityField<{}>;
 	estimatedRowHeight: number;
 	measureRowHeight: boolean;
 	onRowHeightChange: (rowIndex: number, height: number) => void;

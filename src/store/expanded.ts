@@ -1,4 +1,4 @@
-import type { EntityId, PayloadAction, Action, SliceCaseReducers, ActionReducerMapBuilder } from '@reduxjs/toolkit';
+import type { EntityId, PayloadAction, Action, ActionReducerMapBuilder } from '@reduxjs/toolkit';
 
 const name = 'expanded';
 
@@ -8,9 +8,11 @@ export function createExpandedSubslice(dataSet: string) {
 
 	const initialState: ExpandedState = {[name]: []};
 
-	const reducers: SliceCaseReducers<ExpandedState> = {
-		setExpanded(state, action: PayloadAction<EntityId[]>) {state[name] = action.payload},
-		toggleExpanded(state, action: PayloadAction<EntityId[]>) {
+	const reducers = {
+		/** Set the list of expanded rows to @param list */
+		setExpanded(state: ExpandedState, action: PayloadAction<EntityId[]>) {state[name] = action.payload},
+		/** For @param list, remove entries that are present and add entries that are not present */
+		toggleExpanded(state: ExpandedState, action: PayloadAction<EntityId[]>) {
 			const list = state[name];
 			for (let id of action.payload) {
 				const i = list.indexOf(id);
@@ -43,10 +45,20 @@ export function createExpandedSubslice(dataSet: string) {
 	}
 }
 
+export function getExpandedSelectors<S>(
+	selectState: (state: S) => ExpandedState
+) {
+	return {
+		/** The list of ids that represent expanded rows */
+		selectExpanded: (state: S) => selectState(state)[name]
+	}
+}
+
+
 /* Actions */
-export const setExpanded = (dataSet: string, ids: Array<EntityId>) => ({type: dataSet + '/setExpanded', payload: ids});
-export const toggleExpanded = (dataSet: string, ids: Array<EntityId>) => ({type: dataSet + '/toggleExpanded', payload: ids});
+//export const setExpanded = (dataSet: string, ids: Array<EntityId>) => ({type: dataSet + '/setExpanded', payload: ids});
+//export const toggleExpanded = (dataSet: string, ids: Array<EntityId>) => ({type: dataSet + '/toggleExpanded', payload: ids});
 
 /* Selectors */
-export const selectExpanded = (state, dataSet: string): Array<EntityId> => state[dataSet][name];
+//export const selectExpanded = (state, dataSet: string): Array<EntityId> => state[dataSet][name];
  

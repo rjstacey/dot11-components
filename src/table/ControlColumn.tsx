@@ -6,14 +6,9 @@ import {ActionIcon} from '../icons';
 import {Checkbox} from '../form';
 import Dropdown from '../dropdown';
 
-import {
-	selectSelected,
-	setSelected,
-	toggleSelected,
-	selectExpanded,
-	setExpanded,
-	toggleExpanded,
-	selectSortedFilteredIds
+import type {
+	AppTableDataSelectors,
+	AppTableDataActions
 } from '../store/appTableData';
 
 const Selector = styled.div`
@@ -35,27 +30,25 @@ const Container = styled.div`
 `;
 
 type ControlHeaderProps = {
-	dataSet: string;
 	anchorEl: HTMLElement | null;
 	customSelectorElement?: React.ReactNode;
 	showExpanded?: boolean;
+	selectors: AppTableDataSelectors<any>;
+	actions: AppTableDataActions;
 }
 
 function ControlHeader({
-	dataSet,
 	anchorEl,
 	customSelectorElement,
-	showExpanded
+	showExpanded,
+	selectors,
+	actions
 }: ControlHeaderProps) {
 	const dispatch = useDispatch();
 
-	const selectInfo = React.useCallback(state => ({
-		selected: selectSelected(state, dataSet),
-		expanded: selectExpanded(state, dataSet),
-		shownIds: selectSortedFilteredIds(state, dataSet)
-	}), [dataSet]);
-
-	const {selected, expanded, shownIds} = useSelector(selectInfo);
+	const selected = useSelector(selectors.selectSelected);
+	const expanded = useSelector(selectors.selectExpanded);
+	const shownIds = useSelector(selectors.selectSortedFilteredIds);
 
 	const allSelected = React.useMemo(() => (
 			shownIds.length > 0 &&	// not if list is empty
@@ -74,8 +67,8 @@ function ControlHeader({
 		[shownIds, expanded]
 	);
 
-	const toggleSelect = React.useCallback(() => dispatch(setSelected(dataSet, selected.length? []: shownIds)), [dispatch, dataSet, selected, shownIds]);
-	const toggleExpand = React.useCallback(() => dispatch(setExpanded(dataSet, expanded.length? []: shownIds)), [dispatch, dataSet, expanded, shownIds]);
+	const toggleSelect = () => dispatch(actions.setSelected(selected.length? []: shownIds));
+	const toggleExpand = () => dispatch(actions.setExpanded(expanded.length? []: shownIds));
 
 	if (!anchorEl)
 		return null;
@@ -113,26 +106,25 @@ const SelectExpandHeader = (props: Omit<ControlHeaderProps, "showExpanded">) => 
 const SelectHeader = (props: ControlHeaderProps) => <ControlHeader {...props}/>
 
 type ControlCellProps = {
-	dataSet: string;
 	rowId: string | number;
 	showExpanded?: boolean;
+	selectors: AppTableDataSelectors<any>;
+	actions: AppTableDataActions;
 };
 
 function ControlCell({
-	dataSet,
 	rowId,
-	showExpanded
+	showExpanded,
+	selectors,
+	actions
 }: ControlCellProps) {
 	const dispatch = useDispatch();
-	const toggleSelect = React.useCallback(() => dispatch(toggleSelected(dataSet, [rowId])), [dispatch, dataSet, rowId]);
-	const toggleExpand = React.useCallback(() => dispatch(toggleExpanded(dataSet, [rowId])), [dispatch, dataSet, rowId]);
 
-	const selectInfo = React.useCallback(state => ({
-		selected: selectSelected(state, dataSet),
-		expanded: selectExpanded(state, dataSet),
-	}), [dataSet]);
+	const toggleSelect = () => dispatch(actions.toggleSelected([rowId]));
+	const toggleExpand = () => dispatch(actions.toggleExpanded([rowId]));
 
-	const {selected, expanded} = useSelector(selectInfo);
+	const selected = useSelector(selectors.selectSelected)
+	const expanded = useSelector(selectors.selectExpanded);
 
 	return (
 		<Container onClick={e => e.stopPropagation()} >
