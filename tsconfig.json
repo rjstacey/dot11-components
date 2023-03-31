@@ -13,7 +13,7 @@
       "noImplicitAny": false,
       "noImplicitThis": false,
       "lib": ["es2015", "dom", "dom.iterable"],
-      "target": "es6",
+      "target": "es2022",
       "sourceMap": true,
       "module": "esnext",
       "moduleResolution": "Node",

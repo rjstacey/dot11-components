@@ -1,13 +1,9 @@
 import React from 'react';
 import styled from '@emotion/styled';
 
-import ColumnResizer from './ColumnResizer';
+import { ColumnResizer, DraggableEventHandler } from './ColumnResizer';
 
-import type { ColumnProperties, ChangeableColumnProperties, HeaderRendererProps } from './AppTable';
-
-//const HeaderCell = styled.div`
-//	display: flex;
-//`;
+import type { ColumnProperties, ChangeableColumnProperties, HeaderCellRendererProps, AppTableDataSelectors, AppTableDataActions } from './AppTable';
 
 const HeaderCellContent = styled.div`
 	height: 100%;
@@ -30,12 +26,14 @@ const HeaderRow = styled.div`
 type HeaderCellProps = {
 	anchorEl: HTMLElement | null;
 	column: ColumnProperties & ChangeableColumnProperties;
+	selectors: AppTableDataSelectors;
+	actions: AppTableDataActions;
 	fixed: boolean;
 	adjustColumnWidth: (key: string, deltaX: number) => void;
-	defaultHeaderCellRenderer: (props: HeaderRendererProps) => React.ReactNode;
+	defaultHeaderCellRenderer: (props: HeaderCellRendererProps) => React.ReactNode;
 };
 
-function HeaderCell({anchorEl, column, fixed, adjustColumnWidth, defaultHeaderCellRenderer}: HeaderCellProps) {
+function HeaderCell({anchorEl, column, fixed, selectors, actions, adjustColumnWidth, defaultHeaderCellRenderer}: HeaderCellProps) {
 	const {key: dataKey, width, flexGrow, flexShrink, headerRenderer, ...colProps} = column;
 	const style = {
 		display: 'flex',
@@ -44,16 +42,16 @@ function HeaderCell({anchorEl, column, fixed, adjustColumnWidth, defaultHeaderCe
 		flexShrink: fixed? 0: flexShrink,
 		overflow: 'hidden'	// necessary so that the content does not affect size
 	};
-	const renderer = headerRenderer || defaultHeaderCellRenderer;
-	const props = {anchorEl, dataKey, column, ...colProps};
-	const onDrag = (event, {deltaX}) => adjustColumnWidth(dataKey, deltaX);
+	const headerCellRenderer = headerRenderer || defaultHeaderCellRenderer;
+	const headerCellRendererProps: HeaderCellRendererProps = {anchorEl, dataKey, column, selectors, actions, ...colProps};
+	const onDrag: DraggableEventHandler = (event, {deltaX}) => adjustColumnWidth(dataKey, deltaX);
 	return (
 		<div
 			className='AppTable__headerCell'
 			style={style}
 		>
 			<HeaderCellContent>
-				{renderer(props)}
+				{headerCellRenderer(headerCellRendererProps)}
 			</HeaderCellContent>
 			<ColumnResizer
 				onDrag={onDrag}
@@ -76,6 +74,8 @@ type TableHeaderProps = {
 	innerStyle?: React.CSSProperties;
 	fixed: boolean;
 	columns: Array<ColumnProperties & ChangeableColumnProperties>;
+	selectors: AppTableDataSelectors;
+	actions: AppTableDataActions;
 } & Pick<HeaderCellProps, "adjustColumnWidth" | "defaultHeaderCellRenderer">;
 
  const TableHeader = React.forwardRef<HTMLDivElement, TableHeaderProps>(({
@@ -84,6 +84,8 @@ type TableHeaderProps = {
 	innerStyle,
 	fixed,
 	columns,
+	selectors,
+	actions,
 	adjustColumnWidth,
 	defaultHeaderCellRenderer}, ref) => {
 
@@ -98,40 +100,17 @@ type TableHeaderProps = {
 				anchorEl={anchorRef.current}
 				column={column}
 				fixed={fixed}
+				selectors={selectors}
+				actions={actions}
 				adjustColumnWidth={adjustColumnWidth}
 				defaultHeaderCellRenderer={defaultHeaderCellRenderer}
 			/>
 		);
 
-			/*{
-			const {headerRenderer, width, flexGrow, flexShrink, key: dataKey, ...colProps} = column;
-			const style = {
-				flexBasis: width,
-				flexGrow: fixed? 0: flexGrow,
-				flexShrink: fixed? 0: flexShrink,
-				overflow: 'hidden'	// necessary so that the content does not affect size
-			};
-			const renderer = headerRenderer || defaultHeaderCellRenderer;
-			const props = {anchorEl: anchorRef.current, dataKey, column, ...colProps};
-			return (
-				<HeaderCell
-					key={dataKey}
-					className='AppTable__headerCell'
-					style={style}
-				>
-					<HeaderCellContent>
-						{renderer(props)}
-					</HeaderCellContent>
-					<ColumnResizer
-						onDrag={(event, {deltaX}) => setColumnWidth(dataKey, deltaX)}
-					/>
-				</HeaderCell>
-			)
-		});*/
 		setCells(cells);
-	}, [columns, fixed, defaultHeaderCellRenderer, adjustColumnWidth]);
+	}, [columns, fixed, selectors, actions, adjustColumnWidth, defaultHeaderCellRenderer]);
 
-	const classNames = [className, 'AppTable__headerRow'].join(' ')
+	const classNames = [className, 'AppTable__headerRow'].join(' ');
 
 	return (
 		<HeaderAnchor ref={anchorRef}>

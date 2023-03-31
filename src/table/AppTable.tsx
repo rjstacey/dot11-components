@@ -7,7 +7,7 @@ import AutoSizer from 'react-virtualized-auto-sizer';
 
 import AppTableRow, {AppTableRowData} from './AppTableRow';
 import TableHeader from './AppTableHeader';
-import ColumnHeader from './TableColumnHeader';
+import AppTableHeaderCell from './AppTableHeaderCell';
 
 import {debounce, getScrollbarSize} from '../lib';
 
@@ -22,19 +22,22 @@ import type {
 	AppTableDataSelectors,
 } from '../store/appTableData';
 
-export type {EntityId, Dictionary, GetEntityField};
+export type { EntityId, Dictionary, GetEntityField, AppTableDataSelectors, AppTableDataActions };
 
-export type HeaderRendererProps = {
-	anchorEl: HTMLElement | null;
-	label?: string;
-	dataKey: string;
+export type HeaderCellRendererProps = {
+	label?: string;			// Column label
+	dataKey: string;		// Identifies the data element in the row object
 	column: ColumnProperties & ChangeableColumnProperties;
+	anchorEl: HTMLElement | null;
+	selectors: AppTableDataSelectors;
+	actions: AppTableDataActions;
 };
 
-export type CellRendererProps = {
+export type CellRendererProps<EntityType = any> = {
 	dataKey: string;
+	rowIndex: number;
 	rowId: EntityId;
-	rowData: { [k: string]: unknown };
+	rowData: EntityType;
 }
 
 export type ColumnProperties = {
@@ -45,24 +48,24 @@ export type ColumnProperties = {
 	flexShrink?: number;
 	dropdownWidth?: number;
 	dataRenderer?: (value: any) => any;
-	headerRenderer?: (p: HeaderRendererProps) => React.ReactNode;
+	headerRenderer?: (p: HeaderCellRendererProps) => React.ReactNode;
 	cellRenderer?: (p: CellRendererProps) => React.ReactNode;
 };
 
 export type {ChangeableColumnProperties, TablesConfig};
 
-export type RowGetterProps = {
+export type RowGetterProps<T = any> = {
 	rowIndex: number;
 	rowId: EntityId;
-	entities: Dictionary<unknown>;
+	entities: Dictionary<T>;
 	ids: EntityId[];
 };
 
-export type AppTableProps<EntityType> = {
+export type AppTableProps<T> = {
 	fitWidth?: boolean;
 	fixed?: boolean;
 	columns: Array<ColumnProperties>,
-	rowGetter?: (props: RowGetterProps) => EntityType;
+	rowGetter?: (props: RowGetterProps<T>) => T;
 	headerHeight: number;
 	estimatedRowHeight: number;
 	measureRowHeight?: boolean;
@@ -129,18 +132,18 @@ const NoGrid = styled.div`
 /*
  * Key down handler for Grid (when focused)
  */
-const useKeyDown = (actions: AppTableDataActions, selected: EntityId[], ids: EntityId[], dispatch: ReturnType<typeof useDispatch>, gridRef: Grid | null) =>
+const useKeyDown = (selected: EntityId[], ids: EntityId[], setSelected: (ids: EntityId[]) => void, scrollToItem: ((arg: {rowIndex: number}) => void) | undefined) =>
 	React.useCallback((event: React.KeyboardEvent) => {
 
 		const selectAndScroll = (i: number) => {
-			dispatch(actions.setSelected([ids[i]]));
-			if (gridRef)
-				gridRef.scrollToItem({rowIndex: i});
+			setSelected([ids[i]]);
+			if (scrollToItem)
+				scrollToItem({rowIndex: i});
 		}
 
 		// Ctrl-A selects all
 		if ((event.ctrlKey || event.metaKey) && event.key === 'a') {
-			dispatch(actions.setSelected(ids));
+			setSelected(ids);
 			event.preventDefault();
 		}
 		else if (event.key === 'Home') {
@@ -182,9 +185,9 @@ const useKeyDown = (actions: AppTableDataActions, selected: EntityId[], ids: Ent
 
 			selectAndScroll(i);
 		}
-	}, [actions, selected, ids, dispatch, gridRef]);
+	}, [selected, ids, setSelected, scrollToItem]);
 
-const useRowClick = (actions: AppTableDataActions, selected: EntityId[], ids: EntityId[], dispatch) => 
+const useRowClick = (selected: EntityId[], ids: EntityId[], setSelected: (ids: EntityId[]) => void) => 
 	React.useCallback(({event, rowIndex}: {event: React.MouseEvent, rowIndex: number}) => {
 
 		let newSelected = selected.slice();
@@ -222,12 +225,57 @@ const useRowClick = (actions: AppTableDataActions, selected: EntityId[], ids: En
 		else {
 			newSelected = [id];
 		}
-		dispatch(actions.setSelected(newSelected));
-	}, [actions, selected, ids, dispatch]);
+		setSelected(newSelected);
+	}, [selected, ids, setSelected]);
+
+const useSetDefaultTablesConfig = (
+	defaultTablesConfigIn: TablesConfig | undefined,
+	defaultFixed: boolean | undefined,
+	columns: ColumnProperties[],
+	dispatch: ReturnType<typeof useDispatch>,
+	setDefaultTablesConfig: (payload: {tableView: string, tablesConfig: TablesConfig}) => Action
+) => {
+	const defaultTablesConfig = React.useMemo(() => {
+		let defaultTablesConfig: TablesConfig;
+		if (!defaultTablesConfigIn) {
+			const config: TableConfig = {fixed: defaultFixed || false, columns: {}};
+			for (const col of columns)
+				config.columns[col.key] = {unselectable: true, shown: true, width: col.width || 100};
+			defaultTablesConfig = {default: config};
+		}
+		else {
+			defaultTablesConfig = {...defaultTablesConfigIn};
+			for (const [view, config] of Object.entries(defaultTablesConfig)) {
+				if (typeof config.fixed !== 'boolean') {
+					config.fixed = !!defaultFixed || false;
+				}
+				if (typeof config.columns !== 'object') {
+					console.warn(`defaultTablesConfig['${view}'] does not include columns object`);
+					config.columns = {};
+				}
+				for (const col of columns) {
+					if (!config.columns.hasOwnProperty(col.key)) {
+						console.warn(`defaultTablesConfig['${view}'] does not include column with key '${col.key}'`);
+						config.columns[col.key] = {unselectable: true, shown: true, width: col.width || 100};
+					}
+				}
+			}
+		}
+		return defaultTablesConfig;
+	}, [defaultTablesConfigIn, defaultFixed, columns]);
+
+	const defaultTableView = Object.keys(defaultTablesConfig)[0];
+
+	React.useEffect(() => {
+		dispatch(setDefaultTablesConfig({tableView: defaultTableView, tablesConfig: defaultTablesConfig}));
+	}, [defaultTableView, defaultTablesConfig, dispatch, setDefaultTablesConfig]);
+
+	return defaultTablesConfig[defaultTableView];
+}
 
 type GridSizing = {
 	resetIndex: number;
-	rowHeights: Array<number>;
+	rowHeights: number[];
 };
 
 interface AppTableSizedProps<EntityType> extends AppTableProps<EntityType> {
@@ -275,53 +323,19 @@ function AppTableSized<EntityType>({
 		[estimatedRowHeight, gutterSize]
 	);
 
-	const {defaultTablesConfig, defaultTableView} = React.useMemo(() => {
-		let defaultTablesConfig: TablesConfig | undefined = props.defaultTablesConfig;
-		if (!defaultTablesConfig) {
-			const config: TableConfig = {fixed: props.fixed || false, columns: {}};
-			for (const col of props.columns)
-				config.columns[col.key] = {unselectable: true, shown: true, width: col.width || 100};
-			defaultTablesConfig = {default: config};
-		}
-		else {
-			defaultTablesConfig = {...defaultTablesConfig};
-			for (const [view, config] of Object.entries(defaultTablesConfig)) {
-				if (typeof config.fixed !== 'boolean') {
-					config.fixed = !!props.fixed || false;
-				}
-				if (typeof config.columns !== 'object') {
-					console.warn(`defaultTablesConfig['${view}'] does not include columns object`);
-					config.columns = {};
-				}
-				for (const col of props.columns) {
-					if (!config.columns.hasOwnProperty(col.key)) {
-						console.warn(`defaultTablesConfig['${view}'] does not include column with key '${col.key}'`);
-						config.columns[col.key] = {unselectable: true, shown: true, width: col.width || 100};
-					}
-				}
-			}
-		}
-		const defaultTableView = Object.keys(defaultTablesConfig)[0];
-		return {defaultTablesConfig, defaultTableView}
-	}, [props.defaultTablesConfig, props.columns, props.fixed]);
+	const defaultTableConfig = useSetDefaultTablesConfig(props.defaultTablesConfig, props.fixed, props.columns, dispatch, actions.setDefaultTablesConfig);
 
-	React.useEffect(() => {
-		dispatch(actions.setDefaultTablesConfig({tableView: defaultTableView, tablesConfig: defaultTablesConfig}));
-	}, [dispatch, actions, defaultTableView, defaultTablesConfig]);
-
+	const {getField} = selectors;
 	const {selected, expanded, loading} = useSelector(selectors.selectState);
 	const ids = useSelector(selectors.selectSortedFilteredIds);
 	const entities = useSelector(selectors.selectEntities);
-	const {tablesConfig, tableView} = useSelector(selectors.selectUiProperties);
-	const {getField} = selectors;
-
-	const tableConfig = tablesConfig[tableView] || defaultTablesConfig[defaultTableView];
+	const tableConfig = useSelector(selectors.selectCurrentTableConfig) || defaultTableConfig;
 
 	const adjustColumnWidth = React.useCallback((key: string, delta: number) => {
-		dispatch(actions.adjustTableColumnWidth({tableView, key, delta}));
+		dispatch(actions.adjustTableColumnWidth({key, delta}));
 		if (gridRef.current)
 			gridRef.current.resetAfterColumnIndex(0, true);
-	}, [dispatch, actions, tableView]);
+	}, [dispatch, actions]);
 
 	// Sync the table header scroll position with that of the table body
 	const onScroll = ({scrollLeft, scrollTop}) => {
@@ -329,9 +343,9 @@ function AppTableSized<EntityType>({
 			headerRef.current.scrollLeft = scrollLeft;
 	};
 
-	const onKeyDown = useKeyDown(actions, selected, ids, dispatch, gridRef.current);
-
-	const onRowClick = useRowClick(actions, selected, ids, dispatch);
+	const setSelected = React.useCallback((ids: EntityId[]) => dispatch(actions.setSelected(ids)), [dispatch, actions]);
+	const onKeyDown = useKeyDown(selected, ids, setSelected, gridRef.current?.scrollToItem);
+	const onRowClick = useRowClick(selected, ids, setSelected);
 
 	const fixed = tableConfig.fixed;
 	const {columns, totalWidth} = React.useMemo(() => {
@@ -402,8 +416,10 @@ function AppTableSized<EntityType>({
 				innerStyle={{width: fixed? totalWidth + scrollbarSize: '100%'}}
 				fixed={fixed}
 				columns={columns}
+				selectors={selectors}
+				actions={actions}
 				adjustColumnWidth={adjustColumnWidth}
-				defaultHeaderCellRenderer={(p) => <ColumnHeader /*dataSet={dataSet}*/ actions={actions} selectors={selectors} {...p}/>}
+				defaultHeaderCellRenderer={(p) => <AppTableHeaderCell {...p}/>}
 			/>
 		</Table>
 	)
@@ -412,7 +428,7 @@ function AppTableSized<EntityType>({
 /*
  * AppTable
  */
-export function AppTable<EntityType = object>(props: AppTableProps<EntityType>) {
+export function AppTable<EntityType = object>(props: AppTableProps<EntityType>): JSX.Element {
 	return (
 		<AutoSizer disableWidth={props.fitWidth} style={{maxWidth: '100vw'}} >
 			{({height, width}) => <AppTableSized<EntityType> height={height} width={width} {...props} />}

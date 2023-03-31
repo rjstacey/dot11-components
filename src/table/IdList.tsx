@@ -178,7 +178,7 @@ export function IdFilter({selectors, actions, dataKey = 'id', ...props}: IdFilte
 
 	const {values, isNumber, ids, entities} = useSelector(selectInfo);
 
-	const isValid = React.useCallback(value => ids.findIndex(id => getField(entities[id]!, dataKey) === value) !== -1, [ids, entities, dataKey, getField]);
+	const isValid = React.useCallback((value: any) => ids.findIndex(id => getField(entities[id]!, dataKey) === value) !== -1, [ids, entities, dataKey, getField]);
 
 	const onChange = React.useCallback(values => {
 		const comps = values.map(value => ({value, filterType: FilterType.EXACT}));

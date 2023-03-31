@@ -5,7 +5,7 @@ import { createLogger } from 'redux-logger';
 import thunk from 'redux-thunk';
 import { Provider, connect } from 'react-redux';
 
-import errMsg, {setError} from '../store/error';
+import {errorsSlice, setError} from '../store/error';
 import {AppModal, ActionButtonModal, ErrorModal, ConfirmModal} from '../modals';
 
 const story = {
@@ -13,10 +13,12 @@ const story = {
 };
 
 const store = configureStore({
-  reducer: combineReducers({errMsg}),
+  reducer: combineReducers({[errorsSlice.name]: errorsSlice.reducer}),
   middleware: [thunk, createLogger({collapsed: true})],
   devTools: true
 });
+
+//type RootState = ReturnType<typeof store.getState>
 
 const Content = () => 
     <form style={{width: '200px'}}>

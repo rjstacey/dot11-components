@@ -6,7 +6,7 @@ import {Input} from '../form';
 import {FilterType, globalFilterKey, AppTableDataSelectors, AppTableDataActions} from '../store/appTableData';
 
 interface GlobalFilterProps extends React.ComponentProps<typeof Input> {
-	selectors: AppTableDataSelectors<any>;
+	selectors: AppTableDataSelectors;
 	actions: AppTableDataActions;
 }
 

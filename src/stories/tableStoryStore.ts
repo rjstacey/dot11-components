@@ -1,4 +1,4 @@
-import { configureStore, combineReducers, createSelector, ThunkAction, EntityState, Action, PayloadAction, SliceCaseReducers, Store } from '@reduxjs/toolkit';
+import { configureStore, combineReducers, createSelector, ThunkAction, Action, PayloadAction } from '@reduxjs/toolkit';
 import { createLogger } from 'redux-logger';
 import { useDispatch } from 'react-redux';
 
@@ -124,8 +124,6 @@ const dataSlice = createAppTableDataSlice({
 	},
 });
 
-const {getSuccess, setExtra} = dataSlice.actions;
-
 const rootReducer = combineReducers({
 	names: namesSlice.reducer,
 	data: dataSlice.reducer,
@@ -142,9 +140,9 @@ type AppDispatch = typeof store.dispatch;
 type AppThunk<ReturnType = void> = ThunkAction<ReturnType, RootState, unknown, Action>;
 
 export const useAppDispatch: () => AppDispatch = useDispatch;
-//const useAppSelector: TypedUseSelectorHook<RootState> = useSelector
+//export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector
 
-export const dataSelectors = getAppTableDataSelectors((state: RootState) => state.data)
+export const dataSelectors = getAppTableDataSelectors((state: RootState) => state.data, selectEntities, undefined, selectField)
 export const dataActions = dataSlice.actions;
 
 

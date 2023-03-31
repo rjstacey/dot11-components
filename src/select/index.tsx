@@ -145,7 +145,7 @@ export type SelectMethods = {
 	searchResults: () => ItemType[];
 };
 
-class Select extends React.Component<SelectInternalProps, SelectState> {
+class SelectInternal extends React.Component<SelectInternalProps, SelectState> {
 
 	constructor(props: SelectInternalProps) {
 		super(props);
@@ -661,6 +661,8 @@ class Select extends React.Component<SelectInternalProps, SelectState> {
 	};
 }
 
-export type SelectProps = JSX.LibraryManagedAttributes<typeof Select, SelectInternalProps>;
+export type SelectProps = JSX.LibraryManagedAttributes<typeof SelectInternal, SelectInternalProps>;
 
-export default (props: SelectProps) => <Select {...props} />;
+const Select = (props: SelectProps) => <SelectInternal {...props} />;
+
+export default Select;

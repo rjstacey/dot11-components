@@ -62,11 +62,6 @@ const defaultState: State = {
 	selectValues: [],
 }
 
-type TemplateProps = {
-	usePortal: boolean;
-	Component: React.FC;
-}
-
 function Template({usePortal, Component, ...args}) {
 	const [state1, setState1] = React.useState<State>(defaultState);
 	const [state2, setState2] = React.useState<State>(defaultState);

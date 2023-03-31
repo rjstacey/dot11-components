@@ -8,9 +8,9 @@ import store, {loadData, removeRow, dataFields, useAppDispatch, dataSelectors, d
 
 import {
 	AppTable, 
-	SelectHeader, 
+	SelectHeaderCell, 
+	SelectExpandHeaderCell,
 	SelectCell, 
-	SelectExpandHeader,
 	SelectExpandCell,
 	TableColumnHeader,
 	ShowFilters,
@@ -21,14 +21,12 @@ import {
 	SplitPanel,
 	Panel,
 	SplitTableButtonGroup,
-	HeaderRendererProps,
+	HeaderCellRendererProps,
 	CellRendererProps,
 	ColumnProperties
 } from '../table';
 
-const dataSet = 'data';
-
-const tableColumns: Array<ColumnProperties> = [
+const tableColumns: ColumnProperties[] = [
 	{key: '__ctrl__',
 		width: 48, flexGrow: 0, flexShrink: 0},
 	{key: 'id', 
@@ -36,10 +34,12 @@ const tableColumns: Array<ColumnProperties> = [
 		width: 80, flexGrow: 1, flexShrink: 1, dropdownWidth: 200,
 		headerRenderer: p =>
 			<TableColumnHeader
-				//dataSet={dataSet}
-				selectors={dataSelectors}
-				actions={dataActions}
-				customFilterElement=<IdFilter /*dataSet={dataSet}*/ selectors={dataSelectors} actions={dataActions} dataKey='id' />
+				customFilterElement=
+					<IdFilter
+						selectors={p.selectors}
+						actions={p.actions}
+						dataKey='id'
+					/>
 				{...p}
 			/>
 	},
@@ -107,27 +107,47 @@ const LoaderButton= ({numberOfRows}) => {
 
 function tableColumnsWithControl(expandable, dispatch) {
 	const columns = tableColumns.slice();
-	let headerRenderer: (p: HeaderRendererProps) => JSX.Element,
+	let headerRenderer: (p: HeaderCellRendererProps) => JSX.Element,
 		cellRenderer: (p: CellRendererProps) => JSX.Element;
 	if (expandable) {
 		headerRenderer = (p) =>
-			<SelectExpandHeader
-				selectors={dataSelectors}
-				actions={dataActions}
-				customSelectorElement=<IdSelector style={{width: '200px'}} selectors={dataSelectors} actions={dataActions} dataKey={'id'} focusOnMount />
+			<SelectExpandHeaderCell
+				customSelectorElement=
+					<IdSelector
+						style={{width: '200px'}}
+						selectors={dataSelectors}
+						actions={dataActions}
+						dataKey={'id'}
+						focusOnMount
+					/>
 				{...p}
 			/>;
-		cellRenderer = (p) => <SelectExpandCell selectors={dataSelectors} actions={dataActions} {...p} />;
+		cellRenderer = (p) =>
+			<SelectExpandCell
+				selectors={dataSelectors}
+				actions={dataActions}
+				{...p}
+			/>;
 	}
 	else {
 		headerRenderer = (p) =>
-			<SelectHeader
-				selectors={dataSelectors}
-				actions={dataActions}
-				customSelectorElement=<IdSelector style={{width: '200px'}} selectors={dataSelectors} actions={dataActions} dataKey={'id'} focusOnMount />
+			<SelectHeaderCell
+				customSelectorElement=
+					<IdSelector
+						style={{width: '200px'}}
+						selectors={dataSelectors}
+						actions={dataActions}
+						dataKey={'id'}
+						focusOnMount
+					/>
 				{...p}
 			/>;
-		cellRenderer = (p) => <SelectCell selectors={dataSelectors} actions={dataActions} {...p} />;
+		cellRenderer = (p) =>
+			<SelectCell
+				selectors={dataSelectors}
+				actions={dataActions}
+				{...p}
+			/>;
 	}
 	columns[0] = {...columns[0], headerRenderer, cellRenderer};
 	cellRenderer = ({rowData}: {rowData: any}) => <ActionIcon type='delete' onClick={(e) => {e.stopPropagation(); dispatch(removeRow(rowData.id))}} />

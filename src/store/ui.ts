@@ -1,4 +1,4 @@
-import type { PayloadAction, SliceCaseReducers } from '@reduxjs/toolkit';
+import type { PayloadAction } from '@reduxjs/toolkit';
 
 export type ChangeableColumnProperties = {
 	width: number;
@@ -186,16 +186,16 @@ export function createUiSubslice(dataSet: string) {
 export function getUiSelectors<S>(
 	selectState: (state: S) => UiState
 ) {
-	/* All UI properties */
+	/** Select all UI properties */
 	const selectUiProperties = (state: S) => selectState(state)[name];
 
-	/* Currently sected view */
+	/** The currently selected view */
 	const selectCurrentView = (state: S): string => selectUiProperties(state).tableView;
 
-	/* All views */
+	/** A list of all views */
 	const selectViews = (state: S): string[] => Object.keys(selectUiProperties(state).tablesConfig);
 
-	/** Table config for the current view */
+	/** Select table config for the current view */
 	const selectCurrentTableConfig = (state: S): TableConfig => {
 		const {tableView, tablesConfig} = selectUiProperties(state);
 		if (tablesConfig) {
@@ -206,7 +206,7 @@ export function getUiSelectors<S>(
 		return defaultTableConfig;
 	}
 
-	/** Panel config for the current view */
+	/** Select panel config for the current view */
 	const selectCurrentPanelConfig = (state: S): PanelConfig => {
 		const {tableView, panelsConfig} = selectUiProperties(state);
 		if (panelsConfig) {
@@ -225,61 +225,3 @@ export function getUiSelectors<S>(
 		selectCurrentPanelConfig,
 	}
 }
-
-/*
- * Selectors
- */
-/*export const selectCurrentView = (state: any, dataSet: string): string => state[dataSet].ui.tableView;
-
-export const selectCurrentPanelConfig = (state, dataSet: string): PanelConfig => {
-	const {tableView, panelsConfig} = state[dataSet].ui;
-	if (panelsConfig) {
-		const panelConfig = panelsConfig[tableView];
-		if (panelConfig)
-			return panelConfig;
-	}
-	return defaultPanelConfig;
-}
-
-export const selectCurrentTableConfig = (state: any, dataSet: string): TableConfig => {
-	const {tableView, tablesConfig} = state[dataSet].ui;
-	if (tablesConfig) {
-		const tableConfig = tablesConfig[tableView];
-		if (tableConfig)
-			return tableConfig;
-	}
-	return defaultTableConfig;
-}
-
-export const selectViews = (state: any, dataSet: string): Array<string> => Object.keys(state[dataSet].ui.tablesConfig);
-*/
-
-/* Actions */
-/*
-export const setDefaultTablesConfig = (dataSet: string, tableView: string | undefined, tablesConfig: TablesConfig) =>
-	({type: dataSet + '/setDefaultTablesConfig', payload: {tableView, tablesConfig}});
-export const setTableView = (dataSet: string, tableView: string) => 
-	({type: dataSet + '/setTableView', payload: {tableView}});
-export const toggleTableFixed = (dataSet: string, tableView: string) => 
-	({type: dataSet + '/toggleTableFixed', payload: {tableView}});
-export const upsertTableColumns = (dataSet: string, tableView: string, columns: Array<ChangeableColumnProperties>) => 
-	({type: dataSet + '/upsertTableColumns', payload: {tableView, columns}});
-export const adjustTableColumnWidth = (dataSet: string, tableView, key: string, delta: number) => 
-	({type: dataSet + '/adjustTableColumnWidth', payload: {tableView, key, delta}});
-export const setTableColumnWidth = (dataSet: string, tableView: string | undefined, key: string, width: number) => 
-	({type: dataSet + '/setTableColumnWidth', payload: {tableView, key, width}});
-export const setTableColumnShown = (dataSet: string, tableView: string | undefined, key: string, shown: boolean) => 
-	({type: dataSet + '/upsertTableColumns', payload: {tableView, columns: {[key]: {shown}}}});
-export const setTableColumnUnselectable = (dataSet: string, tableView: string | undefined, key: string, unselectable: boolean) => 
-	({type: dataSet + '/upsertTableColumns', payload: {tableView, columns: {[key]: {unselectable}}}});
-
-export const adjustPanelWidth = (dataSet: string, tableView: string | undefined, delta: number) => 
-	({type: dataSet + '/adjustPanelWidth', payload: {tableView, delta}});
-export const setPanelWidth = (dataSet: string, tableView: string | undefined, width: number) => 
-	({type: dataSet + '/setPanelWidth', payload: {tableView, width}});
-export const setPanelIsSplit = (dataSet: string, tableView: string | undefined, isSplit: boolean) => 
-	({type: dataSet + '/setPanelIsSplit', payload: {tableView, isSplit}});
-
-export const setProperty = (dataSet: string, property: string, value: any) => 
-	({type: dataSet + '/setProperty', payload: {property, value}});
-*/

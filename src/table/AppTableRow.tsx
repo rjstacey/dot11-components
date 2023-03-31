@@ -2,7 +2,7 @@ import React from 'react';
 import {areEqual} from 'react-window';
 import styled from '@emotion/styled';
 
-import type { EntityId, Dictionary, GetEntityField, ColumnProperties, RowGetterProps } from './AppTable';
+import type { EntityId, Dictionary, GetEntityField, ColumnProperties, RowGetterProps, CellRendererProps } from './AppTable';
 
 const OuterRow = styled.div`
 	overflow: hidden;
@@ -57,25 +57,24 @@ function PureTableRow({
 	React.useEffect(() => {
 		//if (!rowRef.current)
 		//	return;
-		const height = isExpanded? (rowRef.current as HTMLDivElement).getBoundingClientRect().height: estimatedRowHeight;
+		const height = isExpanded? rowRef.current!.getBoundingClientRect().height: estimatedRowHeight;
 		if (style.height !== height)
 			onRowHeightChange(rowIndex, height);
 	}, [rowIndex, isExpanded, estimatedRowHeight, columns, fixed, onRowHeightChange, style.height, style.width]);
 
 	const cells = React.useMemo(() => columns.map(column => {
-		const {headerRenderer, cellRenderer, dataRenderer, width, flexGrow, flexShrink, key: dataKey, ...colProps} = column;
+		const {cellRenderer, dataRenderer, width, flexGrow, flexShrink, key: dataKey} = column;
 		const style = {
 			flexBasis: width,
 			flexGrow: fixed? 0: flexGrow,
 			flexShrink: fixed? 0: flexShrink,
 			overflow: 'hidden'	// necessary to ensure that the content does not affect width
 		}
-		const getCellData = ({rowData, dataKey}) => rowData.hasOwnProperty(dataKey)? rowData[dataKey]: getField(rowData, dataKey);
 		const renderer = cellRenderer ||
 			(dataRenderer
-				? (props) => dataRenderer(getCellData(props))
-				: (props) => getCellData(props));
-		const props = {rowIndex, rowId, rowData, dataKey, ...colProps}
+				? ({rowData, dataKey}) => dataRenderer(getField(rowData, dataKey))
+				: ({rowData, dataKey}) => getField(rowData, dataKey));
+		const props: CellRendererProps = {rowIndex, rowId, rowData, dataKey};
 		return (
 			<div
 				key={dataKey}

@@ -1,6 +1,6 @@
 
 import { parseNumber } from '../lib';
-import type { EntityId, Dictionary, PayloadAction, SliceCaseReducers } from '@reduxjs/toolkit';
+import type { EntityId, Dictionary, PayloadAction } from '@reduxjs/toolkit';
 import type { Fields, GetEntityField, Option } from './appTableData';
 
 export type SortDirectionType = "NONE" | "ASC" | "DESC";
@@ -178,10 +178,3 @@ export function getSortsSelectors<S>(
 		selectSort: (state: S, dataKey: string) => selectState(state)[name].settings[dataKey]
 	}
 }
-
-/* Actions */
-//export const sortSet = (dataSet: string, dataKey: string, direction: SortDirectionType) => ({type: dataSet + '/setSortDirection', payload: {dataKey, direction}});
-
-/* Selectors */
-//export const selectSorts = (state: {}, dataSet: string): Sorts => state[dataSet][name];
-//export const selectSort = (state: {}, dataSet: string, dataKey: string): Sort | undefined => state[dataSet][name].settings[dataKey];

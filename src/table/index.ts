@@ -1,9 +1,9 @@
 import {AppTable} from './AppTable';
-import type {TablesConfig, HeaderRendererProps, CellRendererProps, ColumnProperties} from './AppTable';
+import type {TablesConfig, HeaderCellRendererProps, CellRendererProps, ColumnProperties} from './AppTable';
 import ShowFilters from './ShowFilters';
 import GlobalFilter from './GlobalFilter';
-import {SelectHeader, SelectCell, SelectExpandHeader, SelectExpandCell} from './ControlColumn';
-import TableColumnHeader from './TableColumnHeader';
+import {SelectHeaderCell, SelectExpandHeaderCell, SelectCell, SelectExpandCell} from './ControlColumn';
+import TableColumnHeader from './AppTableHeaderCell';
 import TableColumnSelector from './TableColumnSelector';
 import TableViewSelector from './TableViewSelector';
 import {IdSelector, IdFilter} from './IdList';
@@ -12,16 +12,16 @@ import {SplitTableButtonGroup} from './SplitTableButtonGroup';
 
 export type {
 	TablesConfig,
-	HeaderRendererProps,
+	HeaderCellRendererProps,
 	CellRendererProps,
 	ColumnProperties
 }
 
 export {
 	AppTable,
-	SelectHeader,
+	SelectHeaderCell,
+	SelectExpandHeaderCell,
 	SelectCell,
-	SelectExpandHeader,
 	SelectExpandCell,
 	TableColumnHeader,
 	TableViewSelector,

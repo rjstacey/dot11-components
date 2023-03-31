@@ -131,16 +131,16 @@ const FiltersContent = styled.div`
 `;
 
 type ShowFiltersProps = {
-	style?: React.CSSProperties;
 	className?: string;
+	style?: React.CSSProperties;
 	fields: Fields;
 	selectors: AppTableDataSelectors,
 	actions: AppTableDataActions,
 };
 
 function ShowFilters({
-	style,
 	className,
+	style,
 	fields,
 	selectors,
 	actions

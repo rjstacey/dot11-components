@@ -2,9 +2,9 @@
 //
 // Began life here https://github.com/koalyptus/TableFilter
 //
-import type { PayloadAction, EntityId, Dictionary, SliceCaseReducers } from '@reduxjs/toolkit';
+import type { PayloadAction, EntityId, Dictionary } from '@reduxjs/toolkit';
 import { parseNumber } from '../lib';
-import type { Fields, ColumnFieldProperties, Option, GetEntityField } from './appTableData';
+import type { Fields, FieldProperties, Option, GetEntityField } from './appTableData';
 
 export const FilterType = {
 	EXACT: 0,
@@ -113,7 +113,7 @@ export type Filters = {
 	[dataKey: string]: Filter;
 };
 
-const filterCreate = ({options}: ColumnFieldProperties): Filter => ({
+const filterCreate = ({options}: FieldProperties): Filter => ({
 	options,	// Array of {label, value} objects
 	comps: [],	// Array of compare objects where a compare object {value, FilterType}
 });
@@ -183,15 +183,3 @@ export function getFiltersSelectors<S>(
 		selectGlobalFilter: (state: S) => selectState(state)[name][globalFilterKey]
 	}
 }
-
-/* Actions */
-//export const setFilter = (dataSet: string, dataKey: string, comps: Array<Comp>) => ({type: dataSet + '/setFilter', payload: {dataKey, comps}});
-//export const addFilter = (dataSet: string, dataKey: string, value: any, filterType: number) => ({type: dataSet + '/addFilter', payload: {dataKey, value, filterType}});
-//export const removeFilter = (dataSet: string, dataKey: string, value: any, filterType: number) => ({type: dataSet + '/removeFilter', payload: {dataKey, value, filterType}});
-//export const clearFilter = (dataSet: string, dataKey: string) => ({type: dataSet + '/clearFilter', payload: {dataKey}});
-//export const clearAllFilters = (dataSet: string) => ({type: dataSet + '/clearAllFilters'});
-
-/* Selectors */
- //export const selectFilters = (state, dataSet: string): Filters => state[dataSet][name];
- //export const selectFilter = (state, dataSet: string, dataKey: string): Filter | undefined => state[dataSet][name][dataKey];
- 

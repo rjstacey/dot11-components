@@ -1,7 +1,7 @@
 import React from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 import {ActionButton} from '../form';
-//import {setPanelWidth, setPanelIsSplit, selectCurrentPanelConfig} from '../store/appTableData';
+
 import type { AppTableDataSelectors, AppTableDataActions } from '../store/appTableData';
 
 import ColumnResizer from './ColumnResizer';

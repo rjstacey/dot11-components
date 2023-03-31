@@ -53,12 +53,3 @@ export function getExpandedSelectors<S>(
 		selectExpanded: (state: S) => selectState(state)[name]
 	}
 }
-
-
-/* Actions */
-//export const setExpanded = (dataSet: string, ids: Array<EntityId>) => ({type: dataSet + '/setExpanded', payload: ids});
-//export const toggleExpanded = (dataSet: string, ids: Array<EntityId>) => ({type: dataSet + '/toggleExpanded', payload: ids});
-
-/* Selectors */
-//export const selectExpanded = (state, dataSet: string): Array<EntityId> => state[dataSet][name];
- 

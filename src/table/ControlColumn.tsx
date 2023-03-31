@@ -7,9 +7,11 @@ import {Checkbox} from '../form';
 import Dropdown from '../dropdown';
 
 import type {
+	HeaderCellRendererProps,
+	CellRendererProps,
 	AppTableDataSelectors,
 	AppTableDataActions
-} from '../store/appTableData';
+} from './AppTable';
 
 const Selector = styled.div`
 	display: flex;
@@ -29,21 +31,18 @@ const Container = styled.div`
 	align-items: center;
 `;
 
-type ControlHeaderProps = {
-	anchorEl: HTMLElement | null;
+type ControlHeaderCellProps = HeaderCellRendererProps & {
 	customSelectorElement?: React.ReactNode;
 	showExpanded?: boolean;
-	selectors: AppTableDataSelectors<any>;
-	actions: AppTableDataActions;
 }
 
-function ControlHeader({
+function ControlHeaderCell({
 	anchorEl,
 	customSelectorElement,
 	showExpanded,
 	selectors,
 	actions
-}: ControlHeaderProps) {
+}: ControlHeaderCellProps) {
 	const dispatch = useDispatch();
 
 	const selected = useSelector(selectors.selectSelected);
@@ -102,13 +101,12 @@ function ControlHeader({
 	)
 }
 
-const SelectExpandHeader = (props: Omit<ControlHeaderProps, "showExpanded">) => <ControlHeader showExpanded {...props}/>
-const SelectHeader = (props: ControlHeaderProps) => <ControlHeader {...props}/>
+const SelectExpandHeaderCell = (props: Omit<ControlHeaderCellProps, "showExpanded">) => <ControlHeaderCell showExpanded {...props}/>
+const SelectHeaderCell = (props: ControlHeaderCellProps) => <ControlHeaderCell {...props}/>
 
-type ControlCellProps = {
-	rowId: string | number;
+type ControlCellProps = CellRendererProps & {
 	showExpanded?: boolean;
-	selectors: AppTableDataSelectors<any>;
+	selectors: AppTableDataSelectors;
 	actions: AppTableDataActions;
 };
 
@@ -148,4 +146,4 @@ function ControlCell({
 const SelectExpandCell = (props: Omit<ControlCellProps, "showExpanded">) => <ControlCell showExpanded {...props} />
 const SelectCell = (props: ControlCellProps) => <ControlCell {...props} />
 
-export {SelectHeader, SelectCell, SelectExpandHeader, SelectExpandCell};
+export {SelectHeaderCell, SelectExpandHeaderCell, SelectCell, SelectExpandCell};

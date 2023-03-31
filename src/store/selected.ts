@@ -1,4 +1,4 @@
-import type { EntityId, PayloadAction, Action, SliceCaseReducers, ActionReducerMapBuilder } from '@reduxjs/toolkit';
+import type { EntityId, PayloadAction, Action, ActionReducerMapBuilder } from '@reduxjs/toolkit';
 
 const name = 'selected';
 
@@ -51,10 +51,3 @@ export function getSelectedSelectors<S>(
 		selectSelected: (state: S) => selectState(state)[name]
 	}
 }
-
-/* Actions */
-export const setSelected = (dataSet: string, ids: EntityId[]) => ({type: dataSet + '/setSelected', payload: ids});
-export const toggleSelected = (dataSet: string, ids: EntityId[]) => ({type: dataSet + '/toggleSelected', payload: ids});
-
-/* Selectors */
-export const selectSelected = (state: {}, dataSet: string): EntityId[] => state[dataSet][name];

@@ -8,19 +8,15 @@ import {Button, Checkbox, Input} from '../form';
 import { Dropdown, RendererProps } from '../dropdown';
 
 import {
-	/*selectGetField,
-	selectEntities,
-	selectIds,
-	selectFilteredIds,
-	selectSorts, selectSort, sortSet, */sortOptions, SortDirection, SortType,
-	/*selectFilter, setFilter, addFilter, removeFilter,*/ FilterType,
-	/*selectSelected,*/
+	sortOptions, SortDirection, SortType,
+	FilterType,
 	SortDirectionType,
-	Sort,
 	Option,
 	AppTableDataSelectors,
 	AppTableDataActions
 } from '../store/appTableData';
+
+import type { HeaderCellRendererProps } from './AppTable';
 
 const StyledCustomContainer = styled.div`
 	margin: 10px 10px 0;
@@ -73,18 +69,17 @@ const Row = styled.div`
 	align-items: center;
 `;
 
-type SortProps = {
-	//dataSet: string;
+function SortComponent({
+	dataKey,
+	selectors,
+	actions,
+}: {
 	dataKey: string;
-	selectors: AppTableDataSelectors<any>;
+	selectors: AppTableDataSelectors;
 	actions: AppTableDataActions;
-};
-
-function SortComponent({selectors, actions/*dataSet*/, dataKey}: SortProps) {
-	//const {direction, type} = useSelector(state => state[dataSet].sorts.settings[dataKey]);
+}) {
 	const {direction, type} = useSelector(state => selectors.selectSort(state, dataKey));
 	const dispatch = useDispatch();
-	//const setSort = React.useCallback((direction: SortDirectionType) => dispatch(sortSet(dataSet, dataKey, direction)), [dispatch, dataSet, dataKey]);
 	const setSort = React.useCallback((direction: SortDirectionType) => dispatch(actions.setSortDirection({dataKey, direction})), [dispatch, actions, dataKey]);
 	return (
 		<Row>
@@ -115,56 +110,52 @@ function SortComponent({selectors, actions/*dataSet*/, dataKey}: SortProps) {
 	)
 }
 
-type FilterProps = {
-	//dataSet: string;
-	selectors: AppTableDataSelectors<any>;
-	actions: AppTableDataActions;
-	dataKey: string;
-	dataRenderer?: (value: any) => string;
-	customFilterElement?: React.ReactNode;
-};
-
 function FilterComponent({
-	selectors,
-	actions /*dataSet*/,
 	dataKey,
+	selectors,
+	actions,
 	dataRenderer,
 	customFilterElement,
-}: FilterProps) {
+}: {
+	dataKey: string;
+	selectors: AppTableDataSelectors;
+	actions: AppTableDataActions;
+	dataRenderer?: (value: any) => string;
+	customFilterElement?: React.ReactNode;
+}) {
 	const [search, setSearch] = React.useState('');
 	const inputRef = React.useRef<HTMLInputElement>(null);
 
 	const dispatch = useDispatch();
 
 	const selectInfo = React.useCallback(state => ({
-		sort: selectors.selectSort(state, dataKey), //selectSort(state, dataSet, dataKey),
-		filter: selectors.selectFilter(state, dataKey), //selectFilter(state, dataSet, dataKey),
-		selected: selectors.selectSelected(state), //selectSelected(state, dataSet),
-		entities: selectors.selectEntities(state), //selectEntities(state, dataSet),
-		getField: selectors.getField, //selectGetField(state, dataSet)
-	}), [selectors /*dataSet*/, dataKey]);
+		sort: selectors.selectSort(state, dataKey),
+		filter: selectors.selectFilter(state, dataKey),
+		selected: selectors.selectSelected(state),
+		entities: selectors.selectEntities(state),
+	}), [selectors, dataKey]);
 
-	const {sort, filter, selected, entities, getField} = useSelector(selectInfo);
+	const {sort, filter, selected, entities} = useSelector(selectInfo);
+	const getField = selectors.getField;
 
 	const selectValues = React.useCallback(state => {
-		const filter = selectors.selectFilter(state, dataKey); //selectFilter(state, dataSet, dataKey);
+		const filter = selectors.selectFilter(state, dataKey);
 		if (!filter)
 			return [];
-		let ids = selectors.selectIds(state); //selectIds(state, dataSet);
+		let ids = selectors.selectIds(state);
 		if (filter.comps.length === 0)
-			ids = selectors.selectFilteredIds(state); //selectFilteredIds(state, dataSet);
-		const getField = selectors.getField; //selectGetField(state, dataSet);
-		const entities = selectors.selectEntities(state); //selectEntities(state, dataSet);
+			ids = selectors.selectFilteredIds(state);
+		const getField = selectors.getField;
+		const entities = selectors.selectEntities(state);
 		return [...new Set(ids.map(id => getField(entities[id]!, dataKey)))];
-	}, [selectors /*dataSet*/, dataKey]);
+	}, [selectors, dataKey]);
 
 	const values = useSelector(selectValues);
 
 	const filterSelected = React.useCallback(() => {
 		const comps = selected.map(id => ({value: getField(entities[id]!, dataKey), filterType: FilterType.EXACT}));
-		//dispatch(setFilter(dataSet, dataKey, comps));
 		dispatch(actions.setFilter({dataKey, comps}));
-	}, [dispatch, actions/*dataSet*/, dataKey, selected, entities, getField]);
+	}, [dispatch, actions, dataKey, selected, entities, getField]);
 
 	const isFilterSelected = React.useMemo(() => {
 		if (!filter)
@@ -177,7 +168,7 @@ function FilterComponent({
 		type: number;
 	};
 
-	const options: Array<Option> = React.useMemo(() => {
+	const options: Option[] = React.useMemo(() => {
 		if (!filter)
 			return [];
 
@@ -195,7 +186,7 @@ function FilterComponent({
 
 	}, [values, dataRenderer, filter]);
 
-	let searchItems: Array<FilterItem> = [];
+	let searchItems: FilterItem[] = [];
 	if (filter) {
 		searchItems = filter.comps
 			.filter(comp => comp.filterType !== FilterType.EXACT)
@@ -206,7 +197,7 @@ function FilterComponent({
 			}));
 	}
 
-	let exactItems: Array<FilterItem> = options.map(o => ({...o, type: FilterType.EXACT}));
+	let exactItems: FilterItem[] = options.map(o => ({...o, type: FilterType.EXACT}));
 
 	if (search) {
 		let regexp;
@@ -254,16 +245,14 @@ function FilterComponent({
 	);
 
 	const toggleItemSelected = React.useCallback(
-		(item) => {
+		(item: FilterItem) => {
 			setSearch('');
 			if (isItemSelected(item))
-				//dispatch(removeFilter(dataSet, dataKey, item.value, item.type));
 				dispatch(actions.removeFilter({dataKey, value: item.value, filterType: item.type}));
 			else
-				//dispatch(addFilter(dataSet, dataKey, item.value, item.type));
 				dispatch(actions.addFilter({dataKey, value: item.value, filterType: item.type}));
 		},
-		[setSearch, isItemSelected, dispatch, actions/*dataSet*/, dataKey]
+		[setSearch, isItemSelected, dispatch, actions, dataKey]
 	);
 
 	const onInputKey = React.useCallback(
@@ -296,7 +285,7 @@ function FilterComponent({
 					Selected
 				</Button>
 				<Button
-					onClick={() => dispatch(actions.setFilter(/*dataSet,*/ {dataKey, comps: []}))}
+					onClick={() => dispatch(actions.setFilter({dataKey, comps: []}))}
 					isActive={filter && filter.comps.length === 0}
 				>
 					Clear
@@ -364,43 +353,33 @@ const Label = styled.label`
 	font-weight: bold;
 `;
 
-type TableColumnHeaderProps = {
+type AppTableHeaderCellProps = HeaderCellRendererProps & {
 	className?: string;
 	style?: React.CSSProperties;
-	dataKey: string;
-	label?: string;
-	dataRenderer?: (value: any) => string;
-	anchorEl: HTMLElement | null;
 	customFilterElement?: React.ReactNode;
-	isId?: boolean;
-	//dataSet: string;
-	selectors: AppTableDataSelectors<any>;
-	actions: AppTableDataActions;
-};
+}
 
-function TableColumnHeader({
+function AppTableHeaderCell({
 	className,
 	style,
-	//dataSet,		// Identifies the dataset in the store
-	dataKey,		// Identifies the data element in the row object
 	label,			// Column label
-	dataRenderer,	// Optional function to render the data element
+	dataKey,		// Identifies the data element in the row object
+	column,
 	anchorEl,
-	customFilterElement,	// Custom filter element for dropdown
-	isId,			// Identifies the data table ID column; enables "filter selected"
 	selectors,
-	actions
-}: TableColumnHeaderProps) {
+	actions,
+	customFilterElement	// Custom filter element for dropdown
+}: AppTableHeaderCellProps) {
 	const selectInfo = React.useCallback((state) => {
-		const sorts = selectors.selectSorts(state); //selectSorts(state, dataSet);
-		const filter = selectors.selectFilter(state, dataKey); //selectFilter(state, dataSet, dataKey);
+		const sorts = selectors.selectSorts(state);
+		const filter = selectors.selectFilter(state, dataKey);
 		return {
 			sort: sorts.settings[dataKey],
 			isSorted: sorts.by.includes(dataKey),
 			filter: filter,
 			isFiltered: filter && filter.comps.length > 0,
 		}
-	}, [selectors /*dataSet*/, dataKey]);
+	}, [selectors, dataKey]);
 
 	const {sort, isSorted, filter, isFiltered} = useSelector(selectInfo);
 
@@ -433,18 +412,16 @@ function TableColumnHeader({
 		<>
 			{sort &&
 				<SortComponent
-					//dataSet={dataSet}
 					selectors={selectors}
 					actions={actions}
 					dataKey={dataKey}
 				/>}
 			{filter &&
 				<FilterComponent
-					//dataSet={dataSet}
 					selectors={selectors}
 					actions={actions}
 					dataKey={dataKey}
-					dataRenderer={dataRenderer}
+					dataRenderer={column.dataRenderer}
 					customFilterElement={customFilterElement}
 				/>}
 		</>;
@@ -459,9 +436,8 @@ function TableColumnHeader({
 			selectRenderer={selectRenderer}
 			dropdownRenderer={dropdownRenderer}
 			portal={anchorEl}
-			//anchorEl={anchorEl}
 		/>
 	)
 }
 
-export default TableColumnHeader;
+export default AppTableHeaderCell;

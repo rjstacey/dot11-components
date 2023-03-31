@@ -1,5 +1,5 @@
 import React from 'react';
-import {DraggableCore, DraggableEventHandler} from 'react-draggable';
+import { DraggableCore, DraggableEventHandler } from 'react-draggable';
 import styled from '@emotion/styled';
 
 const ResizeHandle = styled.div`
@@ -20,12 +20,14 @@ const ResizeHandle = styled.div`
 	}
 `;
 
-type ColumnResizerProps = {
+export type ColumnResizerProps = {
 	style?: React.CSSProperties;
 	onDrag: DraggableEventHandler;
 }
 
-function ColumnResizer({style, onDrag}: ColumnResizerProps) {
+export type { DraggableEventHandler };
+
+export function ColumnResizer({style, onDrag}: ColumnResizerProps) {
 	const nodeRef = React.useRef<HTMLDivElement>(null);
 	const [drag, setDrag] = React.useState(false);
 	if (drag)
@@ -33,7 +35,6 @@ function ColumnResizer({style, onDrag}: ColumnResizerProps) {
 
 	return (
 		<DraggableCore
-			//axis="x"
 			onDrag={onDrag}
 			onStart={e => setDrag(true)}
 			onStop={e => setDrag(false)}
