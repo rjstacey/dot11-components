@@ -33,11 +33,11 @@ export type HeaderCellRendererProps = {
 	actions: AppTableDataActions;
 };
 
-export type CellRendererProps<EntityType = any> = {
+export type CellRendererProps<T = any> = {
 	dataKey: string;
 	rowIndex: number;
 	rowId: EntityId;
-	rowData: EntityType;
+	rowData: T;
 }
 
 export type ColumnProperties = {
@@ -64,8 +64,8 @@ export type RowGetterProps<T = any> = {
 export type AppTableProps<T> = {
 	fitWidth?: boolean;
 	fixed?: boolean;
-	columns: Array<ColumnProperties>,
-	rowGetter?: (props: RowGetterProps<T>) => T;
+	columns: ColumnProperties[],
+	rowGetter?: (props: RowGetterProps<T>) => any;
 	headerHeight: number;
 	estimatedRowHeight: number;
 	measureRowHeight?: boolean;
@@ -363,7 +363,7 @@ function AppTableSized<EntityType>({
 	// If the container size changes, then re-render rows
 	React.useEffect(() => {
 		if (gridRef.current)
-			gridRef.current.resetAfterColumnIndex(0, true)
+			gridRef.current.resetAfterColumnIndex(0, true);
 	}, [width, height, fixed]);
 
 	// Package the context data
@@ -383,7 +383,7 @@ function AppTableSized<EntityType>({
 		onRowClick
 	}), [props.rowGetter, gutterSize, entities, ids, selected, expanded, fixed, columns, getField, estimatedRowHeight, measureRowHeight, onRowHeightChange, onRowClick]);
 
-	// put header after body and reverse the display order via css to prevent header's shadow being covered by body
+	// Put header after body and reverse the display order via css to prevent header's shadow being covered by body
 	return (
 		<Table
 			role='table'

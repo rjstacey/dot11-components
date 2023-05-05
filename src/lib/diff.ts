@@ -6,29 +6,29 @@
  */
 export const MULTIPLE = '<multiple>';
 
-export const isMultiple = (item) => item === MULTIPLE;
+export const isMultiple = (item: unknown): item is typeof MULTIPLE => item === MULTIPLE;
 
-const isObject = (o: any) => o && typeof o === 'object';
-const isDate = (d: any) => d instanceof Date;
-const isEmpty = (o: object) => Object.keys(o).length === 0;
+const isObject = (o: any): o is object => o && typeof o === 'object';
+const isDate = (d: any): d is Date => d instanceof Date;
+const isEmpty = (o: object): o is {} => Object.keys(o).length === 0;
 
 export function recursivelyDiffObjects(l: any, r: any) {
-	const isObject = o => o != null && typeof o === 'object';
 
-	if (l === r) return l;
+	if (l === r)
+		return l;
 
 	if (!isObject(l) || !isObject(r))
 		return MULTIPLE;
 
 	if (isDate(l) || isDate(r)) {
-		if (l.valueOf() === r.valueOf()) return l;
+		if (l.valueOf() === r.valueOf())
+			return l;
 		return MULTIPLE;
 	}
 
 	if (Array.isArray(l) && Array.isArray(r)) {
-		if (l.length === r.length) {
-			return l.map((v, i) => recursivelyDiffObjects(l[i], r[i]))
-		}
+		if (l.length === r.length)
+			return l.map((v, i) => recursivelyDiffObjects(l[i], r[i]));
 	}
 	else {
 		const deletedValues = Object.keys(l).reduce((acc, key) => {
@@ -40,7 +40,8 @@ export function recursivelyDiffObjects(l: any, r: any) {
 
 			const difference = recursivelyDiffObjects(l[key], r[key]);
 
-			if (isObject(difference) && isEmpty(difference) && !isDate(difference)) return acc // return no diff
+			if (isObject(difference) && isEmpty(difference) && !isDate(difference))
+				return acc; // return no diff
 
 			return { ...acc, [key]: difference } // return updated key
 		}, deletedValues)
@@ -55,7 +56,7 @@ export function recursivelyDiffObjects(l: any, r: any) {
  * @param modified - object with modified content
  * @returns changes - object with content from modified that differs from original
  */
-export function shallowDiff(original: object, modified: object) {
+export function shallowDiff(original: any, modified: any): any {
 	const changes = {};
 	for (let key in modified)
 		if (modified[key] !== original[key])
@@ -63,7 +64,7 @@ export function shallowDiff(original: object, modified: object) {
 	return changes;
 }
 
-export function deepDiff(original: object, modified: object) {
+export function deepDiff(original: any, modified: any): any {
 	if (original === modified)
 		return undefined;
 	if (!isObject(original) || !isObject(modified))
@@ -71,6 +72,8 @@ export function deepDiff(original: object, modified: object) {
 	if (isDate(original) && isDate(modified))
 		return original.valueOf() === modified.valueOf()? undefined: modified;
 	if (Array.isArray(original) && Array.isArray(modified)) {
+		if (original.length !== modified.length)
+			return modified;
 		const result = modified.map((v, i) => deepDiff(original[i], modified[i]));
 		return result.find((v: any) => v !== undefined)? result: undefined;
 	}
@@ -83,6 +86,7 @@ export function deepDiff(original: object, modified: object) {
 	return changes;
 }
 
+
 /**
  * Performs a deep merge of objects and returns new object.
  *
@@ -90,7 +94,10 @@ export function deepDiff(original: object, modified: object) {
  * @param obj2 - second object
  * @returns result - object with properties from both objects, recursively merged
  */
-export function deepMerge(obj1: object, obj2: object) {
+export function deepMerge<O1 extends object, O2 extends object>(obj1: O1, obj2: O2): O1 & O2;
+export function deepMerge<O1 extends Date, O2 extends Date>(obj1: O1, obj2: O2): Date;
+export function deepMerge<O1 extends number | string, O2 extends number | string>(obj1: O1, obj2: O2): O2 extends number? number: string;
+export function deepMerge(obj1: any, obj2: any): any {
 	if (obj1 === obj2)
 		return obj2;
 	if (!isObject(obj1) || !isObject(obj2))
@@ -110,6 +117,8 @@ export function deepMerge(obj1: object, obj2: object) {
 	return result;
 }
 
+export type Multiple<O extends object> = { [K in keyof O]: O[K] | typeof MULTIPLE };
+
 /**
  * Merge two objects and identify properties that have differences.
  * 
@@ -117,7 +126,8 @@ export function deepMerge(obj1: object, obj2: object) {
  * @param second object
  * @returns object that has values for properties with no differences and '<multiple>' for properties with differences
  */
-export function deepMergeTagMultiple(obj1: object, obj2: object) {
+export function deepMergeTagMultiple<O1 = any, O2 = any>(obj1: O1, obj2: O2): O1 extends object? (O2 extends object? Multiple<O1 & O2>: typeof MULTIPLE): typeof MULTIPLE;
+export function deepMergeTagMultiple(obj1: any, obj2: any) {
 	if (obj1 === obj2)
 		return obj1;
 	if (!isObject(obj1) || !isObject(obj2))

@@ -177,7 +177,7 @@ export function getFiltersSelectors<S>(
 	return {
 		/** All filters */
 		selectFilters: (state: S) => selectState(state)[name],
-		/** The filter for @param dataKey */
+		/** The filter for @param `dataKey` */
 		selectFilter: (state: S, dataKey: string) => selectState(state)[name][dataKey],
 		/** The global filter */
 		selectGlobalFilter: (state: S) => selectState(state)[name][globalFilterKey]

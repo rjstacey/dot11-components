@@ -1,4 +1,3 @@
-import Select from '../select';
 import Input from './Input';
 import TextArea from './TextArea';
 import Checkbox from './Checkbox';
@@ -11,9 +10,9 @@ import ActionButton from './ActionButton';
 import {Dropdown, ActionButtonDropdown} from '../dropdown';
 
 export * from './Form';
+export * from '../select';
 
 export {
-	Select,
 	Input,
 	TextArea,
 	Checkbox,

@@ -16,11 +16,11 @@ import type {
 
 import { createSelector } from 'reselect';	/* Use older version; the newer version does not handle typescript generics well */
 
-import { createSelectedSubslice, getSelectedSelectors, SelectedState } from './selected'
-import { createExpandedSubslice, getExpandedSelectors, ExpandedState  } from './expanded'
-import { createFiltersSubslice, getFiltersSelectors, FiltersState, filterData } from './filters'
-import { createSortsSubslice, getSortsSelectors, SortsState, sortData, SortDirectionType } from './sorts'
-import { createUiSubslice, getUiSelectors, UiState } from './ui'
+import { createSelectedSubslice, getSelectedSelectors, SelectedState } from './selected';
+import { createExpandedSubslice, getExpandedSelectors, ExpandedState  } from './expanded';
+import { createFiltersSubslice, getFiltersSelectors, FiltersState, filterData } from './filters';
+import { createSortsSubslice, getSortsSelectors, SortsState, sortData, SortDirectionType } from './sorts';
+import { createUiSubslice, getUiSelectors, UiState } from './ui';
 
 //export * from './selected';
 //export * from './expanded';
@@ -65,31 +65,44 @@ export type AppTableDataState<T> =
 	SortsState &
 	UiState;
 
-export function getAppTableDataSelectors<S, T>(
-	/** Selector for the slice state (required) */
-	selectState: (state: S) => AppTableDataState<T>,
+export type AppTableDataSelectorOptions<S, T2> = {
 	/** Optionally override the entities selector; allows for table join operations etc. */
-	selectEntities?: (state: S) => Dictionary<T>,
+	selectEntities?: (state: S) => Dictionary<T2>;
 	/** Optionally override the ids selector; allows for pre-filtering of table entires */
-	selectIds?: (state: S) => EntityId[],
+	selectIds?: (state: S) => EntityId[];
 	/** Optional function that will derive a field `dataKey` from other fields */
-	getField?: (entity: T, dataKey: string) => any
-) {
+	getField?: (entity: T2, dataKey: string) => any;
+};
 
+export function getAppTableDataSelectors<S, T1, T2>(
+	/** Selector for the slice state (required) */
+	selectState: (state: S) => AppTableDataState<T1>,
+	options?: AppTableDataSelectorOptions<S, T2>
+) {
 	const selectFilters = (state: S) => selectState(state).filters;
 	const selectSorts = (state: S) => selectState(state).sorts;
 
 	/** If `selectIds` is not provided, then the default is to return slice `ids` */
-	if (!selectIds)
-		selectIds = (state: S) => selectState(state).ids;
+	let selectIds = (state: S) => selectState(state).ids;
+	if (options && typeof options.selectIds !== 'undefined')
+		selectIds = options.selectIds;
 
 	/** If `selectEntities` is not provided, then default is to return slice `entities` */
-	if (!selectEntities)
-		selectEntities = (state: S) => selectState(state).entities;
+	function selectEntities(state: S): Dictionary<T1>;
+	function selectEntities(state: S): Dictionary<T2>;
+	function selectEntities(state: S) {
+		if (options && options.selectEntities)
+			return options.selectEntities(state);
+		return selectState(state).entities;
+	}
 
-	/** If `getField` is not provided, then default is to extract the field directly from the entity */
-	if (!getField)
-		getField = (entity: T, dataKey: string) => entity[dataKey];
+	function getField(entity: T1, dataKey: string): any;
+	function getField(entity: T2, dataKey: string): any;
+	function getField(entity: unknown, dataKey: string) {
+		if (options && options.getField)
+			return options.getField(entity as T2, dataKey);
+		return (entity as T1)[dataKey];
+	}
 
 	/** Select array of filtered ids */
 	const selectFilteredIds: (state: S) => EntityId[] = createSelector(
@@ -115,30 +128,6 @@ export function getAppTableDataSelectors<S, T>(
 		(sorts, entities, ids) => sortData(sorts, getField!, entities, ids)
 	);
 
-	/** Returns a list of unique values for a particular field */
-	/*function uniqueFieldValues(entities: Dictionary<T>, ids: EntityId[], dataKey: string): any[] {
-		let values = ids.map(id => getField!(entities[id]!, dataKey));
-		return [...new Set(values.map(v => v !== null? v: ''))];
-	}*/
-	
-	//const selectDataKey = (state: unknown, dataKey: string) => dataKey; 
-
-	/** Generate an array of all the unique field values */
-	/*const selectAllFieldValues: (state: S, dataKey: string) => EntityId[] = createSelector(
-		[selectEntities,
-		selectSortedIds,
-		selectDataKey],
-		uniqueFieldValues
-	);*/
-
-	/** Generate an array of unique values for the currently filtered entries */
-	/*const selectAvailableFieldValues: (state: S, dataKey: string) => EntityId[] = createSelector(
-		[selectEntities,
-		selectSortedFilteredIds,
-		selectDataKey],
-		uniqueFieldValues
-	);*/
-
 	return {
 		getField,
 		selectState,
@@ -147,8 +136,6 @@ export function getAppTableDataSelectors<S, T>(
 		selectSortedIds,
 		selectFilteredIds,
 		selectSortedFilteredIds,
-		//selectAllFieldValues,
-		//selectAvailableFieldValues,
 		...getSelectedSelectors(selectState),
 		...getExpandedSelectors(selectState),
 		...getFiltersSelectors(selectState),
@@ -157,7 +144,7 @@ export function getAppTableDataSelectors<S, T>(
 	}
 }
 
-export type AppTableDataSelectors<S = any, T = any> = ReturnType<typeof getAppTableDataSelectors<S, T>>;
+export type AppTableDataSelectors<S = any, T1 = any, T2 = any> = ReturnType<typeof getAppTableDataSelectors<S, T1, T2>>;
 
 /*
  * Create a redux slice suitible for AppTable rendering.

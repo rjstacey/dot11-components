@@ -5,7 +5,7 @@ import {FixedSizeList as List} from 'react-window';
 
 import {Icon} from '../icons';
 import {Button, Checkbox, Input} from '../form';
-import { Dropdown, RendererProps } from '../dropdown';
+import { Dropdown, DropdownRendererProps } from '../dropdown';
 
 import {
 	sortOptions, SortDirection, SortType,
@@ -386,7 +386,7 @@ function AppTableHeaderCell({
 	if (!sort && !filter)
 		return <Header><Label>{label}</Label></Header>
 
-	const selectRenderer = ({state, methods}: RendererProps) =>
+	const selectRenderer = ({state, methods}: DropdownRendererProps) =>
 		<Header
 			onClick={state.isOpen? methods.close: methods.open}
 		>

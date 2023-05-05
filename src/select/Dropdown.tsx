@@ -1,6 +1,6 @@
 import React from 'react';
 import {VariableSizeList as List} from 'react-window';
-import type { RendererProps } from '.';
+import type { SelectRendererProps } from '.';
 
 /* ItemWrapper measures and sets the height of the item */
 function ItemWrapper({style, item, index, setHeight, props, state, methods}) {
@@ -54,7 +54,7 @@ function ItemWrapper({style, item, index, setHeight, props, state, methods}) {
 	)
 }
 
-function Dropdown({props, state, methods}: RendererProps) {
+function Dropdown({props, state, methods}: SelectRendererProps) {
 
 	const listRef = React.useRef<List>(null);
 	const listInnerRef = React.useRef<HTMLElement>(null);
@@ -67,7 +67,7 @@ function Dropdown({props, state, methods}: RendererProps) {
 			listRef.current.resetAfterIndex(index, true);
 	}
 
-	const getItemHeight = (index) => heightsRef.current[index] || props.estimatedItemHeight;
+	const getItemHeight = (index: number) => heightsRef.current[index] || props.estimatedItemHeight;
 
 	const options = methods.searchResults();
 

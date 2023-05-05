@@ -1,5 +1,5 @@
 import {AppTable} from './AppTable';
-import type {TablesConfig, HeaderCellRendererProps, CellRendererProps, ColumnProperties} from './AppTable';
+import type {TablesConfig, HeaderCellRendererProps, CellRendererProps, ColumnProperties, RowGetterProps} from './AppTable';
 import ShowFilters from './ShowFilters';
 import GlobalFilter from './GlobalFilter';
 import {SelectHeaderCell, SelectExpandHeaderCell, SelectCell, SelectExpandCell} from './ControlColumn';
@@ -14,7 +14,8 @@ export type {
 	TablesConfig,
 	HeaderCellRendererProps,
 	CellRendererProps,
-	ColumnProperties
+	ColumnProperties,
+	RowGetterProps
 }
 
 export {

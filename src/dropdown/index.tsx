@@ -19,7 +19,7 @@ const Header = styled.div`
 	:hover {color: tomato};
 `;
 
-export type RendererProps = {
+export type DropdownRendererProps = {
 	props: DropdownProps;
 	state: DropdownState;
 	methods: DropdownMethods;
@@ -47,8 +47,8 @@ export type DropdownProps = {
 	className?: string;
 	dropdownClassName?: string;
 
-	selectRenderer?: (props: RendererProps) => React.ReactNode;
-	dropdownRenderer?: (props: RendererProps) => React.ReactNode;
+	selectRenderer?: (props: DropdownRendererProps) => React.ReactNode;
+	dropdownRenderer?: (props: DropdownRendererProps) => React.ReactNode;
 
 	children?: React.ReactNode;
 }
@@ -64,7 +64,7 @@ type DropdownMethods = {
 	close: () => void;
 }
 
-function defaultSelectRenderer({props, state, methods}: RendererProps) {
+function defaultSelectRenderer({props, state, methods}: DropdownRendererProps) {
 	return (
 		<Header
 			title={props.title}
@@ -76,7 +76,7 @@ function defaultSelectRenderer({props, state, methods}: RendererProps) {
 	)
 }
 
-function defaultDropdownRenderer({props}: RendererProps) {
+function defaultDropdownRenderer({props}: DropdownRendererProps) {
 	return props.children;
 }
 
@@ -364,7 +364,7 @@ interface ActionButtonDropdownProps extends DropdownProps {
 export const ActionButtonDropdown = ({name, label, title, disabled, ...rest}: ActionButtonDropdownProps) =>
 	<Dropdown
 		handle={false}
-		selectRenderer={({props, state, methods}: RendererProps) =>
+		selectRenderer={({props, state, methods}: DropdownRendererProps) =>
 			<Button
 				title={title}
 				disabled={disabled} 

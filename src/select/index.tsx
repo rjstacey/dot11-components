@@ -20,7 +20,7 @@ const DropdownHandle = (props: React.ComponentProps<typeof Icon>) => <Icon class
 const Placeholder = (props: React.ComponentProps<"div">) => <div className='dropdown-select-placeholder' {...props} />
 const NoData = ({props}) => <div className='dropdown-select-no-data'>{props.noDataLabel}</div>
 
-function defaultContentRenderer({props, state, methods}: RendererProps): React.ReactNode {
+function defaultContentRenderer({props, state, methods}: SelectRendererProps): React.ReactNode {
 	const values = props.values;
 	if (props.multi) {
 		return values.map((item) => {
@@ -36,13 +36,13 @@ function defaultContentRenderer({props, state, methods}: RendererProps): React.R
 	return null;
 }
 
-const defaultAddItemRenderer = ({item, className, props, state, methods}: {item: ItemType, className?: string} & RendererProps): React.ReactNode =>
+const defaultAddItemRenderer = ({item, className, props, state, methods}: {item: ItemType, className?: string} & SelectRendererProps): React.ReactNode =>
 	<span className={className}>{`Add "${item[props.labelField]}"`}</span>
 
-const defaultItemRenderer = ({item, className, props, state, methods}: {item: ItemType, className?: string} & RendererProps): React.ReactNode =>
+const defaultItemRenderer = ({item, className, props, state, methods}: {item: ItemType, className?: string} & SelectRendererProps): React.ReactNode =>
 	<span className={className}>{item[props.labelField]}</span>
 
-function defaultCreateOption({props, state, methods}: RendererProps): ItemType {
+function defaultCreateOption({props, state, methods}: SelectRendererProps): ItemType {
 	return {
 		[props.valueField]: state.search,
 		[props.labelField]: state.search,
@@ -51,7 +51,8 @@ function defaultCreateOption({props, state, methods}: RendererProps): ItemType {
 
 export type ItemType = any; //{ [key: string]: any} | {};
 
-export type RendererProps = {props: any, state: SelectState, methods: SelectMethods};
+export type SelectRendererProps = {props: any, state: SelectState, methods: SelectMethods};
+export type SelectItemRendererProps = { item: ItemType } & SelectRendererProps;
 
 export type SelectInternalProps = SelectDefaultProps & {
 	values: ItemType[];
@@ -109,17 +110,17 @@ type SelectDefaultProps = {
 	contentRenderer: typeof defaultContentRenderer;
 
 	/* Content children */
-	selectItemRenderer: (props: {item: ItemType} & RendererProps) => React.ReactNode;
-	multiSelectItemRenderer: (props: {item: ItemType} & RendererProps) => React.ReactNode;
-	inputRenderer: (props: {inputRef: React.RefObject<HTMLInputElement>} & RendererProps) => React.ReactNode;
+	selectItemRenderer: (props: SelectItemRendererProps) => React.ReactNode;
+	multiSelectItemRenderer: (props: SelectItemRendererProps) => React.ReactNode;
+	inputRenderer: (props: {inputRef: React.RefObject<HTMLInputElement>} & SelectRendererProps) => React.ReactNode;
 
 	/* Dropdown */
-	dropdownRenderer: (props: RendererProps) => React.ReactNode;
+	dropdownRenderer: (props: SelectRendererProps) => React.ReactNode;
 
 	/* Dropdown children */
 	addItemRenderer: typeof defaultAddItemRenderer;
 	itemRenderer: typeof defaultItemRenderer;
-	noDataRenderer: (props: RendererProps) => React.ReactNode;
+	noDataRenderer: (props: SelectRendererProps) => React.ReactNode;
 };
 
 export type SelectState = {
@@ -508,7 +509,7 @@ class SelectInternal extends React.Component<SelectInternalProps, SelectState> {
 		if (props.dropdownClassName)
 			className += ` ${props.dropdownClassName}`;
 
-		const dropdownRenderer = props.dropdownRenderer || ((props: RendererProps) => <Dropdown {...props} />);
+		const dropdownRenderer = props.dropdownRenderer || ((props: SelectRendererProps) => <Dropdown {...props} />);
 
 		const dropdownEl = 
 			<div
@@ -663,6 +664,6 @@ class SelectInternal extends React.Component<SelectInternalProps, SelectState> {
 
 export type SelectProps = JSX.LibraryManagedAttributes<typeof SelectInternal, SelectInternalProps>;
 
-const Select = (props: SelectProps) => <SelectInternal {...props} />;
+export const Select = (props: SelectProps) => <SelectInternal {...props} />;
 
-export default Select;
+//export default Select;

@@ -8,6 +8,7 @@ const array1 = [1, 2];
 const array2 = [1, 2]; // different instance, same content
 const array3 = [1, 3]; // different content
 const array4 = [1, 2, 3]; // different length
+const emptyArray = [];	// empty array
 const date1 = new Date(2011, 2, 1);
 const date2 = new Date(2011, 2, 1); // different instance, same value
 const date3 = new Date(2011, 2, 2); // different value
@@ -20,6 +21,8 @@ const orig = {
 	a1: array1,
 	a2: array1,
 	a3: array1,
+	a4: emptyArray,
+	a5: array1,
 	d1: date1,
 	d2: date1,
 	d3: date1,
@@ -36,6 +39,8 @@ const mod = {
 	a1: array1, // same instance
 	a2: array2, // different instance, same content
 	a3: array3, // different content
+	a4: array1,	// empty vs non-empty
+	a5: emptyArray, // non-empty vs empty
 	d1: date1, // same instance
 	d2: date2, // different instance, same value
 	d3: date3, // different value
@@ -49,6 +54,8 @@ const shallowDiff_result = {
 	o3: mod.o3,
 	a2: mod.a2,
 	a3: mod.a3,
+	a4: mod.a4,
+	a5: mod.a5,
 	d2: mod.d2,
 	d3: mod.d3,
 	oo1: mod.oo1,
@@ -59,6 +66,8 @@ const shallowDiff_result = {
 const deepDiff_result = {
 	o3: {v2: 'BB'},
 	a3: [undefined, 3],
+	a4: array1,
+	a5: emptyArray,
 	d3: date3,
 	oo1: {o3: {v2: 'BB'}},
 	oo2: {a3: [undefined, 3]},
@@ -108,8 +117,12 @@ const m = {
 	}
 };
 
-test('deepMerge', () => {
+test('deepMerge objects', () => {
 	expect(deepMerge(o1, o2)).toStrictEqual(m)
+});
+
+test('deepMerge numbers', () => {
+	expect(deepMerge(1, 2)).toStrictEqual(2)
 });
 
 const oo1 = {
@@ -179,7 +192,7 @@ test('deepMergeTagMultiple 2', () => {
 });
 
 
-test('deepMergeTagMultiple 2', () => {
+test('deepMergeTagMultiple 3', () => {
 	const result = deepMergeTagMultiple(oo1, oo2);
 	expect(result).toStrictEqual(mm);
 	expect(isMultiple(result.sameValue)).toEqual(false);

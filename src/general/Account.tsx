@@ -1,7 +1,7 @@
 import React from 'react';
 import {Button} from '../form';
 
-import { Dropdown, RendererProps } from '../dropdown';
+import { Dropdown, DropdownRendererProps } from '../dropdown';
 import {logout, AccessLevelLabels} from '../lib';
 
 type User = {
@@ -13,7 +13,7 @@ type User = {
 
 type SignOutFormProps = {
 	user: User;
-} & RendererProps;
+} & DropdownRendererProps;
 
 const SignOutForm = ({user, methods}: SignOutFormProps) => {
 
