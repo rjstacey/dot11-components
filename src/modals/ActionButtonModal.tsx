@@ -4,7 +4,7 @@ import {AppModal} from '.';
 import {Icon} from '../icons';
 import {Button} from '../form';
 
-interface ActionButtonModalProps {
+interface ActionButtonModalProps extends React.ComponentPropsWithoutRef<typeof AppModal> {
 	name?: string;
 	label?: string;
 	title?: string;
@@ -12,7 +12,6 @@ interface ActionButtonModalProps {
 	onRequestOpen?: () => void;
 	onRequestClose?: () => void;
 	children?: React.ReactNode;
-	rest: React.ComponentPropsWithoutRef<typeof AppModal>;
 }
 
 export type ChildProps = {
@@ -59,9 +58,9 @@ function ActionButtonModal({
 					/>}
 			</Button>
 			<AppModal
+				{...rest}
 				isOpen={isOpen}
 				onRequestClose={close}
-				{...rest}
 			>
 				{React.Children.map(children,
 					child => React.isValidElement(child)? React.cloneElement(child as React.ReactElement<ChildProps>, {isOpen, close}): child

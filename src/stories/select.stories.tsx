@@ -1,8 +1,8 @@
 import React from 'react';
-import {LoremIpsum} from 'lorem-ipsum';
-import {AppModal} from '../modals';
-import Select from '../select';
-import {Icon, ActionIcon} from '../icons'
+import { LoremIpsum } from 'lorem-ipsum';
+import { AppModal } from '../modals';
+import { Select } from '../select';
+import { Icon, ActionIcon } from '../icons'
 
 const lorem = new LoremIpsum();
 

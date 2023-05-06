@@ -93,7 +93,7 @@ const ListContainer = styled.div`
 type ListProps = {
 	style?: object;
 	className?: string;
-	label: string;
+	label?: string;
 	children?: React.ReactNode;
 }
 

@@ -35,7 +35,7 @@ export type DropdownProps = {
 	closeOnScroll?: boolean;
 	closeOnBlur?: boolean;
 	keepOpen?: boolean;
-	portal?: object;
+	portal?: Element;
 
 	handle?: boolean;
 	dropdownGap?: number;
@@ -65,13 +65,19 @@ type DropdownMethods = {
 }
 
 function defaultSelectRenderer({props, state, methods}: DropdownRendererProps) {
+	const {
+		title,
+		label,
+		handle = true,
+		disabled = false
+	} = props;
 	return (
 		<Header
-			title={props.title}
-			onClick={props.disabled? undefined: (state.isOpen? methods.close: methods.open)}
+			title={title}
+			onClick={disabled? undefined: (state.isOpen? methods.close: methods.open)}
 		>
-			{props.label && <label>{props.label}</label>}
-			{props.handle && <Icon type='handle' isOpen={state.isOpen} />}
+			{label && <label>{label}</label>}
+			{handle && <Icon type='handle' isOpen={state.isOpen} />}
 		</Header>
 	)
 }
@@ -95,7 +101,7 @@ export class Dropdown extends React.Component<DropdownProps, DropdownState> {
 	debouncedUpdateBounds: () => void;
 	debouncedOnScroll: () => void;
 
-	constructor(props) {
+	constructor(props: DropdownProps) {
 		super(props);
 		this.state = {
 			isOpen: false,

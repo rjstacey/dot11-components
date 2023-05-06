@@ -38,7 +38,7 @@ type AppModalProps = {
 	isOpen: boolean;
 	onRequestClose?: () => void;
 	children?: React.ReactNode;
-}
+} & React.ComponentProps<typeof Modal>;
 
 function AppModal({style, overlayStyle, className, isOpen, onRequestClose, children, ...otherProps}: AppModalProps) {
 	const modalStyle = {content: {...defaultModalStyle.content, ...style}, overlay: {...defaultModalStyle.overlay, ...overlayStyle}}
