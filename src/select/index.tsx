@@ -56,7 +56,7 @@ export type SelectItemRendererProps = { item: ItemType } & SelectRendererProps;
 
 export type SelectInternalProps = SelectDefaultProps & {
 	values: ItemType[];
-	onChange: (values: ItemType[]) => void;
+	//onChange: (values: ItemType[]) => void;
 	options: ItemType[];
 
 	style?: React.CSSProperties;

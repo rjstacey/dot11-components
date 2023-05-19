@@ -95,12 +95,13 @@ type ListProps = {
 	className?: string;
 	label?: string;
 	children?: React.ReactNode;
-}
+} & React.ComponentProps<"div">
 
-const List = ({style, className, label, children}: ListProps) =>
+const List = ({style, className, label, children, ...otherProps}: ListProps) =>
 	<ListContainer
 		style={style}
 		className={className}
+		{...otherProps}
 	>
 		{label && <label>{label}</label>}
 		{children}

@@ -98,7 +98,7 @@ export function createUiSubslice(dataSet: string) {
 					ui.tableView = Object.keys(ui.tablesConfig)[0];
 			}
 		},
-		upsertTableColumns(state: UiState, action: PayloadAction<{tableView?: string; columns: Array<ChangeableColumnProperties>}>) {
+		upsertTableColumns(state: UiState, action: PayloadAction<{tableView?: string; columns: { [key: string]: Partial<ChangeableColumnProperties> }}>) {
 			const ui = state[name];
 			let {tableView, columns} = action.payload;
 			if (tableView === undefined)

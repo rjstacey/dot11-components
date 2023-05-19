@@ -132,13 +132,19 @@ const NoGrid = styled.div`
 /*
  * Key down handler for Grid (when focused)
  */
-const useKeyDown = (selected: EntityId[], ids: EntityId[], setSelected: (ids: EntityId[]) => void, scrollToItem: ((arg: {rowIndex: number}) => void) | undefined) =>
+const useKeyDown = (
+	selected: EntityId[],
+	ids: EntityId[],
+	setSelected: (ids: EntityId[]) => void,
+	//scrollToItem: ((arg: {rowIndex: number}) => void) | undefined
+	gridRef: React.RefObject<Grid>
+) =>
 	React.useCallback((event: React.KeyboardEvent) => {
 
 		const selectAndScroll = (i: number) => {
 			setSelected([ids[i]]);
-			if (scrollToItem)
-				scrollToItem({rowIndex: i});
+			if (gridRef.current)
+				gridRef.current.scrollToItem({rowIndex: i});
 		}
 
 		// Ctrl-A selects all
@@ -185,7 +191,7 @@ const useKeyDown = (selected: EntityId[], ids: EntityId[], setSelected: (ids: En
 
 			selectAndScroll(i);
 		}
-	}, [selected, ids, setSelected, scrollToItem]);
+	}, [selected, ids, setSelected, gridRef]);
 
 const useRowClick = (selected: EntityId[], ids: EntityId[], setSelected: (ids: EntityId[]) => void) => 
 	React.useCallback(({event, rowIndex}: {event: React.MouseEvent, rowIndex: number}) => {
@@ -344,7 +350,7 @@ function AppTableSized<EntityType>({
 	};
 
 	const setSelected = React.useCallback((ids: EntityId[]) => dispatch(actions.setSelected(ids)), [dispatch, actions]);
-	const onKeyDown = useKeyDown(selected, ids, setSelected, gridRef.current?.scrollToItem);
+	const onKeyDown = useKeyDown(selected, ids, setSelected, gridRef);
 	const onRowClick = useRowClick(selected, ids, setSelected);
 
 	const fixed = tableConfig.fixed;

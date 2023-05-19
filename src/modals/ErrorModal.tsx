@@ -1,9 +1,9 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import {Form} from '../form';
-import {AppModal} from '.';
+import { Form } from '../form';
+import { AppModal } from '.';
 
-import {clearError, selectErrors} from '../store/error';
+import { clearError, selectErrors } from '../store/error';
 
 function strToHtml(s: string) {
 	return s
@@ -31,7 +31,7 @@ function ErrorModal() {
 	return (
 		<AppModal
 			isOpen={errMsg !== null}
-			onRequestClose={clearError}
+			onRequestClose={() => dispatch(clearError())}
 		>
 			<Form
 				title={summary}

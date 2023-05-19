@@ -13,11 +13,21 @@ export const AccessLevelLabels = {
 	[AccessLevel.WGAdmin]: 'WG admin'
 };
 
-export const displayAccessLevel = (value) => AccessLevelLabels[value] || 'Unknown';
+export const displayAccessLevel = (value: number) => AccessLevelLabels[value] || 'Unknown';
 
 export const AccessLevelOptions = Object.values(AccessLevel).map(value => ({value, label: AccessLevelLabels[value]}));
 
 const LOGIN_STORAGE = 'User';
+
+export type User = {
+	SAPIN: number;
+	Name: string;
+	Email: string;
+	Status: string;
+	Token: any;
+	Access: number;
+	Permissions: string[];
+}
 
 export async function logout() {
 	localStorage.removeItem(LOGIN_STORAGE);
@@ -28,7 +38,7 @@ export async function logout() {
 
 export function getUser() {
 	// Get user from local storage. This may fail if the browser has certain privacy settings.
-	let user;
+	let user: User | undefined;
 	try {
 		const s = localStorage.getItem(LOGIN_STORAGE);
 		if (s)
