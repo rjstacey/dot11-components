@@ -142,7 +142,7 @@ type AppThunk<ReturnType = void> = ThunkAction<ReturnType, RootState, unknown, A
 export const useAppDispatch: () => AppDispatch = useDispatch;
 //export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector
 
-export const dataSelectors = getAppTableDataSelectors((state: RootState) => state.data, selectEntities, undefined, selectField)
+export const dataSelectors = getAppTableDataSelectors((state: RootState) => state.data, {selectEntities, getField: selectField})
 export const dataActions = dataSlice.actions;
 
 

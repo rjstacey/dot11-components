@@ -8,10 +8,9 @@ export type SortDirectionType = "NONE" | "ASC" | "DESC";
 export type Sort = {
 	type: number;
 	direction: SortDirectionType;
-	//getField?: GetField;
 };
 
-export type SortSettings = { [dataKey: string]: Sort };
+export type SortSettings = Record<string, Sort>;
 
 export type Sorts = {
 	settings: SortSettings;
@@ -31,7 +30,7 @@ export const SortDirection = {
 	DESC: 'DESC'
 }
 
-export const cmpNumeric = (a, b) => {
+export const cmpNumeric = (a: string | number, b: string | number) => {
 	const A = parseNumber(a);
 	const B = parseNumber(b);
 	return A - B;
@@ -64,7 +63,7 @@ export const cmpString = (a: string, b: string) => {
 	return A < B? -1: (A > B? 1: 0);
 }
 
-export const cmpDate = (a: any, b: any) => a - b
+export const cmpDate = (a: string, b: string) => (new Date(a)).valueOf() - (new Date(b)).valueOf();
 
 export const sortFunc = {
 	[SortType.NUMERIC]: cmpNumeric,

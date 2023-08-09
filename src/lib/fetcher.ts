@@ -1,4 +1,4 @@
-import {saveAs} from 'file-saver';
+import { saveAs } from 'file-saver';
 
 type Methods = {
 	[key: string]: Function;
@@ -40,7 +40,7 @@ function tryParseJSON(json: string | undefined) {
 	}
 }
 
-function getResponseBody(res: Response) {
+function getResponseBody(res: Response): Promise<any> {
 	const contentType = res.headers.get('content-type');
 	if (contentType && contentType.indexOf('json') >= 0)
 		return res.text().then(tryParseJSON);
@@ -59,14 +59,25 @@ async function errHandler(res: Response) {
 	throw new NetworkError(body || '', res.status);
 }
 
-methods.fetch = async (method: Method, url: string, params: Record<string, string>) => {
+function urlParams(params: Record<string, any>) {
+	let p = new URLSearchParams();
+	Object.entries(params).forEach(([key, value]) => {
+		if (Array.isArray(value))
+			value.forEach(v => p.append(key + "[]", v));
+		else
+			p.append(key, value);
+	})
+	return p.toString();
+}
+
+methods.fetch = async (method: Method, url: string, params: Record<string, any>) => {
 	url = apiBaseUrl + url;
 
 	const options: RequestInit = {method};
 
 	if (params) {
 		if (method === "GET")
-			url += '?' + new URLSearchParams(params);
+			url += '?' + urlParams(params);
 		else
 			options.body = JSON.stringify(params);
 	}
@@ -87,10 +98,10 @@ methods.fetch = async (method: Method, url: string, params: Record<string, strin
 ["GET", "POST", "PUT", "DELETE", "PATCH"]
 	.forEach(m => methods[m.toLowerCase()] = (...args) => methods.fetch(m, ...args));
 
-methods.getFile = async (url: string, params) => {
+methods.getFile = async (url: string, params: Record<string, any>) => {
 	url = apiBaseUrl + url;
 	if (params)
-		url += '?' + new URLSearchParams(params);
+		url += '?' + urlParams(params);
 
 	const options: RequestInit = {method: 'GET'};
 	if (jwtBearerToken)
@@ -113,12 +124,13 @@ methods.getFile = async (url: string, params) => {
 	return errHandler(res);
 }
 
-methods.postForFile = async (url: string, params: object, file) => {
+methods.postForFile = async (url: string, params: any, file?: File) => {
 	url = apiBaseUrl + url;
 
 	const formData = new FormData();
 	formData.append('params', JSON.stringify(params));
-	formData.append('file', file);
+	if (file)
+		formData.append('file', file);
 
 	const options: RequestInit = {
 		method: 'POST',
@@ -144,12 +156,34 @@ methods.postForFile = async (url: string, params: object, file) => {
 	return errHandler(res);
 }
 
-methods.postMultipart = async (url: string, params: object) => {
+/** Deprecated */
+methods.postMultipart = async (url: string, params: Record<string, any>) => {
 	url = apiBaseUrl + url;
 
 	let formData = new FormData();
-	for (let key of Object.keys(params))
-		formData.append(key, params[key]);
+	Object.entries(params).forEach(([key, value]) => {
+		formData.append(key, value);
+	});
+
+	const options: RequestInit = {
+		method: 'POST',
+		body: formData
+	};
+	if (jwtBearerToken)
+		options.headers = {'Authorization': `Bearer ${jwtBearerToken}`};
+
+	const res = await fetch(url, options);
+
+	return res.ok? res.json(): errHandler(res);
+}
+
+methods.postWithFile = async (url: string, params: any, file?: File) => {
+	url = apiBaseUrl + url;
+
+	const formData = new FormData();
+	formData.append('params', JSON.stringify(params));
+	if (file)
+		formData.append('file', file);
 
 	const options: RequestInit = {
 		method: 'POST',

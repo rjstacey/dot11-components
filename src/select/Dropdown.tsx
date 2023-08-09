@@ -89,7 +89,7 @@ function Dropdown({props, state, methods}: SelectRendererProps) {
 			setMaxHeight(height);
 	}, [props.dropdownHeight, maxHeight, options]);
 
-	const itemKey = (index) => {
+	const itemKey = (index: number) => {
 		if (props.create && state.search && index === 0)
 			return '{new-item}';
 		return '' + options[index][props.valueField] + options[index][props.labelField];
@@ -116,7 +116,7 @@ function Dropdown({props, state, methods}: SelectRendererProps) {
 					style={style}
 					item={options[index]}
 					index={index}
-					setHeight={(height) => setItemHeight(index, height)}
+					setHeight={(height: number) => setItemHeight(index, height)}
 					props={props}
 					methods={methods}
 					state={state}
