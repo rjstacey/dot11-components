@@ -30,7 +30,7 @@ export * from './ui';
 
 export { EntityId, Dictionary };
 
-export type GetEntityField<T> = (entity: T, dataKey: string) => any;
+export type GetEntityField<T = any> = (entity: T, dataKey: string) => any;
 
 export type Option = {
 	value: any;

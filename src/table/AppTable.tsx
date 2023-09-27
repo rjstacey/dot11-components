@@ -61,11 +61,13 @@ export type RowGetterProps<T = any> = {
 	ids: EntityId[];
 };
 
+export type RowGetter<T = any> = (props: RowGetterProps<T>) => any;
+
 export type AppTableProps<T> = {
 	fitWidth?: boolean;
 	fixed?: boolean;
 	columns: ColumnProperties[],
-	rowGetter?: (props: RowGetterProps<T>) => any;
+	rowGetter?: RowGetter;
 	headerHeight: number;
 	estimatedRowHeight: number;
 	measureRowHeight?: boolean;
