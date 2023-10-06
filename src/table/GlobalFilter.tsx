@@ -1,9 +1,9 @@
 import React from 'react';
-import {useDispatch, useSelector} from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
-import {Input} from '../form';
+import { Input } from '../form';
 
-import {FilterType, globalFilterKey, AppTableDataSelectors, AppTableDataActions} from '../store/appTableData';
+import { globalFilterKey, AppTableDataSelectors, AppTableDataActions, type FilterComp, CompOp } from '../store/appTableData';
 
 interface GlobalFilterProps extends React.ComponentProps<typeof Input> {
 	selectors: AppTableDataSelectors;
@@ -31,7 +31,7 @@ function GlobalFilter({
 			// and position the cursor between the slashes (using the useEffect above)
 			newValue = '//';
 		}
-		const comp = {value: newValue, filterType: FilterType.CONTAINS};
+		const comp: FilterComp = {value: newValue, operation: CompOp.CONTAINS};
 		if (newValue[0] === '/') {
 			const parts = newValue.split('/');
 			if (parts.length > 2) {
@@ -39,7 +39,7 @@ function GlobalFilter({
 				// If the regex doesn't validate then ignore it
 				try {
 					new RegExp(parts[1], parts[2]);
-					comp.filterType = FilterType.REGEX;
+					comp.operation = CompOp.REGEX;
 				}
 				catch (err) {}
 			}

@@ -1,8 +1,9 @@
 import React from 'react';
+import type { EntityId, Dictionary } from '@reduxjs/toolkit';
 import { areEqual } from 'react-window';
 import styled from '@emotion/styled';
 
-import type { EntityId, Dictionary, GetEntityField, ColumnProperties, RowGetter } from './AppTable';
+import type { GetEntityField, ColumnProperties, RowGetter } from './AppTable';
 
 const OuterRow = styled.div`
 	overflow: hidden;

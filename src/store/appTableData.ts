@@ -19,7 +19,7 @@ import { createSelector } from 'reselect';	/* Use older version; the newer versi
 import { createSelectedSubslice, getSelectedSelectors, SelectedState } from './selected';
 import { createExpandedSubslice, getExpandedSelectors, ExpandedState  } from './expanded';
 import { createFiltersSubslice, getFiltersSelectors, FiltersState, filterData } from './filters';
-import { createSortsSubslice, getSortsSelectors, SortsState, sortData, SortDirectionType } from './sorts';
+import { createSortsSubslice, getSortsSelectors, SortsState, sortData, type SortDirectionValue } from './sorts';
 import { createUiSubslice, getUiSelectors, UiState } from './ui';
 
 //export * from './selected';
@@ -28,9 +28,18 @@ export * from './filters';
 export * from './sorts';
 export * from './ui';
 
-export { EntityId, Dictionary };
+//export { EntityId, Dictionary };
 
 export type GetEntityField<T = any> = (entity: T, dataKey: string) => any;
+
+export const FieldType = {
+	STRING: "STRING",
+	NUMERIC: "NUMERIC",
+	CLAUSE: "CLAUSE",
+	DATE: "DATE"
+} as const;
+export type FieldTypeKey = keyof typeof FieldType;
+export type FieldTypeValue = typeof FieldType[FieldTypeKey];
 
 export type Option = {
 	value: any;
@@ -39,8 +48,8 @@ export type Option = {
 
 export type FieldProperties = {
 	label?: string;
-	sortType?: number;
-	sortDirection?: SortDirectionType;
+	type?: FieldTypeValue;
+	sortDirection?: SortDirectionValue;
 	dontSort?: boolean;
 	dontFilter?: boolean;
 	options?: Option[];

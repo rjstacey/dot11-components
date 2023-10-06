@@ -1,19 +1,17 @@
 import React from 'react';
-import {useDispatch, useSelector} from 'react-redux';
-import type {Action} from '@reduxjs/toolkit';
+import { useDispatch, useSelector } from 'react-redux';
+import type { Action, EntityId, Dictionary } from '@reduxjs/toolkit';
 import styled from '@emotion/styled';
-import {VariableSizeGrid as Grid} from 'react-window';
+import { VariableSizeGrid as Grid } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
 
 import AppTableRow, {AppTableRowData} from './AppTableRow';
 import TableHeader from './AppTableHeader';
 import AppTableHeaderCell from './AppTableHeaderCell';
 
-import {debounce, getScrollbarSize} from '../lib';
+import { debounce, getScrollbarSize } from '../lib';
 
 import type {
-	EntityId,
-	Dictionary,
 	GetEntityField,
 	TablesConfig,
 	TableConfig,
@@ -22,7 +20,7 @@ import type {
 	AppTableDataSelectors,
 } from '../store/appTableData';
 
-export type { EntityId, Dictionary, GetEntityField, AppTableDataSelectors, AppTableDataActions };
+export type { GetEntityField, AppTableDataSelectors, AppTableDataActions };
 
 export type HeaderCellRendererProps = {
 	label?: string;			// Column label

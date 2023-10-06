@@ -1,13 +1,11 @@
 
 import { parseNumber } from '../lib';
 import type { EntityId, Dictionary, PayloadAction } from '@reduxjs/toolkit';
-import type { Fields, GetEntityField, Option } from './appTableData';
-
-export type SortDirectionType = "NONE" | "ASC" | "DESC";
+import { FieldType, FieldTypeValue, Fields, GetEntityField, Option } from './appTableData';
 
 export type Sort = {
-	type: number;
-	direction: SortDirectionType;
+	type: FieldTypeValue;
+	direction: SortDirectionValue;
 };
 
 export type SortSettings = Record<string, Sort>;
@@ -17,18 +15,13 @@ export type Sorts = {
 	by: string[];
 };
 
-export const SortType = {
-	STRING: 0,
-	NUMERIC: 1,
-	CLAUSE: 2,
-	DATE: 3
-}
-
 export const SortDirection = {
 	NONE: 'NONE',
 	ASC: 'ASC',
 	DESC: 'DESC'
-}
+} as const;
+export type SortDirectionKey = keyof typeof SortDirection;
+export type SortDirectionValue = typeof SortDirection[SortDirectionKey];
 
 export const cmpNumeric = (a: string | number, b: string | number) => {
 	const A = parseNumber(a);
@@ -66,17 +59,17 @@ export const cmpString = (a: string, b: string) => {
 export const cmpDate = (a: string, b: string) => (new Date(a)).valueOf() - (new Date(b)).valueOf();
 
 export const sortFunc = {
-	[SortType.NUMERIC]: cmpNumeric,
-	[SortType.CLAUSE]: cmpClause,
-	[SortType.STRING]: cmpString,
-	[SortType.DATE]: cmpDate
-}
+	NUMERIC: cmpNumeric,
+	CLAUSE: cmpClause,
+	STRING: cmpString,
+	DATE: cmpDate
+} as const;
 
 export function sortData<EntityType={}>(sorts: Sorts, getField: GetEntityField<EntityType>, entities: Dictionary<EntityType>, ids: EntityId[]): EntityId[] {
 	let sortedIds = ids.slice();
 	for (const dataKey of sorts.by) {
 		const {direction, type} = sorts.settings[dataKey];
-		if (direction !== "ASC" && direction !== "DESC")
+		if (direction !== SortDirection.ASC && direction !== SortDirection.DESC)
 			continue;
 		const cmpFunc = sortFunc[type];
 		sortedIds = sortedIds.sort(
@@ -92,20 +85,20 @@ export function sortOptions<T extends Option>(sort: Sort, options: T[]): T[] {
 	const {direction, type} = sort;
 	let sortedOptions = options;
 
-	if (direction === "ASC" || direction === "DESC") {
+	if (direction === SortDirection.ASC || direction === SortDirection.DESC) {
 		const cmpFunc = sortFunc[type];
 		sortedOptions = sortedOptions.sort((itemA, itemB) => cmpFunc(itemA.value, itemB.value));
-		if (direction === "DESC")
+		if (direction === SortDirection.DESC)
 			sortedOptions.reverse();
 	}
 
 	return sortedOptions;
 }
 
-function setSort(sorts: Sorts, dataKey: string, direction: SortDirectionType): Sorts {
+function setSort(sorts: Sorts, dataKey: string, direction: SortDirectionValue): Sorts {
 	let {by, settings} = sorts;
 	if (by.indexOf(dataKey) >= 0) {
-		if (direction === "NONE")
+		if (direction === SortDirection.NONE)
 			by = by.filter(d => d !== dataKey) // remove from sort by list
 	}
 	else {
@@ -125,18 +118,13 @@ function setSort(sorts: Sorts, dataKey: string, direction: SortDirectionType): S
 	}
 }
 
-
 function sortsInit(fields: Fields): Sorts {
 	const settings: SortSettings = {};
 	for (const [dataKey, field] of Object.entries(fields)) {
 		if (field.dontSort)
 			continue;
-		const type = field.sortType || SortType.STRING;
-		if (!Object.values(SortType).includes(type))
-			console.error(`Invalid sort type ${type} for dataKey=${dataKey}`);
-		const direction = field.sortDirection || "NONE";
-		if (!Object.values(SortDirection).includes(direction))
-			console.error(`Invalid sort direction ${direction} for dataKey=${dataKey}`);
+		const type = field.type || FieldType.STRING;
+		const direction = field.sortDirection || SortDirection.NONE;
 		settings[dataKey] = {
 			type,
 			direction,
@@ -154,7 +142,7 @@ export const createSortsSubslice = (dataSet: string, fields: Fields) => {
 	const initialState: SortsState = {[name]: sortsInit(fields)};
 
 	const reducers = {
-		setSortDirection(state: SortsState, action: PayloadAction<{dataKey: string, direction: SortDirectionType}>) {
+		setSortDirection(state: SortsState, action: PayloadAction<{dataKey: string, direction: SortDirectionValue}>) {
 			const {dataKey, direction} = action.payload;
 			state[name] = setSort(state[name], dataKey, direction);
 		},

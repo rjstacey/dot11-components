@@ -3,17 +3,22 @@ import {useDispatch, useSelector} from 'react-redux';
 import styled from '@emotion/styled';
 import {FixedSizeList as List} from 'react-window';
 
-import {Icon} from '../icons';
-import {Button, Checkbox, Input} from '../form';
+import { Icon } from '../icons';
+import { Row, Field, Button, Checkbox, Input } from '../form';
 import { Dropdown, DropdownRendererProps } from '../dropdown';
 
+import { DateFilter } from './DateFilter';
+
 import {
-	sortOptions, SortDirection, SortType,
-	FilterType,
-	SortDirectionType,
+	sortOptions, SortDirection,
+	SortDirectionValue,
 	Option,
 	AppTableDataSelectors,
-	AppTableDataActions
+	AppTableDataActions,
+	FilterComp,
+	CompOp,
+	FieldType,
+	CompOpValue,
 } from '../store/appTableData';
 
 import type { HeaderCellRendererProps } from './AppTable';
@@ -30,17 +35,12 @@ const StyledCustomContainer = styled.div`
 	}
 `;
 
-const StyledInput = styled(Input)`
-	margin: 5px 10px;
-	padding: 10px;
-`;
-
 const StyledList = styled(List)`
 	min-height: 35px;
 	max-height: 250px;
 	border: 1px solid #ccc;
 	border-radius: 3px;
-	margin: 10px;
+	margin-top: 10px;
 `;
 
 type ItemProps = {
@@ -62,13 +62,6 @@ const Item = styled.div<ItemProps>`
 	}
 `;
 
-const Row = styled.div`
-	margin: 5px 10px;
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-`;
-
 function SortComponent({
 	dataKey,
 	selectors,
@@ -80,29 +73,29 @@ function SortComponent({
 }) {
 	const {direction, type} = useSelector(state => selectors.selectSort(state, dataKey));
 	const dispatch = useDispatch();
-	const setSort = React.useCallback((direction: SortDirectionType) => dispatch(actions.setSortDirection({dataKey, direction})), [dispatch, actions, dataKey]);
+	const setSort = React.useCallback((direction: SortDirectionValue) => dispatch(actions.setSortDirection({dataKey, direction})), [dispatch, actions, dataKey]);
 	return (
 		<Row>
 			<label>Sort:</label>
 			<span>
 				<Button
-					onClick={e => setSort(direction === "ASC"? "NONE": "ASC")}
+					onClick={e => setSort(direction === SortDirection.ASC? SortDirection.NONE: SortDirection.ASC)}
 					isActive={direction === SortDirection.ASC}
 				>
 					<Icon
 						type='sort'
-						direction={"ASC"}
-						isAlpha={type !== SortType.NUMERIC}
+						direction={SortDirection.ASC}
+						isAlpha={type !== FieldType.NUMERIC}
 					/>
 				</Button>
 				<Button
-					onClick={e => setSort(direction === "DESC"? "NONE": "DESC")}
-					isActive={direction === "DESC"}
+					onClick={e => setSort(direction === SortDirection.DESC? SortDirection.NONE: SortDirection.DESC)}
+					isActive={direction === SortDirection.DESC}
 				>
 					<Icon
 						type='sort'
-						direction={"DESC"}
-						isAlpha={type !== SortType.NUMERIC}
+						direction={SortDirection.DESC}
+						isAlpha={type !== FieldType.NUMERIC}
 					/>
 				</Button>
 			</span>
@@ -128,7 +121,7 @@ function FilterComponent({
 
 	const dispatch = useDispatch();
 
-	const selectInfo = React.useCallback(state => ({
+	const selectInfo = React.useCallback((state: any) => ({
 		sort: selectors.selectSort(state, dataKey),
 		filter: selectors.selectFilter(state, dataKey),
 		selected: selectors.selectSelected(state),
@@ -138,7 +131,7 @@ function FilterComponent({
 	const {sort, filter, selected, entities} = useSelector(selectInfo);
 	const getField = selectors.getField;
 
-	const selectValues = React.useCallback(state => {
+	const selectValues = React.useCallback((state: any) => {
 		const filter = selectors.selectFilter(state, dataKey);
 		if (!filter)
 			return [];
@@ -153,7 +146,7 @@ function FilterComponent({
 	const values = useSelector(selectValues);
 
 	const filterSelected = React.useCallback(() => {
-		const comps = selected.map(id => ({value: getField(entities[id]!, dataKey), filterType: FilterType.EXACT}));
+		const comps: FilterComp[] = selected.map(id => ({value: getField(entities[id]!, dataKey), operation: CompOp.EQ}));
 		dispatch(actions.setFilter({dataKey, comps}));
 	}, [dispatch, actions, dataKey, selected, entities, getField]);
 
@@ -164,9 +157,7 @@ function FilterComponent({
 		return filter.comps.map(comp => comp.value).join() === list.join();
 	}, [filter, dataKey, selected, entities, getField]);
 
-	interface FilterItem extends Option {
-		type: number;
-	};
+	type FilterItem = Option & FilterComp;
 
 	const options: Option[] = React.useMemo(() => {
 		if (!filter)
@@ -189,40 +180,78 @@ function FilterComponent({
 	let searchItems: FilterItem[] = [];
 	if (filter) {
 		searchItems = filter.comps
-			.filter(comp => comp.filterType !== FilterType.EXACT)
-			.map(comp => ({
-				value: comp.value,
-				label: (comp.filterType === FilterType.REGEX? 'Regex: ': 'Contains: ') + comp.value,
-				type: comp.filterType
-			}));
+			.filter(comp => comp.operation !== CompOp.EQ)
+			.map(comp => {
+				let label = 'Contains: ';
+				if (comp.operation === CompOp.REGEX)
+					label = 'Regex: ';
+				else if (filter.type === FieldType.DATE && comp.operation === CompOp.GT)
+					label = 'After: ';
+				else if (filter.type === FieldType.DATE && comp.operation === CompOp.LT)
+					label = 'Before: ';
+				else if (filter.type === FieldType.NUMERIC) {
+					label = {
+						[CompOp.GTEQ]: "≥ ",
+						[CompOp.LTEQ]: "≤ ",
+						[CompOp.GT]: "> ",
+						[CompOp.LT]: "< ",
+					}[comp.operation] || '';
+				}
+				label += comp.value;
+				return {
+					label,
+					value: comp.value,
+					operation: comp.operation
+				}
+			});
 	}
 
-	let exactItems: FilterItem[] = options.map(o => ({...o, type: FilterType.EXACT}));
+	let exactItems: FilterItem[] = options.map(o => ({...o, operation: CompOp.EQ}));
 
 	if (search) {
-		let regexp;
+		let regexp: RegExp | undefined;
 		const parts = search.split('/');
 		if (search[0] === '/' && parts.length > 2) {
 			// User is entering a regex in the form /pattern/flags.
 			// If the regex doesn't validate then ignore it
 			try {regexp = new RegExp(parts[1], parts[2])} catch (err) {}
 			if (regexp) {
-				exactItems = exactItems.filter(item => regexp.test(item.label));
-				let item = {
+				exactItems = exactItems.filter(item => regexp!.test(item.label));
+				let item: FilterItem = {
 					label: 'Regex: ' + regexp.toString(),
 					value: search,
-					type: FilterType.REGEX
+					operation: CompOp.REGEX
 				};
+				searchItems.unshift(item);
+			}
+		}
+		else if (filter.type === FieldType.NUMERIC && (search[0] === '>' || search[0] === '<')) {
+			const m = /^(>=|<=|>|<)\s*(\d+)/.exec(search);
+			if (m) {
+				let operation: CompOpValue;
+				if (m[1] === ">=")
+					operation = CompOp.GTEQ;
+				else if (m[1] === "<=")
+					operation = CompOp.LTEQ;
+				else if (m[1] === ">")
+					operation = CompOp.GT;
+				else
+					operation = CompOp.LT;
+				let item: FilterItem = {
+					label: search,
+					value: m[2],
+					operation
+				}
 				searchItems.unshift(item);
 			}
 		}
 		else {
 			regexp = new RegExp(search, 'i');
-			exactItems = exactItems.filter(item => regexp.test(item.label));
-			let item = {
+			exactItems = exactItems.filter(item => regexp!.test(item.label));
+			let item: FilterItem = {
 				label: 'Contains: ' + search,
 				value: search,
-				type: FilterType.CONTAINS
+				operation: CompOp.CONTAINS
 			};
 			searchItems.unshift(item);
 		}
@@ -240,7 +269,7 @@ function FilterComponent({
 	}, [search]);
 
 	const isItemSelected = React.useCallback(
-		(item: FilterItem) => filter !== undefined && filter.comps.find(comp => comp.value === item.value && comp.filterType === item.type) !== undefined,
+		(item: FilterItem) => filter !== undefined && filter.comps.find(comp => comp.value === item.value && comp.operation === item.operation) !== undefined,
 		[filter]
 	);
 
@@ -248,9 +277,9 @@ function FilterComponent({
 		(item: FilterItem) => {
 			setSearch('');
 			if (isItemSelected(item))
-				dispatch(actions.removeFilter({dataKey, value: item.value, filterType: item.type}));
+				dispatch(actions.removeFilter({dataKey, value: item.value, operation: item.operation}));
 			else
-				dispatch(actions.addFilter({dataKey, value: item.value, filterType: item.type}));
+				dispatch(actions.addFilter({dataKey, value: item.value, operation: item.operation}));
 		},
 		[setSearch, isItemSelected, dispatch, actions, dataKey]
 	);
@@ -295,14 +324,25 @@ function FilterComponent({
 				<StyledCustomContainer>
 					{customFilterElement}
 				</StyledCustomContainer>}
-			<StyledInput
-				type='search'
-				value={search}
-				ref={inputRef}
-				onChange={e => setSearch(e.target.value)}
-				onKeyDown={onInputKey}
-				placeholder="Search..."
-			/>
+			{filter.type === "DATE" &&
+				<DateFilter
+					dataKey={dataKey}
+					selectors={selectors}
+					actions={actions}
+				/>}
+			<Row>
+				<Field label=''>
+					<Input
+						type='search'
+						value={search}
+						ref={inputRef}
+						onChange={e => setSearch(e.target.value)}
+						onKeyDown={onInputKey}
+						placeholder="Search..."
+					/>
+				</Field>
+			</Row>
+
 			<StyledList
 				height={listHeight}
 				itemCount={items.length}
@@ -369,8 +409,9 @@ function AppTableHeaderCell({
 	selectors,
 	actions,
 	customFilterElement	// Custom filter element for dropdown
-}: AppTableHeaderCellProps) {
-	const selectInfo = React.useCallback((state) => {
+}: AppTableHeaderCellProps
+) {
+	const selectInfo = React.useCallback((state: any) => {
 		const sorts = selectors.selectSorts(state);
 		const filter = selectors.selectFilter(state, dataKey);
 		return {
@@ -402,7 +443,7 @@ function AppTableHeaderCell({
 						type='sort'
 						style={{opacity: 0.2, paddingRight: 4}}
 						direction={sort.direction}
-						isAlpha={sort.type !== SortType.NUMERIC}
+						isAlpha={sort.type !== FieldType.NUMERIC}
 					/>}
 				<Icon type='handle' isOpen={state.isOpen} />
 			</div>

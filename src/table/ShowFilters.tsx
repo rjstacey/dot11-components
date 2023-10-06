@@ -1,15 +1,17 @@
 import React from 'react';
-import {useDispatch, useSelector} from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import styled from '@emotion/styled';
 
-import {ActionIcon} from '../icons';
+import { ActionIcon } from '../icons';
 
 import {
 	globalFilterKey,
 	Fields,
 	Filters,
 	AppTableDataSelectors,
-	AppTableDataActions
+	AppTableDataActions,
+	CompOpValue,
+	CompOp
 } from '../store/appTableData';
 
 const ActiveFilterLabel = styled.label`
@@ -58,7 +60,7 @@ function renderActiveFilters({
 }: {
 	fields: Fields;
 	filters: Filters;
-	removeFilter: (dataKey: string, value: any, filterType: number) => void;
+	removeFilter: (dataKey: string, value: any, operation: CompOpValue) => void;
 	clearAllFilters: () => void;
 }) {
 	let elements: React.ReactNode[] = [];
@@ -82,10 +84,14 @@ function renderActiveFilters({
 				let s = o? o.label: (dataRenderer? dataRenderer(comp.value): comp.value);
 				if (s === '')
 					s = '(Blank)'
+				if (comp.operation === CompOp.GT)
+					s = '> ' + s;
+				if (comp.operation === CompOp.LT)
+					s = '< ' + s;
 				elements.push(
 					<ActiveFilter 
 						key={`${dataKey}_${comp.value}`}
-						remove={() => removeFilter(dataKey, comp.value, comp.filterType)}
+						remove={() => removeFilter(dataKey, comp.value, comp.operation)}
 					>
 						{s}
 					</ActiveFilter>
@@ -152,7 +158,7 @@ function ShowFilters({
 	const filters = useSelector(selectors.selectFilters);
 
 	const activeFilterElements = React.useMemo(() => {
-		const removeFilter = (dataKey: string, value: any, filterType: number) => dispatch(actions.removeFilter({dataKey, value, filterType}));
+		const removeFilter = (dataKey: string, value: any, operation: CompOpValue) => dispatch(actions.removeFilter({dataKey, value, operation}));
 		const clearAllFilters = () => dispatch(actions.clearAllFilters());
 
 		return renderActiveFilters({fields, filters, removeFilter, clearAllFilters});

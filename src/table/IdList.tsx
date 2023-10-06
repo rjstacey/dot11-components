@@ -1,17 +1,18 @@
 import React from 'react';
-import {useDispatch, useSelector} from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { type EntityId } from '@reduxjs/toolkit';
+
 import styled from '@emotion/styled';
-import {Editor, EditorState, ContentState, CompositeDecorator} from 'draft-js';
+import { Editor, EditorState, ContentState, CompositeDecorator } from 'draft-js';
 import 'draft-js/dist/Draft.css';
 
-import {ActionIcon} from '../icons';
-import {parseNumber} from '../lib';
-
+import { ActionIcon } from '../icons';
+import { parseNumber } from '../lib';
 import {
-	FilterType,
-	EntityId,
 	AppTableDataSelectors,
-	AppTableDataActions
+	AppTableDataActions,
+	FilterComp,
+	CompOp
 } from '../store/appTableData';
 
 const Container = styled.div`
@@ -82,7 +83,8 @@ function IdList({
 
 	function findInvalidIds(contentBlock, callback, contentState) {
 		const text = contentBlock.getText();
-		let matchArr, start;
+		let matchArr: RegExpExecArray | null,
+			start: number;
 		while ((matchArr = idRegex.exec(text)) !== null) {
 			start = matchArr.index;
 			const id = isNumber? parseNumber(matchArr[0]): matchArr[0];
@@ -91,7 +93,7 @@ function IdList({
 		}
 	}
 
-	function clear(e) {
+	function clear(e: MouseEvent) {
 		e.stopPropagation();	// don't take focus from editor
 
 		//setEditorState(EditorState.push(editorState, ContentState.createFromText('')))
@@ -164,7 +166,7 @@ export function IdFilter({selectors, actions, dataKey = 'id', ...props}: IdFilte
 
 	const {getField} = selectors;
 
-	const selectInfo = React.useCallback(state => {
+	const selectInfo = React.useCallback((state: any) => {
 		const ids = selectors.selectIds(state);
 		const entities = selectors.selectEntities(state);
 		const filter = selectors.selectFilter(state, dataKey);
@@ -180,8 +182,8 @@ export function IdFilter({selectors, actions, dataKey = 'id', ...props}: IdFilte
 
 	const isValid = React.useCallback((value: any) => ids.findIndex(id => getField(entities[id]!, dataKey) === value) !== -1, [ids, entities, dataKey, getField]);
 
-	const onChange = React.useCallback(values => {
-		const comps = values.map(value => ({value, filterType: FilterType.EXACT}));
+	const onChange = React.useCallback((values: any) => {
+		const comps: FilterComp[] = values.map((value: any) => ({value, type: CompOp.EQ}));
 		dispatch(actions.setFilter({dataKey, comps}));
 	}, [dispatch, actions, dataKey]);
 
@@ -210,7 +212,7 @@ export function IdSelector({selectors, actions, dataKey = 'id', ...props}: IdSel
 	const dispatch = useDispatch();
 	const {getField} = selectors;
 
-	const selectInfo = React.useCallback(state => {
+	const selectInfo = React.useCallback((state: any) => {
 		const ids = selectors.selectIds(state);
 		const entities = selectors.selectEntities(state);
 		const selected = selectors.selectSelected(state);

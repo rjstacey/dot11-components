@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 
 import { displayDate } from '../lib';
 
-import { createAppTableDataSlice, getAppTableDataSelectors, SortType, AppTableDataState } from '../store/appTableData';
+import { createAppTableDataSlice, getAppTableDataSelectors, AppTableDataState, type Fields, FieldType } from '../store/appTableData';
 
 import { LoremIpsum } from "lorem-ipsum";
 
@@ -53,26 +53,26 @@ type DataEntity = {
 	Status: number;
 }
 
-export const dataFields = {
-	id: {label: 'ID', isId: true, sortType: SortType.NUMERIC},
+export const dataFields: Fields = {
+	id: {label: 'ID', type: FieldType.NUMERIC},
 	Name: {label: 'Name'},
 	Date: {
 		label: 'Date',
 		dataRenderer: displayDate,
-		sortType: SortType.DATE
+		type: FieldType.DATE
 	},
 	Text: {
 		label: 'Text',
 	},
 	Number: {
 		label: 'Number',
-		sortType: SortType.NUMERIC
+		type: FieldType.NUMERIC
 	},
 	Status: {
 		label: 'Status',
 		dataRenderer: renderStatus,
 		options: statusOptions,
-		sortType: SortType.NUMERIC,
+		type: FieldType.NUMERIC,
 		dontSort: true,
 		dontFilter: true
 	},

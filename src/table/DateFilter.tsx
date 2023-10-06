@@ -4,7 +4,8 @@ import { Input, Row, Field } from '../form';
 import {
 	type FilterComp,
 	AppTableDataSelectors,
-	AppTableDataActions
+	AppTableDataActions,
+    CompOp
 } from '../store/appTableData';
 
 type DateFilterProps = {
@@ -19,18 +20,18 @@ export function DateFilter({dataKey, selectors, actions}: DateFilterProps) {
 
 	const {beforeDate, afterDate} = useSelector((state: any) => {
         const filter = selectors.selectFilter(state, dataKey);
-        const beforeDate = filter.comps.find(c => c.operation === "LT")?.value || '';
-        const afterDate = filter.comps.find(c => c.operation === "GT")?.value || '';
+        const beforeDate = filter.comps.find(c => c.operation === CompOp.LT)?.value || '';
+        const afterDate = filter.comps.find(c => c.operation === CompOp.GT)?.value || '';
         return {beforeDate, afterDate}
     });
 
     const setBefore = (date: string) => {
-        const comps: FilterComp[] = date? [{value: date, operation: "LT"}]: [];
+        const comps: FilterComp[] = date? [{value: date, operation: CompOp.LT}]: [];
 		dispatch(actions.setFilter({dataKey, comps}));
     }
 
     const setAfter = (date: string) => {
-        const comps: FilterComp[] = date? [{value: date, operation: "GT"}]: [];
+        const comps: FilterComp[] = date? [{value: date, operation: CompOp.GT}]: [];
 		dispatch(actions.setFilter({dataKey, comps}));
     }
 
