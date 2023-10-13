@@ -2,7 +2,7 @@ import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Input, Row, Field } from '../form';
 import {
-	type FilterComp,
+	FilterComp,
 	AppTableDataSelectors,
 	AppTableDataActions,
     CompOp

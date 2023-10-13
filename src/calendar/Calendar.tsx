@@ -1,16 +1,19 @@
-import PropTypes from 'prop-types'
-import React from 'react';
-import styled from '@emotion/styled'
+import PropTypes from "prop-types";
+import React from "react";
+import styled from "@emotion/styled";
 
-import Header from './Header';
-import Month from './Month';
+import Header from "./Header";
+import Month from "./Month";
 
 export type ViewDate = {
 	year: number;
 	month: number;
 };
 
-const toViewDate = (date: Date): ViewDate => ({year: date.getFullYear(), month: date.getMonth()});
+const toViewDate = (date: Date): ViewDate => ({
+	year: date.getFullYear(),
+	month: date.getMonth(),
+});
 
 export type CalendarOptions = {
 	disablePast: boolean;
@@ -41,61 +44,69 @@ function Calendar({
 	multi = false,
 	dual = false,
 	minDate,
-	maxDate
+	maxDate,
 }: CalendarProps) {
-	const [viewDate, setViewDate] = React.useState<ViewDate>(() => toViewDate(new Date()));
+	const [viewDate, setViewDate] = React.useState<ViewDate>(() =>
+		toViewDate(new Date())
+	);
 
-	const onPrevClick = () => setViewDate(toViewDate(new Date(viewDate.year, viewDate.month - 1, 1)));
+	const onPrevClick = () =>
+		setViewDate(toViewDate(new Date(viewDate.year, viewDate.month - 1, 1)));
 
-	const onNextClick = () => setViewDate(toViewDate(new Date(viewDate.year, viewDate.month + 1, 1)));
+	const onNextClick = () =>
+		setViewDate(toViewDate(new Date(viewDate.year, viewDate.month + 1, 1)));
 
 	const onDateClick = (date) => {
 		let newDates;
 		if (multi) {
-			const i = dates.findIndex(d => d === date);
+			const i = dates.findIndex((d) => d === date);
 			if (i >= 0) {
 				newDates = dates.slice();
 				newDates.splice(i, 1);
-			}
-			else {
+			} else {
 				newDates = dates.concat(date);
 			}
 			newDates.sort();
-		}
-		else {
+		} else {
 			newDates = [date];
 		}
 
 		onChange(newDates);
 	};
 
-	const options: CalendarOptions = {disablePast, multi, dual, minDate, maxDate};
+	const options: CalendarOptions = {
+		disablePast,
+		multi,
+		dual,
+		minDate,
+		maxDate,
+	};
 
 	return (
-		<Container
-			style={style}
-			className={className}
-		>
+		<Container style={style} className={className}>
 			<Header
 				onClickPrev={onPrevClick}
 				onClickNext={onNextClick}
 				viewDate={viewDate}
 				options={options}
 			/>
-			<div style={{display: 'flex'}} >
+			<div style={{ display: "flex" }}>
 				<Month
 					dates={dates}
 					onDateClick={onDateClick}
 					viewDate={viewDate}
 					options={options}
 				/>
-				{dual &&
+				{dual && (
 					<Month
 						dates={dates}
 						onDateClick={onDateClick}
-						viewDate={toViewDate(new Date(viewDate.year, viewDate.month + 1, 1))}
+						viewDate={toViewDate(
+							new Date(viewDate.year, viewDate.month + 1, 1)
+						)}
 						options={options}
-					/>}
+					/>
+				)}
 			</div>
 		</Container>
 	);
@@ -104,7 +115,9 @@ function Calendar({
 function validateISODate(props, propName, componentName) {
 	const value = props[propName];
 	if (value && !/\d{4}-\d{2}-\d{2}/.test(value))
-		return new Error(`Invalid ${propName} supplied to ${componentName}. Expect string in form 'YYYY-MM-DD' but got ${value}.`);
+		return new Error(
+			`Invalid ${propName} supplied to ${componentName}. Expect string in form 'YYYY-MM-DD' but got ${value}.`
+		);
 }
 
 Calendar.propTypes = {
@@ -117,20 +130,20 @@ Calendar.propTypes = {
 	dual: PropTypes.bool,
 	minDate: validateISODate,
 	maxDate: validateISODate,
-}
+};
 
 Calendar.defaultProps = {
 	disablePast: false,
 	multi: false,
-	dual: false
-}
+	dual: false,
+};
 
 const Container = styled.div`
 	display: flex;
 	align-items: flex-start;
 	flex-direction: column;
 	box-sizing: border-box;
- 
+
 	cursor: default;
 
 	button {
@@ -166,50 +179,72 @@ const Container = styled.div`
 	--calendar-hsl-accent-light: 47%;
 
 	/* General Theme Main Colors */
-	--calendar-color-primary: hsl(var(--calendar-hsl-primary-hue) var(--calendar-hsl-primary-saturation) var(--calendar-hsl-primary-light));
+	--calendar-color-primary: hsl(
+		var(--calendar-hsl-primary-hue) var(--calendar-hsl-primary-saturation)
+			var(--calendar-hsl-primary-light)
+	);
 
 	--calendar-color-primary-light: hsla(
-		var(--calendar-hsl-primary-hue) var(--calendar-hsl-primary-saturation) var(--calendar-hsl-primary-light) / 40%
+		var(--calendar-hsl-primary-hue) var(--calendar-hsl-primary-saturation)
+			var(--calendar-hsl-primary-light) / 40%
 	);
 
 	--calendar-color-primary-lighter: hsla(
-		var(--calendar-hsl-primary-hue) var(--calendar-hsl-primary-saturation) var(--calendar-hsl-primary-light) / 8%
+		var(--calendar-hsl-primary-hue) var(--calendar-hsl-primary-saturation)
+			var(--calendar-hsl-primary-light) / 8%
 	);
 
-	--calendar-color-accent: hsl(var(--calendar-hsl-accent-hue) var(--calendar-hsl-accent-saturation) var(--calendar-hsl-accent-light));
+	--calendar-color-accent: hsl(
+		var(--calendar-hsl-accent-hue) var(--calendar-hsl-accent-saturation)
+			var(--calendar-hsl-accent-light)
+	);
 
 	--calendar-color-accent-light: hsla(
-		var(--calendar-hsl-accent-hue) var(--calendar-hsl-accent-saturation) var(--calendar-hsl-accent-light) / 40%
+		var(--calendar-hsl-accent-hue) var(--calendar-hsl-accent-saturation)
+			var(--calendar-hsl-accent-light) / 40%
 	);
 
 	--calendar-color-accent-lighter: hsla(
-		var(--calendar-hsl-accent-hue) var(--calendar-hsl-accent-saturation) var(--calendar-hsl-accent-light) / 8%
+		var(--calendar-hsl-accent-hue) var(--calendar-hsl-accent-saturation)
+			var(--calendar-hsl-accent-light) / 8%
 	);
 
 	/* Context Specific */
 	--calendar-color-border-root: var(--calendar-color-border);
-	--calendar-color-bg-text-hover-header-button: var(--calendar-color-text-hover);
+	--calendar-color-bg-text-hover-header-button: var(
+		--calendar-color-text-hover
+	);
 	--calendar-color-text-today: var(--calendar-color-primary);
 	--calendar-color-border-weekdays: var(--calendar-color-border);
 
 	--calendar-color-text-column-labels: var(--calendar-color-text-inactive);
-	--calendar-color-text-column-weekend-labels: var(--calendar-color-accent-light);
+	--calendar-color-text-column-weekend-labels: var(
+		--calendar-color-accent-light
+	);
 
 	--calendar-color-text-date-inactive: var(--calendar-color-text-inactive);
 	--calendar-color-text-date-active: var(--calendar-color-text-dark);
 	--calendar-color-text-date-weekend-active: var(--calendar-color-accent);
-	--calendar-color-text-date-weekend-inactive: var(--calendar-color-accent-light);
+	--calendar-color-text-date-weekend-inactive: var(
+		--calendar-color-accent-light
+	);
 
 	--calendar-color-bg-date-selected: var(--calendar-color-primary);
 	--calendar-color-bg-date-weekend-selected: var(--calendar-color-accent);
 	--calendar-color-text-date-selected: var(--calendar-color-text-light);
-	--calendar-color-text-date-weekend-selected: var(--calendar-color-text-light);
+	--calendar-color-text-date-weekend-selected: var(
+		--calendar-color-text-light
+	);
 	--calendar-color-text-date-disabled: var(--calendar-color-text-inactive);
-	--calendar-color-text-date-weekend-disabled: var(--calendar-color-accent-light);
+	--calendar-color-text-date-weekend-disabled: var(
+		--calendar-color-accent-light
+	);
 
 	--calendar-color-bg-disabled: var(--calendar-color-bg-light);
 	--calendar-color-bg-disabled-cross: var(--calendar-color-text-inactive);
-	--calendar-color-bg-disabled-weekend-cross: var(--calendar-color-accent-light);
+	--calendar-color-bg-disabled-weekend-cross: var(
+		--calendar-color-accent-light
+	);
 
 	& {
 		background-color: var(--calendar-color-bg-light);
@@ -223,7 +258,7 @@ const Container = styled.div`
 		-webkit-tap-highlight-color: var(--calendar-color-transparent);
 		font-family: inherit;
 	}
-	
+
 	.calendar_header span {
 		font-size: 0.85em;
 		color: var(--calendar-color-text-dark);
@@ -252,7 +287,7 @@ const Container = styled.div`
 		border-radius: 2px;
 	}
 
-	.calendar_date  .calendar_date_inner {
+	.calendar_date .calendar_date_inner {
 		border-radius: 2px;
 	}
 
@@ -276,14 +311,15 @@ const Container = styled.div`
 
 	/* Color for inactive dates */
 	.calendar_date.calendar_inactive {
-		opacity: 0.0;
+		opacity: 0;
 	}
 	.calendar_date.calendar_inactive.calendar_weekend span {
 		color: var(--calendar-color-text-date-weekend-inactive);
 	}
 
 	/* Underline today's date (if not selected or disabled) */
-	.calendar_date.calendar_today:not(.calendar_selected):not(.calendar_disabled) span {
+	.calendar_date.calendar_today:not(.calendar_selected):not(.calendar_disabled)
+		span {
 		border-bottom: 1px solid currentColor;
 	}
 

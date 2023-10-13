@@ -1,4 +1,4 @@
-import styled from '@emotion/styled';
+import styled from "@emotion/styled";
 
 export default styled.div`
 	display: flex;
@@ -7,7 +7,7 @@ export default styled.div`
 	padding: 3px 8px;
 	box-sizing: border-box;
 	background: none #fdfdfd;
-	background: linear-gradient(to bottom, #fdfdfd 0%,#f6f7f8 100%);
+	background: linear-gradient(to bottom, #fdfdfd 0%, #f6f7f8 100%);
 	border: 1px solid #999;
 	border-radius: 2px;
 	color: #333;
@@ -19,6 +19,6 @@ export default styled.div`
 	:disabled {
 		cursor: inherit;
 		background: none transparent;
-		opacity: .5;
+		opacity: 0.5;
 	}
 `;

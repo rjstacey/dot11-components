@@ -1,17 +1,10 @@
-import React from 'react';
+import React from "react";
+import type { SelectItemRendererProps } from ".";
 
-export type SelectItemProps = {
-	item: object;
-	props: object;
-	state: object;
-	methods: object;
-}
-
-const SelectItem = ({item, props, state, methods}) =>
-	<span
-		className='dropdown-select-single-item'
-	>
+const SelectItem = ({ item, props, state, methods }: SelectItemRendererProps) => (
+	<span className="dropdown-select-single-item">
 		{item[props.labelField]}
 	</span>
+);
 
 export default SelectItem;

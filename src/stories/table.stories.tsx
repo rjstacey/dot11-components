@@ -1,16 +1,23 @@
-import React from 'react';
-import { Provider } from 'react-redux';
+import React from "react";
+import { Provider } from "react-redux";
 
-import {ActionIcon} from '../icons';
-import {Button} from '../form';
+import { ActionIcon } from "../icons";
+import { Button } from "../form";
 
-import store, {loadData, removeRow, dataFields, useAppDispatch, dataSelectors, dataActions} from './tableStoryStore';
+import store, {
+	loadData,
+	removeRow,
+	dataFields,
+	useAppDispatch,
+	dataSelectors,
+	dataActions,
+} from "./tableStoryStore";
 
 import {
-	AppTable, 
-	SelectHeaderCell, 
+	AppTable,
+	SelectHeaderCell,
 	SelectExpandHeaderCell,
-	SelectCell, 
+	SelectCell,
 	SelectExpandCell,
 	TableColumnHeader,
 	ShowFilters,
@@ -23,146 +30,183 @@ import {
 	SplitTableButtonGroup,
 	HeaderCellRendererProps,
 	CellRendererProps,
-	ColumnProperties
-} from '../table';
+	ColumnProperties,
+} from "../table";
 
 const tableColumns: ColumnProperties[] = [
-	{key: '__ctrl__',
-		width: 48, flexGrow: 0, flexShrink: 0},
-	{key: 'id', 
+	{ key: "__ctrl__", width: 48, flexGrow: 0, flexShrink: 0 },
+	{
+		key: "id",
 		...dataFields.id,
-		width: 80, flexGrow: 1, flexShrink: 1, dropdownWidth: 200,
-		headerRenderer: p =>
+		width: 80,
+		flexGrow: 1,
+		flexShrink: 1,
+		dropdownWidth: 200,
+		headerRenderer: (p) => (
 			<TableColumnHeader
-				customFilterElement=
+				customFilterElement={
 					<IdFilter
 						selectors={p.selectors}
 						actions={p.actions}
-						dataKey='id'
+						dataKey="id"
 					/>
+				}
 				{...p}
 			/>
+		),
 	},
-	{key: 'Name', 
+	{
+		key: "Name",
 		...dataFields.Name,
-		width: 80, flexGrow: 1, flexShrink: 1, dropdownWidth: 200},
-	{key: 'Date',
-		...dataFields.Date,
-		width: 200, flexGrow: 1, flexShrink: 1},
-	{key: 'Text',
-		...dataFields.Text,
-		width: 200, flexGrow: 1, flexShrink: 1},
-	{key: 'Number',
+		width: 80,
+		flexGrow: 1,
+		flexShrink: 1,
+		dropdownWidth: 200,
+	},
+	{ key: "Date", ...dataFields.Date, width: 200, flexGrow: 1, flexShrink: 1 },
+	{ key: "Text", ...dataFields.Text, width: 200, flexGrow: 1, flexShrink: 1 },
+	{
+		key: "Number",
 		...dataFields.Number,
-		width: 200, flexGrow: 1, flexShrink: 1},
-	{key: 'Status',
+		width: 200,
+		flexGrow: 1,
+		flexShrink: 1,
+	},
+	{
+		key: "Status",
 		...dataFields.Status,
-		width: 200, flexGrow: 1, flexShrink: 1},
-	{key: 'Derived',
-		...dataFields.Derived,
-		width: 200},
-	{key: 'Actions',
-		label: 'Actions',
-		width: 200}
+		width: 200,
+		flexGrow: 1,
+		flexShrink: 1,
+	},
+	{ key: "Derived", ...dataFields.Derived, width: 200 },
+	{ key: "Actions", label: "Actions", width: 200 },
 ];
 
 const defaultTablesConfig = {
-	'1': {
+	"1": {
 		fixed: false,
 		columns: {
-			__ctrl__: {unselectable: true, shown: true, width: 48},
-			id: {shown: true, width: 80},
-			Name: {shown: true, width: 200},
-			Text: {shown: true,	width: 200},
-			Date: {shown: true,	width: 200},
-			Number: {shown: true, width: 200},
-			Status: {shown: true, width: 200},
-			Derived: {shown: true, width: 200},
-			Actions: {shown: true, width: 200}
-		}
+			__ctrl__: { unselectable: true, shown: true, width: 48 },
+			id: { shown: true, width: 80 },
+			Name: { shown: true, width: 200 },
+			Text: { shown: true, width: 200 },
+			Date: { shown: true, width: 200 },
+			Number: { shown: true, width: 200 },
+			Status: { shown: true, width: 200 },
+			Derived: { shown: true, width: 200 },
+			Actions: { shown: true, width: 200 },
+		},
 	},
-	'2': {
+	"2": {
 		fixed: false,
 		columns: {
-			__ctrl__: {unselectable: true, shown: true, width: 48},
-			id: {shown: true, width: 80},
-			Name: {unselectable: true, shown: false, width: 200},
-			Text: {shown: true,	width: 200},
-			Date: {shown: true,	width: 200},
-			Number: {shown: true, width: 200},
-			Status: {shown: true, width: 200},
-			Derived: {shown: true, width: 200},
-			Actions: {shown: true, width: 200}
-		}
-	}
-}
+			__ctrl__: { unselectable: true, shown: true, width: 48 },
+			id: { shown: true, width: 80 },
+			Name: { unselectable: true, shown: false, width: 200 },
+			Text: { shown: true, width: 200 },
+			Date: { shown: true, width: 200 },
+			Number: { shown: true, width: 200 },
+			Status: { shown: true, width: 200 },
+			Derived: { shown: true, width: 200 },
+			Actions: { shown: true, width: 200 },
+		},
+	},
+};
 
-const LoaderButton= ({numberOfRows}) => {
+const LoaderButton = ({ numberOfRows }) => {
 	const dispatch = useAppDispatch();
 
 	return (
-		<Button onClick={() => dispatch(loadData(numberOfRows))} >Load {numberOfRows}</Button>
-	)
-}
+		<Button onClick={() => dispatch(loadData(numberOfRows))}>
+			Load {numberOfRows}
+		</Button>
+	);
+};
 
 function tableColumnsWithControl(expandable, dispatch) {
 	const columns = tableColumns.slice();
 	let headerRenderer: (p: HeaderCellRendererProps) => JSX.Element,
 		cellRenderer: (p: CellRendererProps) => JSX.Element;
 	if (expandable) {
-		headerRenderer = (p) =>
+		headerRenderer = (p) => (
 			<SelectExpandHeaderCell
-				customSelectorElement=
+				customSelectorElement={
 					<IdSelector
-						style={{width: '200px'}}
+						style={{ width: "200px" }}
 						selectors={dataSelectors}
 						actions={dataActions}
-						dataKey={'id'}
+						dataKey={"id"}
 						focusOnMount
 					/>
+				}
 				{...p}
-			/>;
-		cellRenderer = (p) =>
+			/>
+		);
+		cellRenderer = (p) => (
 			<SelectExpandCell
 				selectors={dataSelectors}
 				actions={dataActions}
 				{...p}
-			/>;
-	}
-	else {
-		headerRenderer = (p) =>
+			/>
+		);
+	} else {
+		headerRenderer = (p) => (
 			<SelectHeaderCell
-				customSelectorElement=
+				customSelectorElement={
 					<IdSelector
-						style={{width: '200px'}}
+						style={{ width: "200px" }}
 						selectors={dataSelectors}
 						actions={dataActions}
-						dataKey={'id'}
+						dataKey={"id"}
 						focusOnMount
 					/>
+				}
 				{...p}
-			/>;
-		cellRenderer = (p) =>
+			/>
+		);
+		cellRenderer = (p) => (
 			<SelectCell
 				selectors={dataSelectors}
 				actions={dataActions}
 				{...p}
-			/>;
+			/>
+		);
 	}
-	columns[0] = {...columns[0], headerRenderer, cellRenderer};
-	cellRenderer = ({rowData}: {rowData: any}) => <ActionIcon type='delete' onClick={(e) => {e.stopPropagation(); dispatch(removeRow(rowData.id))}} />
-	columns[columns.length-1] = {...columns[columns.length-1], cellRenderer};
+	columns[0] = { ...columns[0], headerRenderer, cellRenderer };
+	cellRenderer = ({ rowData }: { rowData: any }) => (
+		<ActionIcon
+			type="delete"
+			onClick={(e) => {
+				e.stopPropagation();
+				dispatch(removeRow(rowData.id));
+			}}
+		/>
+	);
+	columns[columns.length - 1] = {
+		...columns[columns.length - 1],
+		cellRenderer,
+	};
 	return columns;
 }
 
-export const _SplitPanel = ({expandable, numberOfRows}) => {
-
+export const _SplitPanel = ({ expandable, numberOfRows }) => {
 	return (
-		<div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '80vh'}}>
+		<div
+			style={{
+				display: "flex",
+				flexDirection: "column",
+				width: "100%",
+				height: "80vh",
+			}}
+		>
 			<div>
-				<SplitPanelButton selectors={dataSelectors} actions={dataActions} />
+				<SplitPanelButton
+					selectors={dataSelectors}
+					actions={dataActions}
+				/>
 			</div>
-			<SplitPanel selectors={dataSelectors} actions={dataActions} >
+			<SplitPanel selectors={dataSelectors} actions={dataActions}>
 				<Panel>
 					<span>Something here...</span>
 				</Panel>
@@ -171,18 +215,33 @@ export const _SplitPanel = ({expandable, numberOfRows}) => {
 				</Panel>
 			</SplitPanel>
 		</div>
-	)
-}
+	);
+};
 
-export const SplitTable = ({expandable, numberOfRows}) => {
-
+export const SplitTable = ({ expandable, numberOfRows }) => {
 	const dispatch = useAppDispatch();
 
-	const columns = React.useMemo(() => tableColumnsWithControl(expandable, dispatch), [expandable, dispatch]);
+	const columns = React.useMemo(
+		() => tableColumnsWithControl(expandable, dispatch),
+		[expandable, dispatch]
+	);
 
 	return (
-		<div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '80vh'}}>
-			<div style={{display: 'flex', width: '100%', justifyContent: 'space-between'}}>
+		<div
+			style={{
+				display: "flex",
+				flexDirection: "column",
+				width: "100%",
+				height: "80vh",
+			}}
+		>
+			<div
+				style={{
+					display: "flex",
+					width: "100%",
+					justifyContent: "space-between",
+				}}
+			>
 				<LoaderButton numberOfRows={numberOfRows} />
 				<SplitTableButtonGroup
 					columns={columns}
@@ -190,21 +249,15 @@ export const SplitTable = ({expandable, numberOfRows}) => {
 					actions={dataActions}
 				/>
 			</div>
-			<div style={{display: 'flex', alignItems: 'center'}}>
+			<div style={{ display: "flex", alignItems: "center" }}>
 				<ShowFilters
 					selectors={dataSelectors}
 					actions={dataActions}
 					fields={dataFields}
 				/>
-				<GlobalFilter
-					selectors={dataSelectors}
-					actions={dataActions}
-				/>
+				<GlobalFilter selectors={dataSelectors} actions={dataActions} />
 			</div>
-			<SplitPanel
-				selectors={dataSelectors}
-				actions={dataActions}
-			>
+			<SplitPanel selectors={dataSelectors} actions={dataActions}>
 				<Panel>
 					<AppTable
 						defaultTablesConfig={defaultTablesConfig}
@@ -220,46 +273,32 @@ export const SplitTable = ({expandable, numberOfRows}) => {
 				</Panel>
 			</SplitPanel>
 		</div>
-	)
-}
+	);
+};
 
-export const NoDefaultTable = ({fixed, expandable, numberOfRows}) => {
-
+export const NoDefaultTable = ({ fixed, expandable, numberOfRows }) => {
 	const dispatch = useAppDispatch();
-	const columns = React.useMemo(() => tableColumnsWithControl(expandable, dispatch), [expandable, dispatch]);
+	const columns = React.useMemo(
+		() => tableColumnsWithControl(expandable, dispatch),
+		[expandable, dispatch]
+	);
 
 	return (
-		<div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '80vh'}}>
-			<div style={{display: 'flex', width: '100%', justifyContent: 'space-between'}}>
-				<LoaderButton numberOfRows={numberOfRows} />
-			</div>
-			<ShowFilters 
-				selectors={dataSelectors}
-				actions={dataActions}
-				fields={dataFields}
-			/>
-			<div style={{flex: 1, width: '100%'}} >
-					<AppTable
-						fixed={fixed}
-						columns={columns}
-						headerHeight={46}
-						estimatedRowHeight={56}
-						selectors={dataSelectors}
-						actions={dataActions}
-					/>
-			</div>
-		</div>
-	)
-}
-
-export const FixedCenteredTable = ({expandable, numberOfRows}) => {
-
-	const dispatch = useAppDispatch();
-	const columns = React.useMemo(() => tableColumnsWithControl(expandable, dispatch), [expandable, dispatch]);
-
-	return (
-		<div style={{display: 'flex', flexDirection: 'column', width: '100%', height: '80vh'}}>
-			<div style={{display: 'flex', width: '100%', justifyContent: 'space-between'}}>
+		<div
+			style={{
+				display: "flex",
+				flexDirection: "column",
+				width: "100%",
+				height: "80vh",
+			}}
+		>
+			<div
+				style={{
+					display: "flex",
+					width: "100%",
+					justifyContent: "space-between",
+				}}
+			>
 				<LoaderButton numberOfRows={numberOfRows} />
 			</div>
 			<ShowFilters
@@ -267,35 +306,87 @@ export const FixedCenteredTable = ({expandable, numberOfRows}) => {
 				actions={dataActions}
 				fields={dataFields}
 			/>
-			<div style={{flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center'}} >
-					<AppTable
-						fitWidth
-						fixed
-						columns={columns}
-						//defaultTablesConfig={{'fixed': {}}}
-						headerHeight={46}
-						estimatedRowHeight={56}
-						selectors={dataSelectors}
-						actions={dataActions}
-					/>
+			<div style={{ flex: 1, width: "100%" }}>
+				<AppTable
+					fixed={fixed}
+					columns={columns}
+					headerHeight={46}
+					estimatedRowHeight={56}
+					selectors={dataSelectors}
+					actions={dataActions}
+				/>
 			</div>
 		</div>
-	)
-}
+	);
+};
+
+export const FixedCenteredTable = ({ expandable, numberOfRows }) => {
+	const dispatch = useAppDispatch();
+	const columns = React.useMemo(
+		() => tableColumnsWithControl(expandable, dispatch),
+		[expandable, dispatch]
+	);
+
+	return (
+		<div
+			style={{
+				display: "flex",
+				flexDirection: "column",
+				width: "100%",
+				height: "80vh",
+			}}
+		>
+			<div
+				style={{
+					display: "flex",
+					width: "100%",
+					justifyContent: "space-between",
+				}}
+			>
+				<LoaderButton numberOfRows={numberOfRows} />
+			</div>
+			<ShowFilters
+				selectors={dataSelectors}
+				actions={dataActions}
+				fields={dataFields}
+			/>
+			<div
+				style={{
+					flex: 1,
+					display: "flex",
+					flexDirection: "column",
+					alignItems: "center",
+				}}
+			>
+				<AppTable
+					fitWidth
+					fixed
+					columns={columns}
+					//defaultTablesConfig={{'fixed': {}}}
+					headerHeight={46}
+					estimatedRowHeight={56}
+					selectors={dataSelectors}
+					actions={dataActions}
+				/>
+			</div>
+		</div>
+	);
+};
 
 const story = {
-	title: 'Table',
+	title: "Table",
 	component: AppTable,
 	args: {
 		expandable: false,
 		numberOfRows: 5,
 	},
 	decorators: [
-		(Story) =>
+		(Story) => (
 			<Provider store={store}>
 				<Story />
 			</Provider>
-	]
+		),
+	],
 };
 
 export default story;

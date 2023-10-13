@@ -1,12 +1,14 @@
-
 :root {
 	--dropdown-select-border-color: #ddd;
 	--dropdown-select-hover-border-color: #0074d9;
 	--dropdown-select-background-color: #fafafa;
-	--dropdown-select-focus-outline: 1px solid var(--dropdown-select-hover-border-color);	/* double the border thickness */
+	--dropdown-select-focus-outline: 1px solid
+		var(--dropdown-select-hover-border-color); /* double the border thickness */
 
 	--dropdown-select-dropdown-background-color: #fff;
-	--dropdown-select-dropdown-border-color: var(--dropdown-select-border-color);
+	--dropdown-select-dropdown-border-color: var(
+		--dropdown-select-border-color
+	);
 
 	--dropdown-select-item-disabled-color: #ccc;
 	--dropdown-select-item-disabled-background-color: #f2f2f2;
@@ -39,15 +41,16 @@
 .dropdown-select:focus,
 .dropdown-select:focus-within {
 	border-color: var(--dropdown-select-hover-border-color);
-
 }
 
 .dropdown-select:focus,
 .dropdown-select:focus-within {
 	outline: 0;
-	box-shadow: 0 0 0 3px rgb(0 116 217 / 20%);}
+	box-shadow: 0 0 0 3px rgb(0 116 217 / 20%);
+}
 
-.dropdown-select *, .dropdown-select-dropdown * {
+.dropdown-select *,
+.dropdown-select-dropdown * {
 	box-sizing: border-box;
 }
 
@@ -56,7 +59,7 @@
 	display: flex;
 	flex: 1;
 	flex-wrap: wrap;
-	min-height:  1em;
+	min-height: 1em;
 }
 
 .dropdown-select-placeholder {
@@ -76,9 +79,9 @@
 	display: flex;
 	align-items: center;
 }
-	
+
 .dropdown-select-multi-item-remove:after {
-	content: '×';
+	content: "×";
 	margin-left: 5px;
 }
 
@@ -94,8 +97,12 @@
 }
 
 @keyframes dropdown-select-dual-ring-spin {
-	0% {transform: rotate(0deg);}
-	100% {transform: rotate(180deg);}
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(180deg);
+	}
 }
 
 .dropdown-select-loading {
@@ -103,7 +110,7 @@
 }
 
 .dropdown-select-loading:after {
-	content: ' ';
+	content: " ";
 	display: block;
 	width: 1em;
 	height: 1em;
@@ -114,7 +121,7 @@
 }
 
 .dropdown-select-clear-all:after {
-	content: '×';
+	content: "×";
 	padding: 0 5px;
 }
 
@@ -193,5 +200,7 @@
 
 .dropdown-select-item.dropdown-select-item-selected.dropdown-select-item-active,
 .dropdown-select-item.dropdown-select-item-selected:hover {
-	background-color: var(--dropdown-select-item-selected-active-background-color);
+	background-color: var(
+		--dropdown-select-item-selected-active-background-color
+	);
 }

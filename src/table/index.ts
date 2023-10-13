@@ -1,40 +1,22 @@
-import {AppTable} from './AppTable';
-import type {TablesConfig, HeaderCellRendererProps, CellRendererProps, ColumnProperties, RowGetterProps} from './AppTable';
-import ShowFilters from './ShowFilters';
-import GlobalFilter from './GlobalFilter';
-import {SelectHeaderCell, SelectExpandHeaderCell, SelectCell, SelectExpandCell} from './ControlColumn';
-import TableColumnHeader from './AppTableHeaderCell';
-import TableColumnSelector from './TableColumnSelector';
-import TableViewSelector from './TableViewSelector';
-import {IdSelector, IdFilter} from './IdList';
-import {SplitPanel, Panel, SplitPanelButton} from './SplitPanel';
-import {SplitTableButtonGroup} from './SplitTableButtonGroup';
-
+export { AppTable } from "./AppTable";
 export type {
 	TablesConfig,
 	HeaderCellRendererProps,
 	CellRendererProps,
 	ColumnProperties,
-	RowGetterProps
-}
-
+	RowGetterProps,
+} from "./AppTable";
+export { default as ShowFilters } from "./ShowFilters";
+export { default as GlobalFilter } from "./GlobalFilter";
 export {
-	AppTable,
 	SelectHeaderCell,
 	SelectExpandHeaderCell,
 	SelectCell,
 	SelectExpandCell,
-	TableColumnHeader,
-	TableViewSelector,
-	TableColumnSelector,
-	ShowFilters,
-	GlobalFilter,
-	IdSelector,
-	IdFilter,
-	SplitPanelButton,
-	SplitPanel,
-	Panel,
-	SplitTableButtonGroup
-}
-
-export default AppTable;
+} from "./ControlColumn";
+export { default as TableColumnHeader } from "./AppTableHeaderCell";
+export { default as TableColumnSelector } from "./TableColumnSelector";
+export { default as TableViewSelector } from "./TableViewSelector";
+export { IdSelector, IdFilter } from "./IdList";
+export { SplitPanel, Panel, SplitPanelButton } from "./SplitPanel";
+export { SplitTableButtonGroup } from "./SplitTableButtonGroup";

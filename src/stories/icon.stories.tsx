@@ -1,15 +1,21 @@
-import React from 'react';
+import React from "react";
 
-import {availableIcons, Icon} from '../icons';
+import { availableIcons, Icon } from "../icons";
 
 const story = {
-  title: 'Icon',
-  component: Icon,
+	title: "Icon",
+	component: Icon,
 };
 
-export const AvailableIcons = (args) =>
-	<div style={{display: 'flex', flexDirection: 'column'}}>
-		{availableIcons.map(type => <div key={type} style={{display: 'flex'}}><div style={{width: 250}}>{type}:</div><Icon type={type} /></div>)}
+export const AvailableIcons = (args) => (
+	<div style={{ display: "flex", flexDirection: "column" }}>
+		{availableIcons.map((type) => (
+			<div key={type} style={{ display: "flex" }}>
+				<div style={{ width: 250 }}>{type}:</div>
+				<Icon type={type} />
+			</div>
+		))}
 	</div>
+);
 
 export default story;

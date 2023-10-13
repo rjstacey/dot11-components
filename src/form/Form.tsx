@@ -1,6 +1,6 @@
-import React from 'react';
-import styled from '@emotion/styled';
-import {Spinner} from '../icons';
+import React from "react";
+import styled from "@emotion/styled";
+import { Spinner } from "../icons";
 
 const Container = styled.div`
 	display: flex;
@@ -19,15 +19,19 @@ const Col = styled.div`
 	flex-direction: column;
 	flex: 1;
 	margin: 0 10px;
-	:first-of-type {margin-left: 0}
-	:last-child {margin-right: 0}
+	:first-of-type {
+		margin-left: 0;
+	}
+	:last-child {
+		margin-right: 0;
+	}
 `;
 
 export const Title = styled.h3`
 	margin: 5px 0 20px;
 	align-self: center;
 	font-weight: bold;
-	color: #0099CC;
+	color: #0099cc;
 `;
 
 const ErrMsg = styled(Row)`
@@ -46,10 +50,12 @@ const Button = styled.button`
 	text-transform: uppercase;
 	color: white;
 	font-weight: bold;
-	background-color: #0099CC;
+	background-color: #0099cc;
 	border: none;
 	border-radius: 30px;
-	:focus {outline: none}
+	:focus {
+		outline: none;
+	}
 `;
 
 const FieldContainer = styled.div`
@@ -60,7 +66,9 @@ const FieldContainer = styled.div`
 	/*margin: 10px 0;
 	:first-of-type {margin-top: 0}
 	:last-child {margin-bottom: 0}*/
-	& > label {margin-right: 10px}
+	& > label {
+		margin-right: 10px;
+	}
 `;
 
 type FieldProps = {
@@ -68,16 +76,14 @@ type FieldProps = {
 	className?: string;
 	label: string;
 	children?: React.ReactNode;
-}
+};
 
-const Field = ({style, className, label, children}: FieldProps) =>
-	<FieldContainer
-		style={style}
-		className={className}
-	>
+const Field = ({ style, className, label, children }: FieldProps) => (
+	<FieldContainer style={style} className={className}>
 		<label>{label}</label>
-		{typeof children === 'string'? <span>{children}</span>: children}
+		{typeof children === "string" ? <span>{children}</span> : children}
 	</FieldContainer>
+);
 
 const FieldLeft = styled(Field)`
 	justify-content: left;
@@ -95,38 +101,41 @@ type ListProps = {
 	className?: string;
 	label?: string;
 	children?: React.ReactNode;
-} & React.ComponentProps<"div">
+} & React.ComponentProps<"div">;
 
-const List = ({style, className, label, children, ...otherProps}: ListProps) =>
-	<ListContainer
-		style={style}
-		className={className}
-		{...otherProps}
-	>
+const List = ({
+	style,
+	className,
+	label,
+	children,
+	...otherProps
+}: ListProps) => (
+	<ListContainer style={style} className={className} {...otherProps}>
 		{label && <label>{label}</label>}
 		{children}
 	</ListContainer>
+);
 
 const ListItemContainer = styled.div`
 	display: flex;
 	align-items: center;
 	margin: 5px 0 0 10px;
-	label {margin: 0 5px}
+	label {
+		margin: 0 5px;
+	}
 `;
 
 type ListItemProps = {
 	style?: object;
 	className?: string;
 	children?: React.ReactNode;
-}
+};
 
-const ListItem = ({style, className, children}: ListItemProps) =>
-	<ListItemContainer
-		style={style}
-		className={className}
-	>
+const ListItem = ({ style, className, children }: ListItemProps) => (
+	<ListItemContainer style={style} className={className}>
 		{children}
 	</ListItemContainer>
+);
 
 type FormProps = {
 	style?: object;
@@ -140,29 +149,42 @@ type FormProps = {
 	close?: () => void;
 	cancelLabel?: string;
 	children?: React.ReactNode;
-}
+};
 
-const Form = ({style, className, title, busy, errorText, submit, submitLabel, cancel, close, cancelLabel, children}: FormProps) => 
-	<Container
-		style={style}
-		className={className}
-	>
+const Form = ({
+	style,
+	className,
+	title,
+	busy,
+	errorText,
+	submit,
+	submitLabel,
+	cancel,
+	close,
+	cancelLabel,
+	children,
+}: FormProps) => (
+	<Container style={style} className={className}>
 		{title && <Title>{title}</Title>}
-		{busy !== undefined && <Spinner style={{alignSelf: 'center', visibility: busy? 'visible': 'hidden'}}/>}
+		{busy !== undefined && (
+			<Spinner
+				style={{
+					alignSelf: "center",
+					visibility: busy ? "visible" : "hidden",
+				}}
+			/>
+		)}
 		{children}
-		{errorText !== undefined && <ErrMsg>{errorText || '\u00a0'}</ErrMsg>}
+		{errorText !== undefined && <ErrMsg>{errorText || "\u00a0"}</ErrMsg>}
 		<ButtonRow>
-			{submit && <Button onClick={submit} >{submitLabel || 'OK'}</Button>}
-			{(cancel || close) && <Button onClick={cancel || close} >{cancelLabel || 'Cancel'}</Button>}
+			{submit && <Button onClick={submit}>{submitLabel || "OK"}</Button>}
+			{(cancel || close) && (
+				<Button onClick={cancel || close}>
+					{cancelLabel || "Cancel"}
+				</Button>
+			)}
 		</ButtonRow>
 	</Container>
+);
 
-export {
-	Form,
-	Field,
-	FieldLeft,
-	Row,
-	Col,
-	List,
-	ListItem
-}
+export { Form, Field, FieldLeft, Row, Col, List, ListItem };

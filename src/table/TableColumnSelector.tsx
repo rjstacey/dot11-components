@@ -1,11 +1,14 @@
-import React from 'react';
-import styled from '@emotion/styled';
-import {useDispatch, useSelector} from 'react-redux';
+import React from "react";
+import styled from "@emotion/styled";
+import { useDispatch, useSelector } from "react-redux";
 
-import {Button, ActionButtonDropdown} from '../form';
+import { Button, ActionButtonDropdown } from "../form";
 
-import type { AppTableDataSelectors, AppTableDataActions } from '../store/appTableData';
-import type { ColumnProperties, ChangeableColumnProperties } from './AppTable';
+import type {
+	AppTableDataSelectors,
+	AppTableDataActions,
+} from "../store/appTableData";
+import type { ColumnProperties, ChangeableColumnProperties } from "./AppTable";
 
 const Row = styled.div`
 	margin: 5px 10px;
@@ -32,11 +35,12 @@ const Item = styled.div<ItemProps>`
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
-	${({ disabled }) => disabled && 'text-decoration: line-through;'}
-	${({ isSelected }) => isSelected? 'background: #0074d9;': ':hover{background: #ccc;}'}
+	${({ disabled }) => disabled && "text-decoration: line-through;"}
+	${({ isSelected }) =>
+		isSelected ? "background: #0074d9;" : ":hover{background: #ccc;}"}
 	& > span {
 		margin: 5px 5px;
-		${({ isSelected }) => isSelected && 'color: #fff;'}
+		${({ isSelected }) => isSelected && "color: #fff;"}
 	}
 `;
 
@@ -46,69 +50,77 @@ export type ColumnSelectorProps = {
 	actions: AppTableDataActions;
 };
 
-function ColumnSelectorDropdown({columns, selectors, actions}: ColumnSelectorProps) {
-
+function ColumnSelectorDropdown({
+	columns,
+	selectors,
+	actions,
+}: ColumnSelectorProps) {
 	const dispatch = useDispatch();
 
 	const view = useSelector(selectors.selectCurrentView);
 	const tableConfig = useSelector(selectors.selectCurrentTableConfig);
 
-	const toggleCurrentTableFixed = () => dispatch(actions.toggleTableFixed({tableView: view}));
-	const setTableColumnShown = (colKey: string, shown: boolean) => dispatch(actions.setTableColumnShown({tableView: view, key: colKey, shown}));
+	const toggleCurrentTableFixed = () =>
+		dispatch(actions.toggleTableFixed({ tableView: view }));
+	const setTableColumnShown = (colKey: string, shown: boolean) =>
+		dispatch(
+			actions.setTableColumnShown({ tableView: view, key: colKey, shown })
+		);
 
 	/* Build an array of 'selectable' column config that includes a column label */
-	const selectableColumns: Array<ChangeableColumnProperties & { key: string; label: string }> = [];
-	for (const [key, config] of Object.entries<ChangeableColumnProperties>(tableConfig.columns)) {
+	const selectableColumns: Array<
+		ChangeableColumnProperties & { key: string; label: string }
+	> = [];
+	for (const [key, config] of Object.entries<ChangeableColumnProperties>(
+		tableConfig.columns
+	)) {
 		if (!config.unselectable) {
-			const column = columns.find(c => c.key === key);
+			const column = columns.find((c) => c.key === key);
 			selectableColumns.push({
 				key,
 				...config,
-				label: (column && column.label)? column.label: key
+				label: column && column.label ? column.label : key,
 			});
 		}
 	}
 
 	return (
 		<>
-		<Row>
-			<label>Table view:</label>
-			<span>{view}</span>
-		</Row>
-		<Row>
-			<label>Fixed width:</label>
-			<Button
-				onClick={toggleCurrentTableFixed}
-				isActive={tableConfig.fixed}
-			>
-				On
-			</Button>
-		</Row>
-		<ItemList>
-			{selectableColumns.map((col) => 
-				<Item
-					key={col.key}
-					isSelected={col.shown}
+			<Row>
+				<label>Table view:</label>
+				<span>{view}</span>
+			</Row>
+			<Row>
+				<label>Fixed width:</label>
+				<Button
+					onClick={toggleCurrentTableFixed}
+					isActive={tableConfig.fixed}
 				>
-					<input
-						type='checkbox'
-						checked={col.shown}
-						onChange={() => setTableColumnShown(col.key, !col.shown)}
-					/>
-					<span>{col.label}</span>
-				</Item>
-			)}
-		</ItemList>
+					On
+				</Button>
+			</Row>
+			<ItemList>
+				{selectableColumns.map((col) => (
+					<Item key={col.key} isSelected={col.shown}>
+						<input
+							type="checkbox"
+							checked={col.shown}
+							onChange={() =>
+								setTableColumnShown(col.key, !col.shown)
+							}
+						/>
+						<span>{col.label}</span>
+					</Item>
+				))}
+			</ItemList>
 		</>
-	)
+	);
 }
 
-const ColumnSelector = (props: ColumnSelectorProps) =>
-	<ActionButtonDropdown
-		name='columns'
-		title='Configure table'
-	>
+const ColumnSelector = (props: ColumnSelectorProps) => (
+	<ActionButtonDropdown name="columns" title="Configure table">
 		<ColumnSelectorDropdown {...props} />
 	</ActionButtonDropdown>
+);
 
 export default ColumnSelector;

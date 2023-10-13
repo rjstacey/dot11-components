@@ -1,4 +1,4 @@
-import styled from '@emotion/styled';
+import styled from "@emotion/styled";
 
 const Input = styled.input`
 	display: inline-block;
@@ -10,11 +10,11 @@ const Input = styled.input`
 
 	:focus {
 		outline: 0;
-		box-shadow: 0 0 0 3px rgba(0,116,217,0.2);
+		box-shadow: 0 0 0 3px rgba(0, 116, 217, 0.2);
 	}
 	:focus,
 	:not([disabled]):valid:hover {
-		border-color: #0074D9;
+		border-color: #0074d9;
 	}
 	:invalid {
 		background-color: #ff000052;
@@ -23,15 +23,15 @@ const Input = styled.input`
 		font-style: italic;
 	}
 
-	&[type='text'],
-	&[type='search'],
-	&[type='date'] {
+	&[type="text"],
+	&[type="search"],
+	&[type="date"] {
 		border-radius: 3px;
 		line-height: 25px;
 		padding: 0 5px;
 	}
 
-	&[type='checkbox'] {
+	&[type="checkbox"] {
 		padding: 6px;
 		width: 14px;
 		height: 14px;
@@ -45,7 +45,7 @@ const Input = styled.input`
 			border: 1px solid #adb8c0;
 		}
 		:checked:after {
-			content: '\\2714';
+			content: "\\2714";
 			font-size: 10px;
 			font-weight: 700;
 			position: absolute;

@@ -1,22 +1,4 @@
 
-export const AccessLevel = {
-	Public: 0,
-	Member: 1,
-	SubgroupAdmin: 2,
-	WGAdmin: 3
-};
-
-export const AccessLevelLabels = {
-	[AccessLevel.Public]: 'Observer',
-	[AccessLevel.Member]: 'Member',
-	[AccessLevel.SubgroupAdmin]: 'Subgroup admin',
-	[AccessLevel.WGAdmin]: 'WG admin'
-};
-
-export const displayAccessLevel = (value: number) => AccessLevelLabels[value] || 'Unknown';
-
-export const AccessLevelOptions = Object.values(AccessLevel).map(value => ({value, label: AccessLevelLabels[value]}));
-
 const LOGIN_STORAGE = 'User';
 
 export type User = {

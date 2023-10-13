@@ -1,9 +1,9 @@
-
+/*
 export function debounce(fn: Function, ms = 0) {
 	let timeoutId, lastArgs, lastThis;
 	function invoke() {
 		timeoutId = undefined;
-		return fn.apply(lastThis, lastArgs)
+		return fn.apply(lastThis, lastArgs);
 	}
 	function flush() {
 		if (timeoutId) {
@@ -20,19 +20,20 @@ export function debounce(fn: Function, ms = 0) {
 	debounced.flush = flush;
 	return debounced;
 }
+*/
 
 // copied from https://github.com/react-bootstrap/dom-helpers
 let scrollbarSize: number;
 export function getScrollbarSize(recalculate = false) {
 	if ((!scrollbarSize && scrollbarSize !== 0) || recalculate) {
-		if (typeof window !== 'undefined' && window.document) {
-			let scrollDiv = document.createElement('div');
+		if (typeof window !== "undefined" && window.document) {
+			let scrollDiv = document.createElement("div");
 
-			scrollDiv.style.position = 'absolute';
-			scrollDiv.style.top = '-9999px';
-			scrollDiv.style.width = '50px';
-			scrollDiv.style.height = '50px';
-			scrollDiv.style.overflow = 'scroll';
+			scrollDiv.style.position = "absolute";
+			scrollDiv.style.top = "-9999px";
+			scrollDiv.style.width = "50px";
+			scrollDiv.style.height = "50px";
+			scrollDiv.style.overflow = "scroll";
 
 			document.body.appendChild(scrollDiv);
 			scrollbarSize = scrollDiv.offsetWidth - scrollDiv.clientWidth;
@@ -54,15 +55,15 @@ export function strComp(a: string, b: string) {
 
 export const parseNumber = (value: number | string) => {
 	// Return the value as-is if it's already a number
-	if (typeof value === 'number')
-		return value
+	if (typeof value === "number") return value;
 
 	// Build regex to strip out everything except digits, decimal point and minus sign
-	let regex = new RegExp('[^0-9-.]', 'g');
-	let unformatted = parseFloat((''+value).replace(regex, ''));
+	let regex = new RegExp("[^0-9-.]", "g");
+	let unformatted = parseFloat(("" + value).replace(regex, ""));
 
 	// This will fail silently
-	return !isNaN(unformatted)? unformatted: 0;
-}
+	return !isNaN(unformatted) ? unformatted : 0;
+};
 
-export const isObject = (val: any) => val != null && typeof val === 'object' && Array.isArray(val) === false;
+export const isObject = (val: any) =>
+	val != null && typeof val === "object" && Array.isArray(val) === false;

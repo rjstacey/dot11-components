@@ -1,7 +1,7 @@
-import React from 'react';
-import styled from '@emotion/styled'
+import React from "react";
+import styled from "@emotion/styled";
 
-import {monthLabels} from './utils'
+import { monthLabels } from "./utils";
 
 const HeaderContainer = styled.div`
 	position: relative;
@@ -19,14 +19,14 @@ const ArrowButton = styled.button`
 const ArrowLeft = styled(ArrowButton)`
 	left: 10px;
 	:before {
-		content: '←';
+		content: "←";
 	}
 `;
 
 const ArrowRight = styled(ArrowButton)`
 	right: 10px;
 	:after {
-		content: '→';
+		content: "→";
 	}
 `;
 
@@ -38,16 +38,11 @@ const Label = styled.div`
 type HeaderProps = {
 	onClickPrev: (e: React.MouseEvent) => void;
 	onClickNext: (e: React.MouseEvent) => void;
-	viewDate: {year: number; month: number};
-	options: {dual: boolean};
+	viewDate: { year: number; month: number };
+	options: { dual: boolean };
 };
 
-function Header({
-	onClickPrev,
-	onClickNext,
-	viewDate,
-	options
-}: HeaderProps) {
+function Header({ onClickPrev, onClickNext, viewDate, options }: HeaderProps) {
 	const years = [viewDate.year];
 	const months = [viewDate.month];
 	if (options.dual) {
@@ -62,22 +57,16 @@ function Header({
 				className="calendar_arrow calendar_arrow-left"
 				onClick={onClickPrev}
 			/>
-			{years.map(year =>
-				<Label
-					key={year}
-					style={{width: `${100/years.length}%`}}
-				>
+			{years.map((year) => (
+				<Label key={year} style={{ width: `${100 / years.length}%` }}>
 					{year}
 				</Label>
-			)}
-			{months.map(month =>
-				<Label
-					key={month}
-					style={{width: `${100/months.length}%`}}
-				>
+			))}
+			{months.map((month) => (
+				<Label key={month} style={{ width: `${100 / months.length}%` }}>
 					{monthLabels[month]}
 				</Label>
-			)}
+			))}
 			<ArrowRight
 				className="calendar_arrow calendar_arrow-right"
 				onClick={onClickNext}

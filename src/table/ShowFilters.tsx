@@ -1,8 +1,8 @@
-import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import styled from '@emotion/styled';
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
+import styled from "@emotion/styled";
 
-import { ActionIcon } from '../icons';
+import { ActionIcon } from "../icons";
 
 import {
 	globalFilterKey,
@@ -11,8 +11,8 @@ import {
 	AppTableDataSelectors,
 	AppTableDataActions,
 	CompOpValue,
-	CompOp
-} from '../store/appTableData';
+	CompOp,
+} from "../store/appTableData";
 
 const ActiveFilterLabel = styled.label`
 	font-weight: bold;
@@ -30,7 +30,10 @@ const ActiveFilterContainer = styled.div`
 	color: #fff;
 	border-radius: 3px;
 	align-items: center;
-	:hover {opacity: 0.9}`
+	:hover {
+		opacity: 0.9;
+	}
+`;
 
 const ActiveFilterItem = styled.span`
 	color: #fff;
@@ -46,17 +49,18 @@ interface ActiveFilterProps {
 	children?: React.ReactNode;
 }
 
-const ActiveFilter = ({children, remove}: ActiveFilterProps) =>
-	<ActiveFilterContainer role='listitem'>
+const ActiveFilter = ({ children, remove }: ActiveFilterProps) => (
+	<ActiveFilterContainer role="listitem">
 		{children && <ActiveFilterItem>{children}</ActiveFilterItem>}
-		<ActionIcon style={{minWidth: 16}} type='clear' onClick={remove} />
+		<ActionIcon style={{ minWidth: 16 }} type="clear" onClick={remove} />
 	</ActiveFilterContainer>
+);
 
 function renderActiveFilters({
 	fields,
 	filters,
 	removeFilter,
-	clearAllFilters
+	clearAllFilters,
 }: {
 	fields: Fields;
 	filters: Filters;
@@ -65,33 +69,36 @@ function renderActiveFilters({
 }) {
 	let elements: React.ReactNode[] = [];
 	for (const [dataKey, filter] of Object.entries(filters)) {
-		if (dataKey === globalFilterKey)
-			continue;
+		if (dataKey === globalFilterKey) continue;
 		if (!fields[dataKey]) {
 			console.warn(`${dataKey} not present in fields`);
 			continue;
 		}
-		const {label, dataRenderer} = fields[dataKey];
-		const {comps, options} = filter;
+		const { label, dataRenderer } = fields[dataKey];
+		const { comps, options } = filter;
 		if (comps.length > 0) {
 			elements.push(
 				<ActiveFilterLabel key={dataKey}>
-					{label + ':'}
+					{label + ":"}
 				</ActiveFilterLabel>
 			);
 			for (let comp of comps) {
-				const o = options && options.find(o => o.value === comp.value);
-				let s = o? o.label: (dataRenderer? dataRenderer(comp.value): comp.value);
-				if (s === '')
-					s = '(Blank)'
-				if (comp.operation === CompOp.GT)
-					s = '> ' + s;
-				if (comp.operation === CompOp.LT)
-					s = '< ' + s;
+				const o =
+					options && options.find((o) => o.value === comp.value);
+				let s = o
+					? o.label
+					: dataRenderer
+					? dataRenderer(comp.value)
+					: comp.value;
+				if (s === "") s = "(Blank)";
+				if (comp.operation === CompOp.GT) s = "> " + s;
+				if (comp.operation === CompOp.LT) s = "< " + s;
 				elements.push(
-					<ActiveFilter 
+					<ActiveFilter
 						key={`${dataKey}_${comp.value}`}
-						remove={() => removeFilter(dataKey, comp.value, comp.operation)}
+						remove={() =>
+							removeFilter(dataKey, comp.value, comp.operation)
+						}
 					>
 						{s}
 					</ActiveFilter>
@@ -100,10 +107,16 @@ function renderActiveFilters({
 		}
 	}
 	if (elements.length > 2) {
-		elements.push(<ActiveFilterLabel key='clear_all_label'>Clear All:</ActiveFilterLabel>)
-		elements.push(<ActiveFilter key='clear_all' remove={clearAllFilters} />)
+		elements.push(
+			<ActiveFilterLabel key="clear_all_label">
+				Clear All:
+			</ActiveFilterLabel>
+		);
+		elements.push(
+			<ActiveFilter key="clear_all" remove={clearAllFilters} />
+		);
 	}
-	return elements
+	return elements;
 }
 
 const FiltersContainer = styled.div`
@@ -140,8 +153,8 @@ type ShowFiltersProps = {
 	className?: string;
 	style?: React.CSSProperties;
 	fields: Fields;
-	selectors: AppTableDataSelectors,
-	actions: AppTableDataActions,
+	selectors: AppTableDataSelectors;
+	actions: AppTableDataActions;
 };
 
 function ShowFilters({
@@ -149,7 +162,7 @@ function ShowFilters({
 	style,
 	fields,
 	selectors,
-	actions
+	actions,
 }: ShowFiltersProps) {
 	const dispatch = useDispatch();
 
@@ -158,26 +171,37 @@ function ShowFilters({
 	const filters = useSelector(selectors.selectFilters);
 
 	const activeFilterElements = React.useMemo(() => {
-		const removeFilter = (dataKey: string, value: any, operation: CompOpValue) => dispatch(actions.removeFilter({dataKey, value, operation}));
+		const removeFilter = (
+			dataKey: string,
+			value: any,
+			operation: CompOpValue
+		) => dispatch(actions.removeFilter({ dataKey, value, operation }));
 		const clearAllFilters = () => dispatch(actions.clearAllFilters());
 
-		return renderActiveFilters({fields, filters, removeFilter, clearAllFilters});
+		return renderActiveFilters({
+			fields,
+			filters,
+			removeFilter,
+			clearAllFilters,
+		});
 	}, [actions, fields, filters, dispatch]);
 
 	return (
-		<FiltersContainer
-			style={style}
-			className={className}
-		>
+		<FiltersContainer style={style} className={className}>
 			<FiltersLabel>
-				<label>Filters:</label><br/>
+				<label>Filters:</label>
+				<br />
 				<span>{`Showing ${shownRows} of ${totalRows}`}</span>
 			</FiltersLabel>
 			<FiltersContent>
-				{activeFilterElements.length? activeFilterElements: <FiltersPlaceholder>No filters</FiltersPlaceholder>}
+				{activeFilterElements.length ? (
+					activeFilterElements
+				) : (
+					<FiltersPlaceholder>No filters</FiltersPlaceholder>
+				)}
 			</FiltersContent>
 		</FiltersContainer>
-	)
+	);
 }
 
 export default ShowFilters;

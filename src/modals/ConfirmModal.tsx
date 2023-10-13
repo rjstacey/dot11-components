@@ -1,20 +1,21 @@
-import React from 'react';
-import {Form} from '../form'
-import {AppModal} from '.';
+import React from "react";
+import { Form } from "../form";
+import { AppModal } from ".";
 
-let resolve;
+let resolve: (value: unknown) => void;
 
-type ConfirmModalProps = {
-
-}
+type ConfirmModalProps = {};
 
 type ConfirmModalState = {
 	isOpen: boolean;
 	message: string;
 	hasCancel: boolean;
-}
+};
 
-class ConfirmModal extends React.Component<ConfirmModalProps, ConfirmModalState> {
+class ConfirmModal extends React.Component<
+	ConfirmModalProps,
+	ConfirmModalState
+> {
 	static instance: any;
 
 	constructor(props: ConfirmModalProps) {
@@ -23,44 +24,48 @@ class ConfirmModal extends React.Component<ConfirmModalProps, ConfirmModalState>
 
 		this.state = {
 			isOpen: false,
-			message: '',
-			hasCancel: true
-		}
+			message: "",
+			hasCancel: true,
+		};
 	}
 
-	static show(message: string, hasCancel=true) {
-		ConfirmModal.instance.setState({isOpen: true, message, hasCancel})
+	static show(message: string, hasCancel = true) {
+		ConfirmModal.instance.setState({ isOpen: true, message, hasCancel });
 
-		return new Promise(res => {resolve = res})
+		return new Promise((res) => {
+			resolve = res;
+		});
 	}
 
 	handleOk = () => {
-		this.setState({isOpen: false});
+		this.setState({ isOpen: false });
 		resolve(true);
-	}
+	};
 
 	handleCancel = () => {
-		this.setState({isOpen: false});
+		this.setState({ isOpen: false });
 		resolve(false);
-	}
+	};
 
 	render() {
 		return (
 			<AppModal
-				overlayStyle={{zIndex: 20}}
+				overlayStyle={{ zIndex: 20 }}
 				isOpen={this.state.isOpen}
 				onRequestClose={this.handleCancel}
 			>
 				<Form
 					submit={this.handleOk}
-					submitLabel={this.state.hasCancel? 'Yes': 'OK'}
-					cancel={this.state.hasCancel? this.handleCancel: undefined}
-					cancelLabel='No'
+					submitLabel={this.state.hasCancel ? "Yes" : "OK"}
+					cancel={
+						this.state.hasCancel ? this.handleCancel : undefined
+					}
+					cancelLabel="No"
 				>
 					<p>{this.state.message}</p>
 				</Form>
 			</AppModal>
-		)
+		);
 	}
 }
 

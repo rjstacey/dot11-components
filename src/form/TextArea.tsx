@@ -1,5 +1,5 @@
-import styled from '@emotion/styled';
-import ExpandingTextArea from 'react-expanding-textarea';
+import styled from "@emotion/styled";
+import ExpandingTextArea from "react-expanding-textarea";
 
 const TextArea = styled(ExpandingTextArea)`
 	font-family: inherit;
@@ -10,11 +10,11 @@ const TextArea = styled(ExpandingTextArea)`
 	line-height: 25px;
 	:focus {
 		outline: 0;
-		box-shadow: 0 0 0 3px rgba(0,116,217,0.2);
+		box-shadow: 0 0 0 3px rgba(0, 116, 217, 0.2);
 	}
 	:focus,
 	:hover:not([disabled]) {
-		border-color: #0074D9;
+		border-color: #0074d9;
 	}
 `;
 

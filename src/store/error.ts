@@ -1,7 +1,7 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { NetworkError } from '../lib/fetcher';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { NetworkError } from "../lib/fetcher";
 
-const name = 'errMsg';
+const name = "errMsg";
 
 export type ErrorMsg = {
 	summary: string;
@@ -22,32 +22,25 @@ export const errorsSlice = createSlice({
 			state.push(action.payload);
 		},
 		clearError(state) {
-			if (state.length)
-				state.shift();
-		}
-	}
+			if (state.length) state.shift();
+		},
+	},
 });
 
-export const {clearError} = errorsSlice.actions;
+export const { clearError } = errorsSlice.actions;
 
 export function setError(summary: string, error: any) {
 	let detail: string;
 	if (error instanceof NetworkError) {
-		const {response} = error;
-		if (typeof response === 'object' && 'message' in response)
+		const { response } = error;
+		if (typeof response === "object" && "message" in response)
 			detail = response.message as string;
-		else if (typeof response === 'string')
-			detail = response;
-		else
-			detail = JSON.stringify(response);
-	}
-	else if (typeof error === 'string') {
+		else if (typeof response === "string") detail = response;
+		else detail = JSON.stringify(response);
+	} else if (typeof error === "string") {
 		detail = error;
-	}
-	else {
+	} else {
 		detail = error.toString();
 	}
-	return errorsSlice.actions.setError({summary, detail});
+	return errorsSlice.actions.setError({ summary, detail });
 }
-
-//export default errorsSlice.reducer;

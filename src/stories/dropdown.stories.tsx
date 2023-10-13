@@ -1,6 +1,7 @@
-import React from 'react';
-import Dropdown, {ActionButtonDropdown} from '../dropdown';
-import {Select} from '../form';
+import React from "react";
+import { Meta, Story } from "@storybook/react";
+import { Dropdown, ActionButtonDropdown } from "../dropdown";
+import { Select } from "../form";
 
 type Option = {
 	value: number;
@@ -8,15 +9,15 @@ type Option = {
 };
 
 const options: Option[] = [
-	{value: 1, label: 'One'},
-	{value: 2, label: 'Two'},
-	{value: 3, label: 'Three'},
-	{value: 4, label: 'Four'},
-	{value: 5, label: 'Five'},
-	{value: 6, label: 'Six'},
-	{value: 7, label: 'Seven'},
-	{value: 8, label: 'Eight'},
-	{value: 9, label: 'Nine'}
+	{ value: 1, label: "One" },
+	{ value: 2, label: "Two" },
+	{ value: 3, label: "Three" },
+	{ value: 4, label: "Four" },
+	{ value: 5, label: "Five" },
+	{ value: 6, label: "Six" },
+	{ value: 7, label: "Seven" },
+	{ value: 8, label: "Eight" },
+	{ value: 9, label: "Nine" },
 ];
 
 type ContentProps = {
@@ -25,23 +26,37 @@ type ContentProps = {
 	setState: React.Dispatch<React.SetStateAction<State>>;
 };
 
-function Content({close, state, setState}: ContentProps) {
-	const changeState = (changes: Partial<State>) => setState((state: typeof defaultState) => ({...state, ...changes}));
+function Content({ close, state, setState }: ContentProps) {
+	const changeState = (changes: Partial<State>) =>
+		setState((state: typeof defaultState) => ({ ...state, ...changes }));
 	return (
-		<form style={{width: '200px'}} onSubmit={(e) => e.preventDefault()}>
-			<label><input type='radio' id='1' />Fred</label><br />
-			<label><input type='radio' id='1' />Frog</label><br />
-			<label>Text:
-				<input type='text'
+		<form style={{ width: "200px" }} onSubmit={(e) => e.preventDefault()}>
+			<label>
+				<input type="radio" id="1" />
+				Fred
+			</label>
+			<br />
+			<label>
+				<input type="radio" id="1" />
+				Frog
+			</label>
+			<br />
+			<label>
+				Text:
+				<input
+					type="text"
 					size={24}
 					value={state.text}
-					onChange={e => changeState({text: e.target.value})} 
+					onChange={(e) => changeState({ text: e.target.value })}
 				/>
 			</label>
-			<label>Select:
+			<label>
+				Select:
 				<Select
 					values={state.selectValues}
-					onChange={(selectValues: Option[]) => changeState({selectValues})}
+					onChange={(selectValues: Option[]) =>
+						changeState({ selectValues })
+					}
 					options={options}
 					dropdownHeight={150}
 				/>
@@ -49,7 +64,7 @@ function Content({close, state, setState}: ContentProps) {
 			<button onClick={() => alert(JSON.stringify(state))}>OK</button>
 			<button onClick={close}>Cancel</button>
 		</form>
-	)
+	);
 }
 
 type State = {
@@ -58,19 +73,28 @@ type State = {
 };
 
 const defaultState: State = {
-	text: '',
+	text: "",
 	selectValues: [],
-}
+};
 
-function Template({usePortal, Component, ...args}) {
+function Template({
+	usePortal,
+	Component,
+	...args
+}: {
+	usePortal?: boolean;
+	Component: typeof Dropdown | typeof ActionButtonDropdown;
+}) {
 	const [state1, setState1] = React.useState<State>(defaultState);
 	const [state2, setState2] = React.useState<State>(defaultState);
 	const [state3, setState3] = React.useState<State>(defaultState);
-	let portal: HTMLElement | null = null;
-	if (usePortal)
-		portal = document.querySelector('#root');
+	let portal: Element | undefined;
+	if (usePortal) portal = document.querySelector("#root") || undefined;
 	return (
-		<div id='main' style={{display: 'flex', justifyContent: 'space-between'}}>
+		<div
+			id="main"
+			style={{ display: "flex", justifyContent: "space-between" }}
+		>
 			<Component {...args} portal={portal}>
 				<Content state={state1} setState={setState1} />
 			</Component>
@@ -81,37 +105,35 @@ function Template({usePortal, Component, ...args}) {
 				<Content state={state3} setState={setState3} />
 			</Component>
 		</div>
-	)
+	);
 }
 
-export const IconButton = Template.bind({});
+export const IconButton: Story = (args) => <Template Component={ActionButtonDropdown} {...args} />;
 IconButton.args = {
-	name: 'add',
-	title: 'Icon button',
-	Component: ActionButtonDropdown
+	name: "add",
+	title: "Icon button",
+	Component: ActionButtonDropdown,
 };
 
-export const TextButton = Template.bind({});
+export const TextButton: Story = (args) => <Template Component={ActionButtonDropdown} {...args} />;
 TextButton.args = {
-	label: 'Click Me',
-	title: 'Label button',
-	Component: ActionButtonDropdown
+	label: "Click Me",
+	title: "Label button",
+	Component: ActionButtonDropdown,
 };
 
-export const Label = Template.bind({});
+export const Label: Story = (args) => <Template Component={Dropdown} {...args} />;
 Label.args = {
-	label: 'Label',
-	title: 'Add something',
-	Component: Dropdown
+	label: "Label",
+	title: "Add something",
+	Component: Dropdown,
 };
 
-const story = {
-	title: 'Dropdown',
+export default {
+	title: "Dropdown",
 	component: Dropdown,
 	argTypes: {
-		usePortal: {type: 'boolean'},
-		disabled: {type: 'boolean'},
+		usePortal: { type: "boolean" },
+		disabled: { type: "boolean" },
 	},
-};
-
-export default story;
+} as Meta;

@@ -1,10 +1,11 @@
-import React from 'react';
-import {AppModal} from '.';
+import React from "react";
+import { AppModal } from ".";
 
-import {Icon} from '../icons';
-import {Button} from '../form';
+import { Icon } from "../icons";
+import { Button } from "../form";
 
-interface ActionButtonModalProps extends React.ComponentPropsWithoutRef<typeof AppModal> {
+interface ActionButtonModalProps
+	extends React.ComponentPropsWithoutRef<typeof AppModal> {
 	name?: string;
 	label?: string;
 	title?: string;
@@ -17,7 +18,7 @@ interface ActionButtonModalProps extends React.ComponentPropsWithoutRef<typeof A
 export type ChildProps = {
 	isOpen: boolean;
 	close: () => void;
-}
+};
 
 function ActionButtonModal({
 	name,
@@ -32,16 +33,14 @@ function ActionButtonModal({
 	const [isOpen, setOpen] = React.useState(false);
 
 	const open = () => {
-		if (onRequestOpen)
-			onRequestOpen();
+		if (onRequestOpen) onRequestOpen();
 		setOpen(true);
-	}
+	};
 
 	const close = () => {
-		if (onRequestClose)
-			onRequestClose();
+		if (onRequestClose) onRequestClose();
 		setOpen(false);
-	}
+	};
 
 	return (
 		<>
@@ -49,25 +48,22 @@ function ActionButtonModal({
 				name={name}
 				title={title}
 				disabled={disabled}
-				onClick={isOpen? close: open}
+				onClick={isOpen ? close : open}
 			>
-				{label?
-					label:
-					<Icon
-						type={name}
-					/>}
+				{label ? label : <Icon type={name} />}
 			</Button>
-			<AppModal
-				{...rest}
-				isOpen={isOpen}
-				onRequestClose={close}
-			>
-				{React.Children.map(children,
-					child => React.isValidElement(child)? React.cloneElement(child as React.ReactElement<ChildProps>, {isOpen, close}): child
+			<AppModal {...rest} isOpen={isOpen} onRequestClose={close}>
+				{React.Children.map(children, (child) =>
+					React.isValidElement(child)
+						? React.cloneElement(
+								child as React.ReactElement<ChildProps>,
+								{ isOpen, close }
+						  )
+						: child
 				)}
 			</AppModal>
 		</>
-	)
+	);
 }
 
 export default ActionButtonModal;

@@ -1,18 +1,27 @@
-import React from 'react';
-import styled from '@emotion/styled';
+import React from "react";
+import styled from "@emotion/styled";
 
-interface SliderSwitchProps extends Omit<React.ComponentProps<'input'>, 'type' | 'checked' | 'value' | 'onChange'> {
+interface SliderSwitchProps
+	extends Omit<
+		React.ComponentProps<"input">,
+		"type" | "checked" | "value" | "onChange"
+	> {
 	value: boolean;
 	onChange: (value: boolean) => void;
 }
 
-const SliderSwitch_ = ({value, onChange, ...otherProps}: SliderSwitchProps) =>
+const SliderSwitch_ = ({
+	value,
+	onChange,
+	...otherProps
+}: SliderSwitchProps) => (
 	<input
-		type='checkbox'
+		type="checkbox"
 		checked={value}
 		onChange={(e) => onChange(e.target.checked)}
 		{...otherProps}
-	/>;
+	/>
+);
 
 const SliderSwitch = styled(SliderSwitch_)`
 	position: relative;
@@ -21,7 +30,7 @@ const SliderSwitch = styled(SliderSwitch_)`
 	height: 1.5em;
 	background-color: #ccc;
 	border-radius: 16px;
-	transition: .4s;
+	transition: 0.4s;
 	appearance: none;
 	border: 1px solid #adb8c0;
 
@@ -33,12 +42,12 @@ const SliderSwitch = styled(SliderSwitch_)`
 		left: 0.25em;
 		top: 0.2em;
 		background-color: white;
-		transition: .4s;
+		transition: 0.4s;
 		border-radius: 50%;
 	}
 
 	:checked {
-		background-color: #2196F3;
+		background-color: #2196f3;
 	}
 
 	:checked:before {
@@ -48,7 +57,7 @@ const SliderSwitch = styled(SliderSwitch_)`
 	:focus,
 	:focus-visible {
 		outline: 0; //1px solid #0074d9;
-		border-color: #0074D9;
+		border-color: #0074d9;
 		box-shadow: 0 0 0 3px rgb(0 116 217 / 20%);
 	}
 `;

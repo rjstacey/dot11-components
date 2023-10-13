@@ -1,9 +1,9 @@
-import React from 'react';
-import styled from '@emotion/styled'
+import React from "react";
+import styled from "@emotion/styled";
 
-import type { ViewDate } from './Calendar';
+import type { ViewDate } from "./Calendar";
 
-import {getMonthGrid, weekdayLabels} from './utils';
+import { getMonthGrid, weekdayLabels } from "./utils";
 
 const Week = styled.div`
 	display: flex;
@@ -25,20 +25,14 @@ const DayInner = styled.div`
 	justify-content: center;
 `;
 
-function DayLabel({cell}) {
-
-	const classNames = ['calendar_day'];
-	if (cell.isWeekend)
-		classNames.push('calendar_weekend')
+function DayLabel({ cell }) {
+	const classNames = ["calendar_day"];
+	if (cell.isWeekend) classNames.push("calendar_weekend");
 
 	return (
-		<DayOuter
-			className={classNames.join(' ')}
-		>
-			<DayInner className='calendar_day_inner'>
-				<span
-					className={'calendar_weekday_label'}
-				>
+		<DayOuter className={classNames.join(" ")}>
+			<DayInner className="calendar_day_inner">
+				<span className={"calendar_weekday_label"}>
 					{weekdayLabels[cell.date.getDay()]}
 				</span>
 			</DayInner>
@@ -46,30 +40,22 @@ function DayLabel({cell}) {
 	);
 }
 
-function Day({cell, onClick}) {
-
-	const classNames = ['calendar_date'];
-	if (cell.isInactive)
-		classNames.push('calendar_inactive')
-	if (cell.isDisabled)
-		classNames.push('calendar_disabled')
-	if (cell.isWeekend)
-		classNames.push('calendar_weekend')
-	if (cell.isToday) 
-		classNames.push('calendar_today')
-	if (cell.isSelected)
-		classNames.push('calendar_selected')
+function Day({ cell, onClick }) {
+	const classNames = ["calendar_date"];
+	if (cell.isInactive) classNames.push("calendar_inactive");
+	if (cell.isDisabled) classNames.push("calendar_disabled");
+	if (cell.isWeekend) classNames.push("calendar_weekend");
+	if (cell.isToday) classNames.push("calendar_today");
+	if (cell.isSelected) classNames.push("calendar_selected");
 
 	return (
-		<DayOuter 
-			className={classNames.join(' ')}
+		<DayOuter
+			className={classNames.join(" ")}
 			tabIndex={cell.isDisabled ? -1 : 0}
-			onClick={cell.isDisabled? undefined: () => onClick(cell)}
+			onClick={cell.isDisabled ? undefined : () => onClick(cell)}
 		>
-			<DayInner className='calendar_date_inner'>
-				<span
-					className='calendar_date_label'
-				>
+			<DayInner className="calendar_date_inner">
+				<span className="calendar_date_label">
 					{cell.date.getDate()}
 				</span>
 			</DayInner>
@@ -84,57 +70,53 @@ const MonthOuter = styled.div`
 /* onKeyPress is called with an array of nodes representing the active dates in the month.
  * Navigate these nodes using arrow keys, etc. */
 function onKeyPress(nodes: Array<HTMLDivElement>, e: KeyboardEvent) {
-	if (nodes.length === 0)
-		return;
+	if (nodes.length === 0) return;
 
-	if (e.key === 'Escape') {
+	if (e.key === "Escape") {
 		//e.preventDefault();
 		// hack so browser focuses the next tabbable element when
 		// tab is pressed
-		nodes[nodes.length-1].focus();
-		nodes[nodes.length-1].blur();
+		nodes[nodes.length - 1].focus();
+		nodes[nodes.length - 1].blur();
 	}
 
 	let i = nodes.findIndex((cell) => cell === e.target);
 	if (i < 0) {
-		if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'ArrowRight' || e.key === 'ArrowLeft' || e.key === 'Home' || e.key === 'End') {
+		if (
+			e.key === "ArrowDown" ||
+			e.key === "ArrowUp" ||
+			e.key === "ArrowRight" ||
+			e.key === "ArrowLeft" ||
+			e.key === "Home" ||
+			e.key === "End"
+		) {
 			nodes[0].focus();
 		}
 		return;
 	}
 
-	if (e.key === ' ' || e.key === 'Enter') {
+	if (e.key === " " || e.key === "Enter") {
 		nodes[i].click();
 		return;
 	}
 
-	if (e.key === 'ArrowDown') {
+	if (e.key === "ArrowDown") {
 		i += 7;
-		if (i >= nodes.length)
-			i = nodes.length - 1;
-	}
-	else if (e.key === 'ArrowUp') {
+		if (i >= nodes.length) i = nodes.length - 1;
+	} else if (e.key === "ArrowUp") {
 		i -= 7;
-		if (i < 0)
-			i = 0;
-	}
-	else if (e.key === 'ArrowRight') {
+		if (i < 0) i = 0;
+	} else if (e.key === "ArrowRight") {
 		i++;
-		if (i >= nodes.length)
-			i = nodes.length - 1;
-	}
-	else if (e.key === 'ArrowLeft') {
+		if (i >= nodes.length) i = nodes.length - 1;
+	} else if (e.key === "ArrowLeft") {
 		i--;
-		if (i < 0)
-			i = 0;
-	}
-	else if (e.key === 'Home') {
+		if (i < 0) i = 0;
+	} else if (e.key === "Home") {
 		i = 0;
-	}
-	else if (e.key === 'End') {
+	} else if (e.key === "End") {
 		i = nodes.length - 1;
-	}
-	else {
+	} else {
 		return;
 	}
 	nodes[i].focus();
@@ -143,7 +125,7 @@ function onKeyPress(nodes: Array<HTMLDivElement>, e: KeyboardEvent) {
 type NodeRef = {
 	node: HTMLDivElement;
 	listener: (e: any) => void;
-}
+};
 
 type MonthProps = {
 	style?: React.CSSProperties;
@@ -152,7 +134,7 @@ type MonthProps = {
 	onDateClick: (isoDate: string) => void;
 	viewDate: ViewDate;
 	options: object;
-}
+};
 
 function Month({
 	style,
@@ -160,7 +142,7 @@ function Month({
 	dates,
 	onDateClick,
 	viewDate,
-	options
+	options,
 }: MonthProps) {
 	/* Use a callback ref instead of useEffect. The callback ref, by definition, is called
 	 * when the referenced node changes. useEffect doesn't necessarily trigger with ref changes. */
@@ -168,57 +150,49 @@ function Month({
 	const setRef = React.useCallback((node: HTMLDivElement) => {
 		if (ref.current) {
 			// Already set; do some cleanup
-			const {node, listener} = ref.current;
-			node.removeEventListener('keydown', listener);
+			const { node, listener } = ref.current;
+			node.removeEventListener("keydown", listener);
 		}
-		
+
 		if (node) {
-			const nodes = Array.from<HTMLDivElement>(node.querySelectorAll('.calendar_date:not(.calendar_disabled)'));
+			const nodes = Array.from<HTMLDivElement>(
+				node.querySelectorAll(".calendar_date:not(.calendar_disabled)")
+			);
 			const listener = (e: KeyboardEvent) => onKeyPress(nodes, e);
-			node.addEventListener('keydown', listener);
-			ref.current = {node, listener};
-		}
-		else {
+			node.addEventListener("keydown", listener);
+			ref.current = { node, listener };
+		} else {
 			ref.current = null;
 		}
 	}, []);
 
-	const matrix = React.useMemo(() => getMonthGrid({dates, viewDate, options}), [dates, viewDate, options]);
+	const matrix = React.useMemo(
+		() => getMonthGrid({ dates, viewDate, options }),
+		[dates, viewDate, options]
+	);
 
 	return (
-		<MonthOuter 
+		<MonthOuter
 			style={style}
-			className={(className? className + ' ': '') + 'calendar_month'}
+			className={(className ? className + " " : "") + "calendar_month"}
 		>
-			<Week
-				className="calendar_weekdays"
-			>
-				{matrix[0].map((cell, index) => 
-					<DayLabel
-						key={index}
-						cell={cell}
-					/>
-				)}
+			<Week className="calendar_weekdays">
+				{matrix[0].map((cell, index) => (
+					<DayLabel key={index} cell={cell} />
+				))}
 			</Week>
-			<div
-				ref={setRef}
-				className="calendar_month_dates"
-				role="grid"
-			>
-				{matrix.map((row, index) =>
-					<Week
-						key={index}
-						className="calendar_week"
-					>
-						{row.map((cell) =>
+			<div ref={setRef} className="calendar_month_dates" role="grid">
+				{matrix.map((row, index) => (
+					<Week key={index} className="calendar_week">
+						{row.map((cell) => (
 							<Day
 								key={cell.isoDate}
 								cell={cell}
 								onClick={() => onDateClick(cell.isoDate)}
 							/>
-						)}
+						))}
 					</Week>
-				)}
+				))}
 			</div>
 		</MonthOuter>
 	);

@@ -1,24 +1,26 @@
-import React from 'react';
-import {useDispatch, useSelector} from 'react-redux';
-import styled from '@emotion/styled';
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
+import styled from "@emotion/styled";
 
-import {ActionIcon} from '../icons';
-import {Checkbox} from '../form';
-import Dropdown from '../dropdown';
+import { ActionIcon } from "../icons";
+import { Checkbox } from "../form";
+import { Dropdown } from "../dropdown";
 
 import type {
 	HeaderCellRendererProps,
 	CellRendererProps,
 	AppTableDataSelectors,
-	AppTableDataActions
-} from './AppTable';
+	AppTableDataActions,
+} from "./AppTable";
 
 const Selector = styled.div`
 	display: flex;
 	flex-direction: row;
 	border-radius: 3px;
 	align-items: center;
-	:hover {color: tomato};
+	:hover {
+		color: tomato;
+	}
 	:hover,
 	:focus-within {
 		background-color: #ddd;
@@ -34,14 +36,14 @@ const Container = styled.div`
 type ControlHeaderCellProps = HeaderCellRendererProps & {
 	customSelectorElement?: React.ReactNode;
 	showExpanded?: boolean;
-}
+};
 
 function ControlHeaderCell({
 	anchorEl,
 	customSelectorElement,
 	showExpanded,
 	selectors,
-	actions
+	actions,
 }: ControlHeaderCellProps) {
 	const dispatch = useDispatch();
 
@@ -49,60 +51,76 @@ function ControlHeaderCell({
 	const expanded = useSelector(selectors.selectExpanded);
 	const shownIds = useSelector(selectors.selectSortedFilteredIds);
 
-	const allSelected = React.useMemo(() => (
-			shownIds.length > 0 &&	// not if list is empty
-			shownIds.filter(id => !selected.includes(id)).length === 0
-		),
+	const allSelected = React.useMemo(
+		() =>
+			shownIds.length > 0 && // not if list is empty
+			shownIds.filter((id) => !selected.includes(id)).length === 0,
 		[shownIds, selected]
 	);
 
 	const isIndeterminate = !allSelected && selected.length > 0;
 
-	const allExpanded = React.useMemo(() => (
+	const allExpanded = React.useMemo(
+		() =>
 			expanded &&
-			shownIds.length > 0 &&	// not if list is empty
-			shownIds.filter(id => !expanded.includes(id)).length === 0
-		),
+			shownIds.length > 0 && // not if list is empty
+			shownIds.filter((id) => !expanded.includes(id)).length === 0,
 		[shownIds, expanded]
 	);
 
-	const toggleSelect = () => dispatch(actions.setSelected(selected.length? []: shownIds));
-	const toggleExpand = () => dispatch(actions.setExpanded(expanded.length? []: shownIds));
+	const toggleSelect = () =>
+		dispatch(actions.setSelected(selected.length ? [] : shownIds));
+	const toggleExpand = () =>
+		dispatch(actions.setExpanded(expanded.length ? [] : shownIds));
 
-	if (!anchorEl)
-		return null;
+	if (!anchorEl) return null;
 
 	return (
 		<Container>
 			<Selector>
 				<Checkbox
-					title={allSelected? "Clear all": isIndeterminate? "Clear selected": "Select all"}
+					title={
+						allSelected
+							? "Clear all"
+							: isIndeterminate
+							? "Clear selected"
+							: "Select all"
+					}
 					checked={allSelected}
 					indeterminate={isIndeterminate}
 					onChange={toggleSelect}
 				/>
-				{customSelectorElement &&
+				{customSelectorElement && (
 					<Dropdown
-						style={{display: 'flex', width: '100%', justifyContent: 'center'}}
-						dropdownAlign='left'
+						style={{
+							display: "flex",
+							width: "100%",
+							justifyContent: "center",
+						}}
+						dropdownAlign="left"
 						portal={anchorEl}
 						dropdownRenderer={() => customSelectorElement}
-					/>}
+					/>
+				)}
 			</Selector>
-			{showExpanded &&
+			{showExpanded && (
 				<ActionIcon
-					type='double-expander'
+					type="double-expander"
 					title="Expand all"
 					open={allExpanded}
 					onClick={toggleExpand}
 				/>
-			}
+			)}
 		</Container>
-	)
+	);
 }
 
-const SelectExpandHeaderCell = (props: Omit<ControlHeaderCellProps, "showExpanded">) => <ControlHeaderCell showExpanded {...props}/>
-const SelectHeaderCell = (props: ControlHeaderCellProps) => <ControlHeaderCell {...props}/>
+const SelectExpandHeaderCell = (
+	props: Omit<ControlHeaderCellProps, "showExpanded">
+) => <ControlHeaderCell showExpanded {...props} />;
+const SelectHeaderCell = (props: ControlHeaderCellProps) => (
+	<ControlHeaderCell {...props} />
+);
 
 type ControlCellProps = CellRendererProps & {
 	showExpanded?: boolean;
@@ -114,36 +132,43 @@ function ControlCell({
 	rowId,
 	showExpanded,
 	selectors,
-	actions
+	actions,
 }: ControlCellProps) {
 	const dispatch = useDispatch();
 
 	const toggleSelect = () => dispatch(actions.toggleSelected([rowId]));
 	const toggleExpand = () => dispatch(actions.toggleExpanded([rowId]));
 
-	const selected = useSelector(selectors.selectSelected)
+	const selected = useSelector(selectors.selectSelected);
 	const expanded = useSelector(selectors.selectExpanded);
 
 	return (
-		<Container onClick={e => e.stopPropagation()} >
+		<Container onClick={(e) => e.stopPropagation()}>
 			<Checkbox
 				title="Select row"
 				checked={selected.includes(rowId)}
 				onChange={toggleSelect}
 			/>
-			{showExpanded && 
+			{showExpanded && (
 				<ActionIcon
-					type='expander'
+					type="expander"
 					title="Expand row"
 					open={expanded.includes(rowId)}
 					onClick={toggleExpand}
 				/>
-			}
+			)}
 		</Container>
-	)
+	);
 }
 
-const SelectExpandCell = (props: Omit<ControlCellProps, "showExpanded">) => <ControlCell showExpanded {...props} />
-const SelectCell = (props: ControlCellProps) => <ControlCell {...props} />
+const SelectExpandCell = (props: Omit<ControlCellProps, "showExpanded">) => (
+	<ControlCell showExpanded {...props} />
+);
+const SelectCell = (props: ControlCellProps) => <ControlCell {...props} />;
 
-export {SelectHeaderCell, SelectExpandHeaderCell, SelectCell, SelectExpandCell};
+export {
+	SelectHeaderCell,
+	SelectExpandHeaderCell,
+	SelectCell,
+	SelectExpandCell,
+};

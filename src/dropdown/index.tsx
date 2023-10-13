@@ -1,13 +1,13 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import styled from '@emotion/styled';
+import React from "react";
+import ReactDOM from "react-dom";
+import styled from "@emotion/styled";
 
-import {Icon} from '../icons';
-import {Button} from '../form';
+import { Icon } from "../icons";
+import { Button } from "../form";
 
-import {debounce} from '../lib';
+import { debounce } from "../lib";
 
-import './index.css';
+import "./index.css";
 
 const Header = styled.div`
 	display: flex;
@@ -16,14 +16,16 @@ const Header = styled.div`
 	min-width: 1em;
 	min-height: 1em;
 	cursor: pointer;
-	:hover {color: tomato};
+	:hover {
+		color: tomato;
+	}
 `;
 
 export type DropdownRendererProps = {
 	props: DropdownProps;
 	state: DropdownState;
 	methods: DropdownMethods;
-}
+};
 
 export type DropdownProps = {
 	title?: string;
@@ -40,8 +42,8 @@ export type DropdownProps = {
 	handle?: boolean;
 	dropdownGap?: number;
 	dropdownHeight?: number;
-	dropdownPosition?: 'auto' | 'bottom' | 'top';
-	dropdownAlign?: 'right' | 'left' | 'justify';
+	dropdownPosition?: "auto" | "bottom" | "top";
+	dropdownAlign?: "right" | "left" | "justify";
 
 	style?: React.CSSProperties;
 	className?: string;
@@ -51,48 +53,54 @@ export type DropdownProps = {
 	dropdownRenderer?: (props: DropdownRendererProps) => React.ReactNode;
 
 	children?: React.ReactNode;
-}
+};
 
 type DropdownState = {
 	isOpen: boolean;
 	selectBounds: DOMRect | null;
 	dropdownBounds: DOMRect | null;
-}
+};
 
 type DropdownMethods = {
 	open: () => void;
 	close: () => void;
-}
+};
 
-function defaultSelectRenderer({props, state, methods}: DropdownRendererProps) {
-	const {
-		title,
-		label,
-		handle = true,
-		disabled = false
-	} = props;
+function defaultSelectRenderer({
+	props,
+	state,
+	methods,
+}: DropdownRendererProps) {
+	const { title, label, handle = true, disabled = false } = props;
 	return (
 		<Header
 			title={title}
-			onClick={disabled? undefined: (state.isOpen? methods.close: methods.open)}
+			onClick={
+				disabled
+					? undefined
+					: state.isOpen
+					? methods.close
+					: methods.open
+			}
 		>
 			{label && <label>{label}</label>}
-			{handle && <Icon type='handle' isOpen={state.isOpen} />}
+			{handle && <Icon type="handle" isOpen={state.isOpen} />}
 		</Header>
-	)
+	);
 }
 
-function defaultDropdownRenderer({props}: DropdownRendererProps) {
+function defaultDropdownRenderer({ props }: DropdownRendererProps) {
 	return props.children;
 }
 
-const boundsEqual = (b1: DOMRect | null, b2: DOMRect | null) => 
-		b1 === b2 ||
-		(!!b1 && !!b2 &&
-		 b1.x === b2.x &&
-		 b1.y === b2.y &&
-		 b1.width === b2.width &&
-		 b1.height === b2.height);
+const boundsEqual = (b1: DOMRect | null, b2: DOMRect | null) =>
+	b1 === b2 ||
+	(!!b1 &&
+		!!b2 &&
+		b1.x === b2.x &&
+		b1.y === b2.y &&
+		b1.width === b2.width &&
+		b1.height === b2.height);
 
 export class Dropdown extends React.Component<DropdownProps, DropdownState> {
 	dropdownRef: any;
@@ -106,7 +114,7 @@ export class Dropdown extends React.Component<DropdownProps, DropdownState> {
 		this.state = {
 			isOpen: false,
 			selectBounds: null,
-			dropdownBounds: null
+			dropdownBounds: null,
 		};
 
 		this.methods = {
@@ -126,26 +134,28 @@ export class Dropdown extends React.Component<DropdownProps, DropdownState> {
 	}
 
 	onOutsideClick = (event: MouseEvent) => {
-		const {state} = this;
+		const { state } = this;
 
 		// Ignore if not open
-		if (!state.isOpen)
-			return;
+		if (!state.isOpen) return;
 
-		const {target} = event;
+		const { target } = event;
 
 		// Ignore click in dropdown
 		const dropdownEl = this.dropdownRef;
-		if (dropdownEl && (dropdownEl === target || dropdownEl.contains(target)))
+		if (
+			dropdownEl &&
+			(dropdownEl === target || dropdownEl.contains(target))
+		)
 			return;
-		
+
 		// Ignore click in select
 		const selectEl = this.selectRef;
 		if (selectEl && (selectEl === target || selectEl.contains(target)))
 			return;
 
 		this.close();
-	}
+	};
 
 	onScroll = () => {
 		if (this.props.closeOnScroll) {
@@ -154,137 +164,127 @@ export class Dropdown extends React.Component<DropdownProps, DropdownState> {
 		}
 
 		this.updateBounds();
-	}
+	};
 
 	updateBounds = () => {
 		//console.log(this.selectRef, this.dropdownRef)
-		const selectBounds = this.selectRef?
-			this.selectRef.getBoundingClientRect(): {};
-		const dropdownBounds = this.dropdownRef?
-			this.dropdownRef.getBoundingClientRect(): null;
+		const selectBounds = this.selectRef
+			? this.selectRef.getBoundingClientRect()
+			: {};
+		const dropdownBounds = this.dropdownRef
+			? this.dropdownRef.getBoundingClientRect()
+			: null;
 		if (!boundsEqual(this.state.selectBounds, selectBounds))
-			this.setState({selectBounds});
+			this.setState({ selectBounds });
 		if (!boundsEqual(this.state.dropdownBounds, dropdownBounds))
-			this.setState({dropdownBounds});
-	}
+			this.setState({ dropdownBounds });
+	};
 
 	setSelectRef = (ref: HTMLDivElement) => {
 		this.selectRef = ref;
-		const selectBounds = ref? ref.getBoundingClientRect(): null;
-		this.setState({selectBounds});
-	}
+		const selectBounds = ref ? ref.getBoundingClientRect() : null;
+		this.setState({ selectBounds });
+	};
 
 	setDropdownRef = (ref: HTMLDivElement) => {
 		this.dropdownRef = ref;
-		const dropdownBounds = ref? ref.getBoundingClientRect(): null;
-		this.setState({dropdownBounds});
-	}
+		const dropdownBounds = ref ? ref.getBoundingClientRect() : null;
+		this.setState({ dropdownBounds });
+	};
 
 	open = () => {
-		const {props, state} = this;
-		if (state.isOpen)
-			return;
+		const { props, state } = this;
+		if (state.isOpen) return;
 
-		window.addEventListener('resize', this.debouncedUpdateBounds);
-		document.addEventListener('scroll', this.debouncedOnScroll, true);
-		document.addEventListener('click', this.onOutsideClick, true);
+		window.addEventListener("resize", this.debouncedUpdateBounds);
+		document.addEventListener("scroll", this.debouncedOnScroll, true);
+		document.addEventListener("click", this.onOutsideClick, true);
 
 		this.updateBounds();
 
-		this.setState({isOpen: true});
+		this.setState({ isOpen: true });
 
-		if (props.onRequestOpen)
-			props.onRequestOpen();
-	}
+		if (props.onRequestOpen) props.onRequestOpen();
+	};
 
 	close = () => {
-		const {props, state} = this;
-		if (!state.isOpen)
-			return;
+		const { props, state } = this;
+		if (!state.isOpen) return;
 
-		window.removeEventListener('resize', this.debouncedUpdateBounds);
-		document.removeEventListener('scroll', this.debouncedOnScroll, true);
-		document.removeEventListener('click', this.onOutsideClick, true);
+		window.removeEventListener("resize", this.debouncedUpdateBounds);
+		document.removeEventListener("scroll", this.debouncedOnScroll, true);
+		document.removeEventListener("click", this.onOutsideClick, true);
 
-		this.setState({isOpen: false});
+		this.setState({ isOpen: false });
 
-		if (props.onRequestClose)
-			props.onRequestClose();
-	}
+		if (props.onRequestClose) props.onRequestClose();
+	};
 
 	onClick = (event: React.MouseEvent) => {
-		const {props, state} = this;
+		const { props, state } = this;
 
-		if (props.disabled || props.keepOpen)
-			return;
+		if (props.disabled || props.keepOpen) return;
 		event.preventDefault();
-		if (state.isOpen)
-			this.close();
-		else
-			this.open();
-	}
+		if (state.isOpen) this.close();
+		else this.open();
+	};
 
 	onKeyDown = (event: React.KeyboardEvent) => {
-		const {state} = this;
+		const { state } = this;
 
-		const escape = event.key === 'Escape';
-		const enter = event.key === 'Enter';
-		const arrowDown = event.key === 'ArrowDown';
+		const escape = event.key === "Escape";
+		const enter = event.key === "Enter";
+		const arrowDown = event.key === "ArrowDown";
 
-		if (state.isOpen && escape)
-			this.close();
-		if (!state.isOpen && (arrowDown || enter))
-			this.open();
-	}
+		if (state.isOpen && escape) this.close();
+		if (!state.isOpen && (arrowDown || enter)) this.open();
+	};
 
 	renderDropdown = () => {
-		const {props, state, methods} = this;
-		const {selectBounds, dropdownBounds} = state;
+		const { props, state, methods } = this;
+		const { selectBounds, dropdownBounds } = state;
 		const style: React.CSSProperties = {};
 
-		if (!selectBounds)
-			return;
+		if (!selectBounds) return;
 
-		const { 
+		const {
 			dropdownRenderer = defaultDropdownRenderer,
-			dropdownPosition = 'bottom',
-			dropdownAlign = 'right',
+			dropdownPosition = "bottom",
+			dropdownAlign = "right",
 			dropdownGap = 5,
-			dropdownHeight = 300
+			dropdownHeight = 300,
 		} = props;
 
-		let className = 'dropdown-container';
-		if (props.dropdownClassName)
-			className += ` ${props.dropdownClassName}`;
+		let className = "dropdown-container";
+		if (props.dropdownClassName) className += ` ${props.dropdownClassName}`;
 
-		const dropdownEl = 
+		const dropdownEl = (
 			<div
 				ref={this.setDropdownRef}
 				className={className}
 				style={style}
-				onClick={e => e.stopPropagation()}	// prevent click propagating to select and closing the dropdown
+				onClick={(e) => e.stopPropagation()} // prevent click propagating to select and closing the dropdown
 			>
-				{dropdownRenderer({props, state, methods})}
+				{dropdownRenderer({ props, state, methods })}
 			</div>
+		);
 
 		let position = dropdownPosition;
 		let align = dropdownAlign;
 
 		// Determine if above or below selector
-		if (position === 'auto') {
+		if (position === "auto") {
 			const height = selectBounds.bottom + dropdownHeight + dropdownGap;
 			if (height > window.innerHeight && height > selectBounds.top)
-				position = 'top';
-			else
-				position = 'bottom';
+				position = "top";
+			else position = "bottom";
 		}
 
-		if (align === 'justify')
-			style.width = selectBounds.width;
+		if (align === "justify") style.width = selectBounds.width;
 
 		if (props.portal) {
-			style.position = 'fixed';
-			if (align === 'left') {
+			style.position = "fixed";
+			if (align === "left") {
 				let left = selectBounds.left - 1;
 				if (dropdownBounds) {
 					const right = left + dropdownBounds.width;
@@ -292,52 +292,46 @@ export class Dropdown extends React.Component<DropdownProps, DropdownState> {
 						left = window.innerWidth - dropdownBounds.width;
 				}
 				style.left = left;
-			}
-			else {
+			} else {
 				let right = selectBounds.right + 1;
 				if (dropdownBounds) {
 					const left = right - dropdownBounds.width;
-					if (left < 0)
-						right -= left;
+					if (left < 0) right -= left;
 				}
 				style.right = window.innerWidth - right;
 			}
-			if (position === 'bottom')
+			if (position === "bottom")
 				style.top = selectBounds.bottom + dropdownGap;
-			else 
-				style.bottom = window.innerHeight - selectBounds.top + dropdownGap;
+			else
+				style.bottom =
+					window.innerHeight - selectBounds.top + dropdownGap;
 
 			return ReactDOM.createPortal(dropdownEl, props.portal);
-		}
-		else {
-			style.position = 'absolute';
-			if (align === 'left')
-				style.left = -1;
-			else
-				style.right = 1;
-			if (position === 'bottom')
+		} else {
+			style.position = "absolute";
+			if (align === "left") style.left = -1;
+			else style.right = 1;
+			if (position === "bottom")
 				style.top = selectBounds.height + dropdownGap;
-			else
-				style.bottom = selectBounds.height + dropdownGap;
+			else style.bottom = selectBounds.height + dropdownGap;
 
 			return dropdownEl;
 		}
-	}
+	};
 
 	render() {
-		const {props, state, methods} = this;
+		const { props, state, methods } = this;
 
 		const {
 			style,
-			selectRenderer =  defaultSelectRenderer,
+			selectRenderer = defaultSelectRenderer,
 			closeOnBlur,
 			disabled,
 			keepOpen,
 		} = this.props;
 
-		let className = 'dropdown';
-		if (props.className)
-			className += ` ${props.className}`;
+		let className = "dropdown";
+		if (props.className) className += ` ${props.className}`;
 
 		return (
 			<div
@@ -346,17 +340,17 @@ export class Dropdown extends React.Component<DropdownProps, DropdownState> {
 				ref={this.setSelectRef}
 				onClick={this.onClick}
 				onKeyDown={this.onKeyDown}
-				onBlur={closeOnBlur? this.close: undefined}
-				tabIndex={disabled? -1: 0}
+				onBlur={closeOnBlur ? this.close : undefined}
+				tabIndex={disabled ? -1 : 0}
 				aria-label="Dropdown"
 				aria-expanded={state.isOpen}
 			>
 				<>
-				{selectRenderer({props, state, methods})}
-				{(state.isOpen || keepOpen) && this.renderDropdown()}
+					{selectRenderer({ props, state, methods })}
+					{(state.isOpen || keepOpen) && this.renderDropdown()}
 				</>
 			</div>
-		)
+		);
 	}
 }
 
@@ -365,25 +359,27 @@ interface ActionButtonDropdownProps extends DropdownProps {
 	label?: string;
 	title?: string;
 	disabled?: boolean;
-};
+}
 
-export const ActionButtonDropdown = ({name, label, title, disabled, ...rest}: ActionButtonDropdownProps) =>
+export const ActionButtonDropdown = ({
+	name,
+	label,
+	title,
+	disabled,
+	...rest
+}: ActionButtonDropdownProps) => (
 	<Dropdown
 		handle={false}
-		selectRenderer={({props, state, methods}: DropdownRendererProps) =>
+		selectRenderer={({ props, state, methods }: DropdownRendererProps) => (
 			<Button
 				title={title}
-				disabled={disabled} 
+				disabled={disabled}
 				isActive={state.isOpen}
-				onClick={state.isOpen? methods.close: methods.open}
+				onClick={state.isOpen ? methods.close : methods.open}
 			>
-				{label?
-					label:
-					<Icon
-						type={name}
-					/>}
-			</Button>}
+				{label ? label : <Icon type={name} />}
+			</Button>
+		)}
 		{...rest}
 	/>
-
-export default Dropdown;
+);
