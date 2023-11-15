@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import styled from "@emotion/styled";
 import { FixedSizeList as List } from "react-window";
 
-import { Icon } from "../icons";
+//import { Icon } from "../icons";
 import { Row, Field, Button, Checkbox, Input } from "../form";
 import { Dropdown, DropdownRendererProps } from "../dropdown";
 
@@ -20,6 +20,7 @@ import {
 	CompOp,
 	FieldType,
 	CompOpValue,
+	FieldTypeValue,
 } from "../store/appTableData";
 
 import type { HeaderCellRendererProps } from "./AppTable";
@@ -64,6 +65,31 @@ const Item = styled.div<ItemProps>`
 	}
 `;
 
+function IconSort({
+	style,
+	type,
+	direction
+}: {
+	style?: React.CSSProperties;
+	type: FieldTypeValue,
+	direction: SortDirectionValue
+}) {
+	let className = "bi-sort";
+	if (type === FieldType.NUMERIC)
+		className += "-numeric";
+	if (type === FieldType.STRING)
+		className += "-alpha";
+	if (direction === SortDirection.ASC)
+		className += "-down";
+	else if (direction === SortDirection.DESC)
+		className += "-up";
+	else
+		return null;
+	if (!/numeric|alpha/.test(className))
+		className += "-alt";
+	return <i className={className} style={style} />
+}
+
 function SortComponent({
 	dataKey,
 	selectors,
@@ -82,6 +108,7 @@ function SortComponent({
 			dispatch(actions.setSortDirection({ dataKey, direction })),
 		[dispatch, actions, dataKey]
 	);
+
 	return (
 		<Row>
 			<label>Sort:</label>
@@ -96,11 +123,7 @@ function SortComponent({
 					}
 					isActive={direction === SortDirection.ASC}
 				>
-					<Icon
-						type="sort"
-						direction={SortDirection.ASC}
-						isAlpha={type !== FieldType.NUMERIC}
-					/>
+					<IconSort type={type} direction={SortDirection.ASC} />
 				</Button>
 				<Button
 					onClick={(e) =>
@@ -112,11 +135,7 @@ function SortComponent({
 					}
 					isActive={direction === SortDirection.DESC}
 				>
-					<Icon
-						type="sort"
-						direction={SortDirection.DESC}
-						isAlpha={type !== FieldType.NUMERIC}
-					/>
+					<IconSort type={type} direction={SortDirection.DESC} />
 				</Button>
 			</span>
 		</Row>
@@ -494,16 +513,15 @@ function AppTableHeaderCell({
 		<Header onClick={state.isOpen ? methods.close : methods.open}>
 			<Label>{label || dataKey}</Label>
 			<div className="handle">
-				{isFiltered && <Icon type="filter" style={{ opacity: 0.2 }} />}
+				{isFiltered && <i className="bi-funnel" style={{ opacity: 0.2 }} />}
 				{isSorted && (
-					<Icon
-						type="sort"
+					<IconSort
 						style={{ opacity: 0.2, paddingRight: 4 }}
 						direction={sort.direction}
-						isAlpha={sort.type !== FieldType.NUMERIC}
+						type={sort.type}
 					/>
 				)}
-				<Icon type="handle" isOpen={state.isOpen} />
+				<i className={"bi-chevron" + (state.isOpen? "-up": "-down")} />
 			</div>
 		</Header>
 	);

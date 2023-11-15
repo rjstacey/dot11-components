@@ -80,19 +80,6 @@ export const IconCollapse = ({ isCollapsed, ...props }) => (
 	/>
 );
 
-/*
-const _IconHandle = styled.div`
-    display: inline-block;
-    border-top: 0.4em solid;
-    border-right: 0.4em solid transparent;
-    border-bottom: 0;
-    border-left: 0.4em solid transparent;
-    margin: 2px;
-`;
-
-const IconHandle = ({isOpen}) => <_IconHandle style={isOpen? {transform: 'rotate(180deg)'}: undefined} />
-*/
-
 const IconSVG = styled.svg`
 	display: inline-block;
 	height: 1em;
@@ -118,6 +105,7 @@ const IconClear = (props) => (
 		/>
 	</IconSVG>
 );
+//const IconClear: React.FC = (props) => <span {...props}>×</span>
 
 const IconExpander = ({ open, style, ...otherProps }) => (
 	<IconSVG
@@ -175,63 +163,147 @@ const IconVoteNo = ({ style, ...otherProps }) => (
 	</IconSVG>
 );
 
+const IconPeopleSlash = () => (
+	<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+
+<path d="
+  M15 14
+  s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1
+  h8Zm-7.978-1
+  A.261.261 0 0 1 7 12.996
+  c.001-.264.167-1.03.76-1.72
+  C8.312 10.629 9.282 10 11 10
+  c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002
+  a.274.274 0 0 1-.014.002
+  H7.022Z
+  M11 7
+  a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z
+  m3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z
+  M6.936 9.28a5.88 5.88 0 0 0-1.23-.247
+  A7.35 7.35 0 0 0 5 9c-4 0-5 3-5 4 0 .667.333 1 1 1
+  h4.216A2.238 2.238 0 0 1 5 13
+  c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816ZM4.92 10A5.493 5.493 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275ZM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0Zm3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z
+  " />
+  <path d="M14 2 L1 15" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M14 2 L1 15" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+</svg>
+)
+
 export const faIcons = {
-	refresh: faSync,
-	add: faPlus,
-	delete: faTrashAlt,
-	next: faArrowCircleRight,
-	prev: faArrowCircleLeft,
-	import: faFileImport,
-	export: faFileExport,
-	upload: faFileUpload,
-	download: faFileDownload,
-	more: faAngleDoubleDown,
-	columns: faColumns,
-	save: faSave,
-	undo: faUndo,
-	redo: faRedo,
-	close: faWindowClose,
+	//refresh: faSync,
+	//add: faPlus,
+	//delete: faTrashAlt,
+	//next: faArrowCircleRight,
+	//prev: faArrowCircleLeft,
+	//import: faFileImport,
+	//export: faFileExport,
+	//upload: faFileUpload,
+	//download: faFileDownload,
+	//more: faAngleDoubleDown,
+	//columns: faColumns,
+	//save: faSave,
+	//undo: faUndo,
+	//redo: faRedo,
+	//close: faWindowClose,
 	"object-group": faObjectGroup,
-	edit: faEdit,
-	"book-open": faBookOpen,
-	history: faHistory,
-	copy: faCopy,
-	"user-slash": faUserSlash,
-	"user-check": faUserCheck,
-	user: faUser,
-	"group-slash": faUsersSlash,
-	group: faUsers,
+	//edit: faEdit,
+	//"book-open": faBookOpen,
+	//history: faHistory,
+	//copy: faCopy,
+	//"user-slash": faUserSlash,
+	//"user-check": faUserCheck,
+	//user: faUser,
+	//"group-slash": faUsersSlash,
+	//group: faUsers,
 	"angle-right": faAngleRight,
 	"angle-left": faAngleLeft,
-	calendar: faCalendar,
-	filter: faFilter,
-	link: faLink,
-	cancel: faBan,
-	envelope: faEnvelope,
+	//calendar: faCalendar,
+	//filter: faFilter,
+	//link: faLink,
+	//cancel: faBan,
+	//envelope: faEnvelope,
 
 	/* editing: inline styles */
-	bold: faBold,
-	italic: faItalic,
-	underline: faUnderline,
-	strikethrough: faStrikethrough,
-	highlight: faHighlighter,
+	//bold: faBold,
+	//italic: faItalic,
+	//underline: faUnderline,
+	//strikethrough: faStrikethrough,
+	//highlight: faHighlighter,
 
 	/* editing: block styles */
-	quote: faQuoteRight,
-	"unordered-list-item": faListUl,
-	"ordered-list-item": faListOl,
-	code: faCode,
+	//quote: faQuoteRight,
+	//"unordered-list-item": faListUl,
+	//"ordered-list-item": faListOl,
+	//code: faCode,
 };
 
 export const otherIcons = {
 	clear: IconClear,
-	handle: IconHandle,
+	handle: <i className="bi-chevron-down" />, //IconHandle,
 	expander: IconExpander,
 	"double-expander": IconDoubleExpander,
 	sort: IconSort,
 	"vote-yes": IconVoteYes,
 	"vote-no": IconVoteNo,
+
+	"refresh": <i className="bi-arrow-repeat" />,
+	"undo": <i className="bi-arrow-counterclockwise" />,
+	"redo": <i className="bi-arrow-clockwise" />,
+	"copy": <i className="bi-copy" />,
+	"edit": <i className="bi-pencil" />,
+	"cancel": <i className="bi-x-circle" />,
+	"ok": <i className="bi-check-circle" />,
+	"next": <i className="bi-arrow-right-circle" />,
+	"prev": <i className="bi-arrow-left-circle" />,
+	"filter": <i className="bi-funnel" />,
 	"add-item": <i className="bi-journal-plus" />,
+	"close": <i className="bi-x-square" />,
+
+	"add": <i className="bi-plus-lg" />,
+	"delete": <i className="bi-trash" />,
+	//"clear": <i className="bi-x-lg" />,
+
+	"book-open": <i className="bi-book" />,
+
+	"user": <i className="bi-person" />,
+	"user-check": <i className="bi-person-check" />,
+	"user-slash": <i className="bi-person-slash" />,
+	"group": <i className="bi-people" />,
+	"group-slash": <IconPeopleSlash />,
+
+	"envelope": <i className="bi-envelope" />,
+	"send": <i className="bi-send" />,
+	"calendar": <i className="bi-calendar" />,
+	"columns": <i className="bi-layout-three-columns" />,
+	"save": <i className="bi-floppy" />,
+	"history": <i className="bi-clock-history" />,
+
+	"import": <i className="bi-cloud-upload" />,
+	"export": <i className="bi-cloud-download" />,
+	"upload": <i className="bi-upload" />,
+	"download": <i className="bi-download" />,
+	"more": <i className="bi-chevron-double-down" />,
+
+	/* editing: inline styles */
+	"bold": <i className="bi-type-bold" />,
+	"italic": <i className="bi-type-italic" />,
+	"underline": <i className="bi-type-underline" />,
+	"strikethrough": <i className="bi-type-strikethrough" />,
+	"highlight": <i className="bi-highlighter" />,
+	"link": <i className="bi-link" />,
+
+	/* editing: block styles */
+	"quote": <i className="bi-blockquote-left" />,
+	"unordered-list-item": <i className="bi-list-ul" />,
+	"ordered-list-item": <i className="bi-list-ol" />,
+	"code": <i className="bi-code" />,
+
+	"text-left": <i className="bi-text-left" />,
+	"text-right": <i className="bi-text-right" />,
+	"text-center": <i className="bi-text-center" />,
+	"text-justify": <i className="bi-justify" />,
+	"text-indent-left": <i className="bi-text-indent-left" />,
+	"text-indent-right": <i className="bi-text-indent-right" />,
 };
 
 export const availableIcons = Object.keys(faIcons).concat(

@@ -1,7 +1,7 @@
-import React from "react";
+import * as React from "react";
 import ReactDOM from "react-dom";
 
-import { Icon } from "../icons";
+//import { Icon } from "../icons";
 
 import Dropdown from "./Dropdown";
 import MultiSelectItem from "./MultiSelectItem";
@@ -24,9 +24,9 @@ const Clear = (props: React.ComponentProps<"div">) => (
 const Separator = (props: React.ComponentProps<"div">) => (
 	<div className="dropdown-select-separator" {...props} />
 );
-const DropdownHandle = (props: React.ComponentProps<typeof Icon>) => (
+/*const DropdownHandle = (props: React.ComponentProps<typeof Icon>) => (
 	<Icon className="dropdown-select-handle" type="handle" {...props} />
-);
+);*/
 const Placeholder = (props: React.ComponentProps<"div">) => (
 	<div className="dropdown-select-placeholder" {...props} />
 );
@@ -106,12 +106,12 @@ export type SelectItemRendererProps = { item: ItemType } & SelectRendererProps;
 
 export type SelectInternalProps = SelectDefaultProps & {
 	values: ItemType[];
-	//onChange: (values: ItemType[]) => void;
 	options: ItemType[];
 
 	style?: React.CSSProperties;
 	className?: string;
 	dropdownClassName?: string;
+	"aria-label"?: string;
 
 	portal?: Element | null;
 
@@ -133,6 +133,7 @@ type SelectDefaultProps = {
 	searchable: boolean;
 	backspaceDelete: boolean;
 	readOnly: boolean;
+	disabled: boolean;
 	closeOnScroll: boolean;
 	closeOnBlur: boolean;
 	clearOnSelect: boolean;
@@ -182,7 +183,7 @@ type SelectDefaultProps = {
 export type SelectState = {
 	isOpen: boolean;
 	search: string;
-	selectBounds: DOMRect | {};
+	selectBounds: DOMRect | null;
 	cursor: number | null;
 	searchResults: ItemType[];
 };
@@ -190,15 +191,15 @@ export type SelectState = {
 export type SelectMethods = {
 	open: () => void;
 	close: () => void;
-	addItem: (item: any) => void;
+	addItem: (item: ItemType) => void;
 	addSearchItem: () => Promise<void>;
-	removeItem: (item: any) => void;
+	removeItem: (item: ItemType) => void;
 	setSearch: (search: string) => void;
 	getInputSize: () => number;
-	isSelected: (item: any) => boolean;
-	isDisabled: (item: any) => boolean;
-	sort: (options: any) => any;
-	filter: (options: any) => any;
+	isSelected: (item: ItemType) => boolean;
+	isDisabled: (item: ItemType) => boolean;
+	sort: (options: ItemType[]) => ItemType[];
+	filter: (options: ItemType[]) => ItemType[];
 	searchResults: () => ItemType[];
 };
 
@@ -207,9 +208,9 @@ class SelectInternal extends React.Component<SelectInternalProps, SelectState> {
 		super(props);
 
 		this.state = {
-			isOpen: false,
+			isOpen: props.keepOpen,
 			search: "",
-			selectBounds: {},
+			selectBounds: null,
 			cursor: null,
 			searchResults: props.options,
 		};
@@ -256,9 +257,11 @@ class SelectInternal extends React.Component<SelectInternalProps, SelectState> {
 		if (
 			prevProps.options !== props.options ||
 			prevProps.keepSelectedInList !== props.keepSelectedInList ||
-			prevProps.sortBy !== props.sortBy
+			prevProps.sortBy !== props.sortBy ||
+			prevProps.disabled !== props.disabled
 		) {
 			this.setState({
+				isOpen: props.keepOpen,
 				cursor: null,
 				searchResults: this.searchResults(),
 			});
@@ -357,7 +360,7 @@ class SelectInternal extends React.Component<SelectInternalProps, SelectState> {
 
 	addItem = (item: ItemType) => {
 		const { props } = this;
-		let values;
+		let values: ItemType[];
 		if (props.multi) {
 			values = [...props.values, item];
 		} else {
@@ -388,12 +391,12 @@ class SelectInternal extends React.Component<SelectInternalProps, SelectState> {
 		props.onChange(newValues);
 	};
 
-	clearAll = (e) => {
+	clearAll: React.MouseEventHandler = (e) => {
 		e.stopPropagation();
 		this.props.onChange([]);
 	};
 
-	setSearch = (search) => {
+	setSearch = (search: string) => {
 		if (search && !this.state.isOpen) this.open();
 		this.setState({ search }, () =>
 			this.setState({
@@ -410,16 +413,16 @@ class SelectInternal extends React.Component<SelectInternalProps, SelectState> {
 		return props.placeholder.length;
 	};
 
-	isSelected = (item: any) => {
+	isSelected = (item: ItemType) => {
 		const { props } = this;
 		return !!props.values.find((selectedItem) =>
 			props.valuesEqual(selectedItem, item)
 		);
 	};
 
-	isDisabled = (item: any) => item.disabled || false;
+	isDisabled = (item: ItemType) => item.disabled || false;
 
-	sort = (options) => {
+	sort = (options: ItemType[]) => {
 		const { sortBy } = this.props;
 		if (!sortBy) return options;
 
@@ -432,7 +435,7 @@ class SelectInternal extends React.Component<SelectInternalProps, SelectState> {
 		});
 	};
 
-	filter = (options) => {
+	filter = (options: ItemType[]) => {
 		const { search } = this.state;
 		const searchBy = this.props.searchBy || this.props.labelField;
 		const safeString = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -466,15 +469,15 @@ class SelectInternal extends React.Component<SelectInternalProps, SelectState> {
 		return options;
 	};
 
-	onClick = (event) => {
+	onClick: React.MouseEventHandler = (event) => {
 		const { props, state } = this;
-		if (props.readOnly || props.keepOpen) return;
+		if (props.disabled || props.readOnly || props.keepOpen) return;
 		event.preventDefault();
 		if (state.isOpen) this.close();
 		else this.open();
 	};
 
-	onFocus = (event: React.FocusEvent) => {
+	onFocus: React.FocusEventHandler = (event) => {
 		if (
 			this.inputRef.current &&
 			document.activeElement !== this.inputRef.current
@@ -482,7 +485,7 @@ class SelectInternal extends React.Component<SelectInternalProps, SelectState> {
 			this.inputRef.current.focus();
 	};
 
-	onKeyDown = (event: React.KeyboardEvent) => {
+	onKeyDown: React.KeyboardEventHandler = (event) => {
 		const { props, state } = this;
 
 		const escape = event.key === "Escape";
@@ -510,15 +513,17 @@ class SelectInternal extends React.Component<SelectInternalProps, SelectState> {
 		}
 
 		// Only get here if open
-		if (escape) {
+		if (escape && !props.keepOpen) {
 			this.close();
 		}
 
 		if (enter) {
 			const item = state.searchResults[state.cursor || 0];
 			if (item && !item.disabled) {
-				if (!this.isSelected(item)) this.addItem(item);
-				else this.removeItem(item);
+				if (!this.isSelected(item))
+					this.addItem(item);
+				else
+					this.removeItem(item);
 			}
 			event.preventDefault();
 		}
@@ -526,7 +531,7 @@ class SelectInternal extends React.Component<SelectInternalProps, SelectState> {
 		if (arrowDown || arrowUp) {
 			let { cursor } = state;
 			let wrap = 0;
-			let item;
+			let item: ItemType;
 			do {
 				if (cursor === null) {
 					cursor = 0;
@@ -550,9 +555,9 @@ class SelectInternal extends React.Component<SelectInternalProps, SelectState> {
 		}
 	};
 
-	renderDropdown = (dropdownProps) => {
+	renderDropdown = () => {
 		const { props, state, methods } = this;
-		const selectBounds = state.selectBounds as DOMRect;
+		const selectBounds = state.selectBounds!;
 		const style: Partial<React.CSSProperties> = {
 			width: props.dropdownWidth || selectBounds.width,
 		};
@@ -576,10 +581,10 @@ class SelectInternal extends React.Component<SelectInternalProps, SelectState> {
 		);
 
 		// Determine if above or below selector
-		let position = props.dropdownPosition || "bottom";
-		let align = props.dropdownAlign || "left";
-		let height = props.dropdownHeight || 300;
-		let gap = props.dropdownGap || 5;
+		let position = props.dropdownPosition;
+		let align = props.dropdownAlign;
+		let height = props.dropdownHeight;
+		let gap = props.dropdownGap;
 		if (position === "auto") {
 			const dropdownHeight = selectBounds.bottom + height + gap;
 			if (
@@ -587,7 +592,8 @@ class SelectInternal extends React.Component<SelectInternalProps, SelectState> {
 				dropdownHeight > selectBounds.top
 			)
 				position = "top";
-			else position = "bottom";
+			else
+				position = "bottom";
 		}
 
 		if (props.portal) {
@@ -614,30 +620,32 @@ class SelectInternal extends React.Component<SelectInternalProps, SelectState> {
 		const { props, state, methods } = this;
 
 		let cn = "dropdown-select";
-		if (props.readOnly) cn += ` dropdown-select-read-only`;
+		if (props.disabled) cn += " dropdown-select-disabled";
+		if (props.readOnly) cn += " dropdown-select-read-only";
 		if (props.className) cn += ` ${props.className}`;
+
+		let content = props.contentRenderer({ props, state, methods });
+		if (!content && props.placeholder && !state.search)
+			content = <Placeholder>{props.placeholder}</Placeholder>;
 
 		return (
 			<div
 				ref={this.selectRef}
 				style={props.style}
 				className={cn}
-				tabIndex={props.readOnly ? -1 : 0}
-				aria-label="Dropdown select"
+				tabIndex={(props.disabled || props.readOnly) ? -1 : 0}
+				aria-label={props["aria-label"]}
 				aria-expanded={state.isOpen}
+				aria-disabled={props.disabled}
+				role="select"
 				onClick={this.onClick}
 				onKeyDown={this.onKeyDown}
 				onFocus={this.onFocus}
 				onBlur={props.closeOnBlur ? this.close : undefined}
-				//direction={props.direction}
 			>
 				<Content style={{ minWidth: `${props.placeholder.length}ch` }}>
-					{props.values.length === 0 && !state.search && (
-						<Placeholder>{props.placeholder}</Placeholder>
-					)}
-					{props.contentRenderer({ props, state, methods })}
-					{props.searchable &&
-						!props.readOnly &&
+					{content}
+					{!props.readOnly && props.searchable &&
 						props.inputRenderer({
 							inputRef: this.inputRef,
 							props,
@@ -648,19 +656,14 @@ class SelectInternal extends React.Component<SelectInternalProps, SelectState> {
 
 				{props.loading && <Loading />}
 
-				{props.clearable && !props.readOnly && (
-					<Clear onClick={this.clearAll} />
-				)}
+				{!props.readOnly &&
+					<>
+						{props.clearable && <Clear onClick={this.clearAll} />}
+						{props.separator && <Separator />}
+						{props.handle && <i className={"bi-chevron" + (state.isOpen? "-up": "-down")} />}
 
-				{props.separator && !props.readOnly && <Separator />}
-
-				{props.handle && !props.readOnly && (
-					<DropdownHandle isOpen={state.isOpen} />
-				)}
-
-				{(state.isOpen || props.keepOpen) &&
-					!props.readOnly &&
-					this.renderDropdown({ props, state, methods })}
+						{state.isOpen && this.renderDropdown()}
+					</>}
 			</div>
 		);
 	}
@@ -679,6 +682,7 @@ class SelectInternal extends React.Component<SelectInternalProps, SelectState> {
 		searchable: true,
 		backspaceDelete: true,
 		readOnly: false,
+		disabled: false,
 		closeOnScroll: false,
 		closeOnBlur: false,
 		clearOnSelect: true,

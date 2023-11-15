@@ -125,9 +125,9 @@ function Dropdown({ props, state, methods }: SelectRendererProps) {
 		>
 			{({ index, style }) => (
 				<ItemWrapper
+					index={index}
 					style={style}
 					item={options[index]}
-					index={index}
 					setHeight={(height: number) => setItemHeight(index, height)}
 					props={props}
 					methods={methods}

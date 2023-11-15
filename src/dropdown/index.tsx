@@ -84,7 +84,7 @@ function defaultSelectRenderer({
 			}
 		>
 			{label && <label>{label}</label>}
-			{handle && <Icon type="handle" isOpen={state.isOpen} />}
+			{handle && <i className={"bi-chevron" + (state.isOpen? "-up": "-down")} />}
 		</Header>
 	);
 }

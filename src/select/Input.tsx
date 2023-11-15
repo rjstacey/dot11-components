@@ -16,6 +16,7 @@ function Input({ inputRef, props, state, methods }) {
 			style={{ width: `${state.search.length + 1}ch` }}
 			value={state.search}
 			onChange={(event) => methods.setSearch(event.target.value)}
+			disabled={props.disabled}
 		/>
 	);
 }
