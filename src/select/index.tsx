@@ -116,6 +116,10 @@ export type SelectInternalProps = SelectDefaultProps & {
 	portal?: Element | null;
 
 	dropdownWidth?: number;
+
+	onClick?: React.MouseEventHandler;
+	onFocus?: React.FocusEventHandler;
+	onBlur?: React.FocusEventHandler;
 };
 
 type SelectDefaultProps = {
@@ -471,18 +475,33 @@ class SelectInternal extends React.Component<SelectInternalProps, SelectState> {
 
 	onClick: React.MouseEventHandler = (event) => {
 		const { props, state } = this;
-		if (props.disabled || props.readOnly || props.keepOpen) return;
-		event.preventDefault();
-		if (state.isOpen) this.close();
-		else this.open();
+		if (!props.disabled && !props.readOnly && !props.keepOpen) {
+			event.preventDefault();
+			if (state.isOpen) {
+				this.close();
+			}
+			else {
+				this.open();
+			}
+		}
+		props.onClick?.(event)
 	};
 
 	onFocus: React.FocusEventHandler = (event) => {
 		if (
 			this.inputRef.current &&
 			document.activeElement !== this.inputRef.current
-		)
+		) {
 			this.inputRef.current.focus();
+		}
+		this.props.onFocus?.(event);
+	};
+
+	onBlur: React.FocusEventHandler = (event) => {
+		if (this.props.closeOnBlur) {
+			this.close();
+		}
+		this.props.onBlur?.(event);
 	};
 
 	onKeyDown: React.KeyboardEventHandler = (event) => {
@@ -641,7 +660,7 @@ class SelectInternal extends React.Component<SelectInternalProps, SelectState> {
 				onClick={this.onClick}
 				onKeyDown={this.onKeyDown}
 				onFocus={this.onFocus}
-				onBlur={props.closeOnBlur ? this.close : undefined}
+				onBlur={this.onBlur}
 			>
 				<Content style={{ minWidth: `${props.placeholder.length}ch` }}>
 					{content}
