@@ -1,8 +1,6 @@
 import * as React from "react";
 import ReactDOM from "react-dom";
 
-//import { Icon } from "../icons";
-
 import Dropdown from "./Dropdown";
 import MultiSelectItem from "./MultiSelectItem";
 import SelectItem from "./SelectItem";
@@ -484,7 +482,7 @@ class SelectInternal extends React.Component<SelectInternalProps, SelectState> {
 				this.open();
 			}
 		}
-		props.onClick?.(event)
+		props.onClick?.(event);
 	};
 
 	onFocus: React.FocusEventHandler = (event) => {

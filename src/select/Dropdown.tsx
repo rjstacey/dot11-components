@@ -66,7 +66,7 @@ function Dropdown({ props, state, methods }: SelectRendererProps) {
 	const setItemHeight = (index: number, height: number) => {
 		const heights = heightsRef.current;
 		heights[index] = height;
-		if (listRef.current) listRef.current.resetAfterIndex(index, true);
+		listRef.current?.resetAfterIndex(index, true);
 	};
 
 	const getItemHeight = (index: number) =>
@@ -75,8 +75,9 @@ function Dropdown({ props, state, methods }: SelectRendererProps) {
 	const options = methods.searchResults();
 
 	React.useEffect(() => {
-		if (!listRef.current) return;
-		if (state.cursor) listRef.current.scrollToItem(state.cursor);
+		if (state.cursor) {
+			listRef.current?.scrollToItem(state.cursor);
+		}
 	}, [state.cursor]);
 
 	const [maxHeight, setMaxHeight] = React.useState(props.dropdownHeight);
@@ -88,7 +89,9 @@ function Dropdown({ props, state, methods }: SelectRendererProps) {
 			bounds.height < props.dropdownHeight
 				? bounds.height
 				: props.dropdownHeight;
-		if (height !== maxHeight) setMaxHeight(height);
+		if (height !== maxHeight) {
+			setMaxHeight(height);
+		}
 	}, [props.dropdownHeight, maxHeight, options]);
 
 	const itemKey = (index: number) => {
@@ -120,7 +123,6 @@ function Dropdown({ props, state, methods }: SelectRendererProps) {
 			itemSize={getItemHeight}
 			estimatedItemSize={props.estimatedItemHeight}
 			itemKey={itemKey}
-			//innerRef={listInnerRef}
 			innerElementType={innerEl}
 		>
 			{({ index, style }) => (

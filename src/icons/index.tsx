@@ -322,12 +322,16 @@ export const Icon = ({ type, name, ...rest }: IconProps) => {
 	if (name) icon = faIcons[name];
 	if (icon) return <FontAwesomeIcon icon={icon} {...rest} />;
 	if (type) icon = otherIcons[type];
-	if (icon)
-		return React.isValidElement(icon)
-			? React.cloneElement(icon, rest)
-			: typeof icon === "function"
+	if (icon) {
+		if (React.isValidElement(icon)) {
+			const className = ((icon as React.ReactElement<{className?: string}>).props.className || "")
+				+ (rest.className? " " + rest.className: "");
+			return React.cloneElement(icon, {...rest, className} as any);
+		}
+		return typeof icon === "function"
 			? icon(rest)
 			: icon;
+	}
 	console.warn("Unknown icon: ", type || name);
 	return null;
 };
