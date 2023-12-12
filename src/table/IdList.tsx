@@ -105,7 +105,7 @@ function IdList({
 		}
 	}
 
-	function clear(e: MouseEvent) {
+	function clear(e: React.MouseEvent) {
 		e.stopPropagation(); // don't take focus from editor
 
 		//setEditorState(EditorState.push(editorState, ContentState.createFromText('')))

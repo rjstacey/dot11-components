@@ -45,7 +45,7 @@ const ActiveFilterItem = styled.span`
 `;
 
 interface ActiveFilterProps {
-	remove: (e: MouseEvent) => void;
+	remove: React.MouseEventHandler;
 	children?: React.ReactNode;
 }
 
