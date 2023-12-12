@@ -57,7 +57,9 @@ export const TwoColsForm = ({
 	const [slider, setSlider] = React.useState(false);
 
 	return (
-		<Form {...otherArgs}>
+		<Form
+			{...otherArgs}
+		>
 			<Row>
 				<Col>
 					<List label="List 1:">

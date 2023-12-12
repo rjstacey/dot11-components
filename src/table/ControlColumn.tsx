@@ -105,9 +105,9 @@ function ControlHeaderCell({
 			</Selector>
 			{showExpanded && (
 				<ActionIcon
-					type="double-expander"
+					type={allExpanded? "double-caret-down": "double-caret-right"} //"double-expander"}
 					title="Expand all"
-					open={allExpanded}
+					//open={allExpanded}
 					onClick={toggleExpand}
 				/>
 			)}
@@ -141,6 +141,7 @@ function ControlCell({
 
 	const selected = useSelector(selectors.selectSelected);
 	const expanded = useSelector(selectors.selectExpanded);
+	const isExpanded = expanded.includes(rowId);
 
 	return (
 		<Container onClick={(e) => e.stopPropagation()}>
@@ -151,9 +152,9 @@ function ControlCell({
 			/>
 			{showExpanded && (
 				<ActionIcon
-					type="expander"
+					type={isExpanded? "caret-down": "caret-right"} //"expander"
 					title="Expand row"
-					open={expanded.includes(rowId)}
+					//open={expanded.includes(rowId)}
 					onClick={toggleExpand}
 				/>
 			)}
