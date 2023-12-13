@@ -2,7 +2,6 @@ import React from "react";
 
 import { configureStore, combineReducers } from "@reduxjs/toolkit";
 import { createLogger } from "redux-logger";
-import thunk from "redux-thunk";
 import { Provider, connect } from "react-redux";
 
 import { errorsSlice, setError } from "../store/error";
@@ -19,8 +18,7 @@ const story = {
 
 const store = configureStore({
 	reducer: combineReducers({ [errorsSlice.name]: errorsSlice.reducer }),
-	middleware: [thunk, createLogger({ collapsed: true })],
-	devTools: true,
+	//middleware: (getDM) => getDM().concat(createLogger({ collapsed: true })),
 });
 
 //type RootState = ReturnType<typeof store.getState>

@@ -33,11 +33,9 @@ export function createSelectedSubslice(dataSet: string) {
 		builder: ActionReducerMapBuilder<{ ids: EntityId[] } & SelectedState>
 	) => {
 		builder.addMatcher(
-			(action: Action) =>
-				action &&
-				action.type &&
+			(action: Action) => Boolean(
 				action.type.startsWith(dataSet) &&
-				action.type.match(/(removeOne|removeMany|getSuccess)$/),
+				action.type.match(/(removeOne|removeMany|getSuccess)$/)),
 			(state) => {
 				const list = state[name];
 				const ids = state.ids;

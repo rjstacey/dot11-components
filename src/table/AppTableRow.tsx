@@ -1,5 +1,5 @@
 import React from "react";
-import type { EntityId, Dictionary } from "@reduxjs/toolkit";
+import type { EntityId } from "@reduxjs/toolkit";
 import { areEqual } from "react-window";
 import styled from "@emotion/styled";
 
@@ -134,7 +134,7 @@ const TableRow = React.memo(PureTableRow, areEqual);
 
 export type AppTableRowData = {
 	gutterSize: number;
-	entities: Dictionary<unknown>;
+	entities: Record<EntityId, unknown>;
 	ids: EntityId[];
 	selected: EntityId[];
 	expanded: EntityId[];

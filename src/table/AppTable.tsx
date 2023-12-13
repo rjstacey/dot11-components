@@ -1,6 +1,6 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import type { Action, EntityId, Dictionary } from "@reduxjs/toolkit";
+import type { Action, EntityId } from "@reduxjs/toolkit";
 import styled from "@emotion/styled";
 import { VariableSizeGrid as Grid } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
@@ -55,7 +55,7 @@ export type { ChangeableColumnProperties, TablesConfig };
 export type RowGetterProps<T = any> = {
 	rowIndex: number;
 	rowId: EntityId;
-	entities: Dictionary<T>;
+	entities: Record<EntityId, T>;
 	ids: EntityId[];
 };
 

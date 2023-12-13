@@ -6,7 +6,7 @@ import type {
 	EntityAdapter,
 	IdSelector,
 	Comparer,
-	Dictionary,
+	//Dictionary,
 	Update,
 	PayloadAction,
 	SliceCaseReducers,
@@ -48,6 +48,8 @@ export * from "./sorts";
 export * from "./ui";
 
 //export { EntityId, Dictionary };
+
+type Dictionary<T = any> = Record<EntityId, T>;
 
 export type GetEntityField<T = any> = (entity: T, dataKey: string) => any;
 
@@ -191,7 +193,7 @@ export function createAppTableDataSlice<
 >({
 	name,
 	fields,
-	selectId,
+	selectId = (entity: T) => entity["id"],
 	sortComparer,
 	initialState,
 	reducers,
@@ -213,8 +215,7 @@ export function createAppTableDataSlice<
 }) {
 	const dataAdapter = createEntityAdapter<T>(
 		Object.assign(
-			{},
-			selectId ? { selectId } : {},
+			{ selectId },
 			sortComparer ? { sortComparer } : {}
 		)
 	);

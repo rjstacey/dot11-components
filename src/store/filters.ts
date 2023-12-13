@@ -111,7 +111,7 @@ function cmpValue(d: any, comp: FilterComp) {
 export function filterData<T>(
 	filters: Filters,
 	getField: GetEntityField<T>,
-	entities: Dictionary<T>,
+	entities: Record<EntityId, T>,
 	ids: EntityId[]
 ): EntityId[] {
 	let filteredIds = ids.slice();

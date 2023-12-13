@@ -1,5 +1,5 @@
 import { parseNumber } from "../lib";
-import type { EntityId, Dictionary, PayloadAction } from "@reduxjs/toolkit";
+import type { EntityId, PayloadAction } from "@reduxjs/toolkit";
 import {
 	FieldType,
 	FieldTypeValue,
@@ -73,7 +73,7 @@ export const sortFunc = {
 export function sortData<EntityType = {}>(
 	sorts: Sorts,
 	getField: GetEntityField<EntityType>,
-	entities: Dictionary<EntityType>,
+	entities: Record<EntityId, EntityType>,
 	ids: EntityId[]
 ): EntityId[] {
 	let sortedIds = ids.slice();

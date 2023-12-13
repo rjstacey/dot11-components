@@ -35,11 +35,9 @@ export function createExpandedSubslice(dataSet: string) {
 		builder: ActionReducerMapBuilder<ExpandedState & { ids: EntityId[] }>
 	) => {
 		builder.addMatcher(
-			(action: Action) =>
-				action &&
-				action.type &&
+			(action: Action) => Boolean(
 				action.type.startsWith(dataSet) &&
-				action.type.match(/(removeOne|removeMany|getSuccess)$/),
+				action.type.match(/(removeOne|removeMany|getSuccess)$/)),
 			(state) => {
 				const list = state[name];
 				const ids = state.ids;

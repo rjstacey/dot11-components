@@ -1,6 +1,5 @@
 import {
 	configureStore,
-	combineReducers,
 	createSelector,
 	ThunkAction,
 	Action,
@@ -135,19 +134,17 @@ const dataSlice = createAppTableDataSlice({
 	},
 });
 
-const rootReducer = combineReducers({
-	names: namesSlice.reducer,
-	data: dataSlice.reducer,
-});
-
 const store = configureStore({
-	reducer: rootReducer,
+	reducer: {
+		names: namesSlice.reducer,
+		data: dataSlice.reducer,
+	},
 	middleware: (getDefaultMiddleware) =>
 		getDefaultMiddleware().concat(createLogger({ collapsed: true })),
 	devTools: true,
 });
 
-type RootState = ReturnType<typeof rootReducer>;
+type RootState = ReturnType<typeof store.getState>;
 type AppDispatch = typeof store.dispatch;
 type AppThunk<ReturnType = void> = ThunkAction<
 	ReturnType,
