@@ -2,7 +2,7 @@
 //
 // Began life here https://github.com/koalyptus/TableFilter
 //
-import type { PayloadAction, EntityId, Dictionary } from "@reduxjs/toolkit";
+import type { PayloadAction, EntityId } from "@reduxjs/toolkit";
 import { parseNumber } from "../lib";
 import {
 	Fields,

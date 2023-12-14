@@ -160,36 +160,18 @@ function FilterComponent({
 
 	const dispatch = useDispatch();
 
-	const selectInfo = React.useCallback(
-		(state: any) => ({
-			sort: selectors.selectSort(state, dataKey),
-			filter: selectors.selectFilter(state, dataKey),
-			selected: selectors.selectSelected(state),
-			entities: selectors.selectEntities(state),
-		}),
-		[selectors, dataKey]
-	);
-
-	const { sort, filter, selected, entities } = useSelector(selectInfo);
+	const selectSort = React.useCallback((state: any) => selectors.selectSort(state, dataKey), [selectors, dataKey]);
+	const selectFilter = React.useCallback((state: any) => selectors.selectFilter(state, dataKey), [selectors, dataKey]);
+	const sort = useSelector(selectSort);
+	const filter = useSelector(selectFilter);
+	const selected = useSelector(selectors.selectSelected);
+	const entities = useSelector(selectors.selectEntities);
+	const ids = useSelector(selectors.selectIds);
 	const getField = selectors.getField;
 
-	const selectValues = React.useCallback(
-		(state: any) => {
-			const filter = selectors.selectFilter(state, dataKey);
-			if (!filter) return [];
-			let ids = selectors.selectIds(state);
-			if (filter.comps.length === 0)
-				ids = selectors.selectFilteredIds(state);
-			const getField = selectors.getField;
-			const entities = selectors.selectEntities(state);
-			return [
-				...new Set(ids.map((id) => getField(entities[id]!, dataKey))),
-			];
-		},
-		[selectors, dataKey]
-	);
-
-	const values = useSelector(selectValues);
+	const values = React.useMemo(() => (
+		[...new Set(ids.map((id) => getField(entities[id]!, dataKey)))]
+	), [dataKey, ids, entities, getField]);
 
 	const filterSelected = React.useCallback(() => {
 		const comps: FilterComp[] = selected.map((id) => ({
@@ -486,21 +468,17 @@ function AppTableHeaderCell({
 	actions,
 	customFilterElement, // Custom filter element for dropdown
 }: AppTableHeaderCellProps) {
-	const selectInfo = React.useCallback(
-		(state: any) => {
-			const sorts = selectors.selectSorts(state);
-			const filter = selectors.selectFilter(state, dataKey);
-			return {
-				sort: sorts.settings[dataKey],
-				isSorted: sorts.by.includes(dataKey),
-				filter: filter,
-				isFiltered: filter && filter.comps.length > 0,
-			};
-		},
+
+	const sorts = useSelector(selectors.selectSorts);
+	const sort = sorts.settings[dataKey];
+	const isSorted = sorts.by.includes(dataKey);
+
+	const selectFilter = React.useCallback(
+		(state: any) => selectors.selectFilter(state, dataKey),
 		[selectors, dataKey]
 	);
-
-	const { sort, isSorted, filter, isFiltered } = useSelector(selectInfo);
+	const filter = useSelector(selectFilter);
+	const isFiltered = filter && filter.comps.length > 0;
 
 	if (!sort && !filter)
 		return (

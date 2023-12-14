@@ -18,7 +18,7 @@ const story = {
 
 const store = configureStore({
 	reducer: combineReducers({ [errorsSlice.name]: errorsSlice.reducer }),
-	//middleware: (getDM) => getDM().concat(createLogger({ collapsed: true })),
+	middleware: (getDM) => getDM().concat(createLogger({ collapsed: true })),
 });
 
 //type RootState = ReturnType<typeof store.getState>

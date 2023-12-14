@@ -1,4 +1,5 @@
 import type { PayloadAction } from "@reduxjs/toolkit";
+import { createSelector } from "reselect"; /* Use older version; the newer version does not handle typescript generics well */
 
 export type ChangeableColumnProperties = {
 	width: number;
@@ -241,8 +242,11 @@ export function getUiSelectors<S>(selectState: (state: S) => UiState) {
 		selectUiProperties(state).tableView;
 
 	/** A list of all views */
-	const selectViews = (state: S): string[] =>
-		Object.keys(selectUiProperties(state).tablesConfig);
+	const selectTablesConfig = (state: S) => selectUiProperties(state).tablesConfig;
+	const selectViews = createSelector(
+		selectTablesConfig,
+		(tablesConfig) => Object.keys(tablesConfig)
+	);
 
 	/** Select table config for the current view */
 	const selectCurrentTableConfig = (state: S): TableConfig => {

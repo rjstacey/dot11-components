@@ -654,7 +654,6 @@ class SelectInternal extends React.Component<SelectInternalProps, SelectState> {
 				aria-label={props["aria-label"]}
 				aria-expanded={state.isOpen}
 				aria-disabled={props.disabled}
-				role="select"
 				onClick={this.onClick}
 				onKeyDown={this.onKeyDown}
 				onFocus={this.onFocus}

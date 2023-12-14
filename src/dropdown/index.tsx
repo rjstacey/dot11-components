@@ -361,25 +361,27 @@ interface ActionButtonDropdownProps extends DropdownProps {
 	disabled?: boolean;
 }
 
-export const ActionButtonDropdown = ({
+export function ActionButtonDropdown({
 	name,
 	label,
 	title,
 	disabled,
 	...rest
-}: ActionButtonDropdownProps) => (
-	<Dropdown
-		handle={false}
-		selectRenderer={({ props, state, methods }: DropdownRendererProps) => (
-			<Button
-				title={title}
-				disabled={disabled}
-				isActive={state.isOpen}
-				onClick={state.isOpen ? methods.close : methods.open}
-			>
-				{label ? label : <Icon type={name} />}
-			</Button>
-		)}
-		{...rest}
-	/>
-);
+}: ActionButtonDropdownProps) {
+	return (
+		<Dropdown
+			handle={false}
+			selectRenderer={({ props, state, methods }: DropdownRendererProps) => (
+				<Button
+					title={title}
+					disabled={disabled}
+					isActive={state.isOpen}
+					onClick={state.isOpen ? methods.close : methods.open}
+				>
+					{label ? label : <Icon type={name} />}
+				</Button>
+			)}
+			{...rest}
+		/>
+	);
+}
