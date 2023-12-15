@@ -2,7 +2,7 @@ import React from "react";
 
 import { configureStore, combineReducers } from "@reduxjs/toolkit";
 import { createLogger } from "redux-logger";
-import { Provider, connect } from "react-redux";
+import { Provider, useDispatch } from "react-redux";
 
 import { errorsSlice, setError } from "../store/error";
 import {
@@ -58,39 +58,83 @@ BasicActionButtonModal.args = {
 	disabled: false,
 };
 
-function SendError({ setError }) {
-	const [summary, setSummary] = React.useState("");
-	const [message, setMessage] = React.useState("");
+type ErrorType = {
+	summary: string;
+	message: string;
+}
+
+function ErrorForm({err, setErr}: {err: ErrorType, setErr: (err: ErrorType) => void}) {
+	const dispatch = useDispatch();
+
+	function updateErr(changes: Partial<ErrorType>) {
+		setErr({...err, ...changes})
+	}
+	const rowStyle={display: 'flex', margin: 5};
 	return (
-		<div>
-			<label>
-				Summary:{" "}
+		<div
+			style={{display: 'flex', margin: 5}}
+		>
+			<div
+				style={rowStyle}
+			>
+				<label>Summary:</label>
 				<input
 					type="text"
-					value={summary}
-					onChange={(e) => setSummary(e.target.value)}
+					value={err.summary}
+					onChange={(e) => updateErr({summary: e.target.value})}
 				/>
-			</label>
-			<br />
-			<label>
-				Message:{" "}
+			</div>
+			<div
+				style={rowStyle}
+			>
+				<label>Message:</label>
 				<input
 					type="text"
-					value={message}
-					onChange={(e) => setMessage(e.target.value)}
+					value={err.message}
+					onChange={(e) => updateErr({message: e.target.value})}
 				/>
-			</label>
-			<br />
-			<button onClick={() => setError(summary, message)}>send</button>
+			</div>
+			<button
+				onClick={() => dispatch(setError(err.summary, err.message))}
+			>
+				send
+			</button>
 		</div>
 	);
 }
 
-const ConnectedSendError = connect(null, { setError })(SendError);
+function MultipleErrors() {
+	const dispatch = useDispatch();
+	const [err1, setErr1] = React.useState<ErrorType>({summary: "Error 1", message: "Message 1"});
+	const [err2, setErr2] = React.useState<ErrorType>({summary: "Error 2", message: "Message 2"});
+
+	function sendAll() {
+		dispatch(setError(err1.summary, err1.message));
+		dispatch(setError(err2.summary, err2.message));
+	}
+
+	return (
+		<div
+			style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}
+		>
+			<ErrorForm err={err1} setErr={setErr1} />
+			<ErrorForm err={err2} setErr={setErr2} />
+			<div
+				style={{display: 'flex', alignItems: 'center'}}
+			>
+				<button
+					onClick={sendAll}
+				>
+					Send all
+				</button>
+			</div>
+		</div>
+	);
+}
 
 const Error = () => (
 	<Provider store={store}>
-		<ConnectedSendError />
+		<MultipleErrors />
 		<ErrorModal />
 	</Provider>
 );

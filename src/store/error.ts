@@ -21,13 +21,19 @@ export const errorsSlice = createSlice({
 		setError(state, action: PayloadAction<ErrorMsg>) {
 			state.push(action.payload);
 		},
-		clearError(state) {
-			if (state.length) state.shift();
+		clearOne(state, action: PayloadAction<number | undefined>) {
+			if (state.length) {
+				const n = action.payload || 0;
+				state.splice(n, 1);
+			}
 		},
+		clearAll() {
+			return initialState;
+		}
 	},
 });
 
-export const { clearError } = errorsSlice.actions;
+export const { clearOne, clearAll } = errorsSlice.actions;
 
 export function setError(summary: string, error: any) {
 	let detail: string;

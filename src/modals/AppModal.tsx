@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import Modal from "react-modal";
 
 const defaultModalStyle: {
@@ -37,18 +37,11 @@ const defaultModalStyle: {
 type AppModalProps = {
 	style?: React.CSSProperties;
 	overlayStyle?: React.CSSProperties;
-	className?: string;
-	isOpen: boolean;
-	onRequestClose?: () => void;
-	children?: React.ReactNode;
 } & React.ComponentProps<typeof Modal>;
 
 function AppModal({
 	style,
 	overlayStyle,
-	className,
-	isOpen,
-	onRequestClose,
 	children,
 	...otherProps
 }: AppModalProps) {
@@ -58,11 +51,8 @@ function AppModal({
 	};
 	return (
 		<Modal
-			isOpen={isOpen}
 			style={modalStyle}
-			className={className}
-			appElement={document.querySelector("#root") as HTMLElement}
-			onRequestClose={onRequestClose}
+			appElement={document.querySelector("body") as HTMLElement}
 			{...otherProps}
 		>
 			{children}
