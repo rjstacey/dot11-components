@@ -1,6 +1,6 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Button, Form, Row, Col } from "../form";
+import { Button } from "../form";
 import { ActionIcon } from "../icons";
 import { AppModal } from ".";
 
