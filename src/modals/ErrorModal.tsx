@@ -29,17 +29,14 @@ function MultipleErrorForm({errors}: {errors: ErrorMsg[]}) {
 
 	const dismissOneButton = <Button onClick={() => dispatch(clearOne(n))}>Dismiss</Button>;
 	const dismissAllButton = <Button onClick={() => dispatch(clearAll())}>Dismiss All</Button>;
-	const navLeft = <ActionIcon className={styles["nav-icon"]} name='prev'	onClick={prev} />;
-	const navRight = <ActionIcon className={styles["nav-icon"]}	name='next'	onClick={next} />;
-
 	const dismissActions = errors.length > 1? (
 		<>
-			{navLeft}
-				<div className={styles["dismiss-buttons-stack"]}>
-					{dismissOneButton}
-					{dismissAllButton}
-				</div>
-			{navRight}
+			<ActionIcon className={styles["nav-icon"]} name='prev'	onClick={prev} />
+			<div className={styles["dismiss-buttons-stack"]}>
+				{dismissOneButton}
+				{dismissAllButton}
+			</div>
+			<ActionIcon className={styles["nav-icon"]}	name='next'	onClick={next} />
 		</>
 	): (
 		dismissOneButton
@@ -53,12 +50,12 @@ function MultipleErrorForm({errors}: {errors: ErrorMsg[]}) {
 		>
 			{errors.length > 1 &&
 				<div className={styles["error-count"]}>
-					{errors.length} errors
+					{n+1} of {errors.length} errors
 				</div>}
 
 			<h2 className={styles["form-title"]}>{error.summary}</h2>
 
-			{error.detail && error.detail.split('\n').map(s => <p>{s}</p>)}
+			{error.detail && error.detail.split('\n').map((s, i) => <p key={i}>{s}</p>)}
 
 			<div className={styles["dismiss-buttons"]}>
 				{dismissActions}
