@@ -1,5 +1,4 @@
-import React from "react";
-import styled from "@emotion/styled";
+import * as React from "react";
 
 import { ColumnResizer, DraggableEventHandler } from "./ColumnResizer";
 
@@ -11,23 +10,6 @@ import type {
 	AppTableDataActions,
 } from "./AppTable";
 
-const HeaderCellContent = styled.div`
-	height: 100%;
-	width: calc(100% - 12px);
-`;
-
-const HeaderAnchor = styled.div`
-	position: relative;
-`;
-
-const HeaderContainer = styled.div`
-	overflow: hidden;
-`;
-
-const HeaderRow = styled.div`
-	display: flex;
-	height: 100%;
-`;
 
 type HeaderCellProps = {
 	anchorEl: HTMLElement | null;
@@ -77,10 +59,15 @@ function HeaderCell({
 	const onDrag: DraggableEventHandler = (event, { deltaX }) =>
 		adjustColumnWidth(dataKey, deltaX);
 	return (
-		<div className="AppTable__headerCell" style={style}>
-			<HeaderCellContent>
+		<div
+			className="header-cell"
+			style={style}
+		>
+			<div
+				className="header-cell-content"
+			>
 				{headerCellRenderer(headerCellRendererProps)}
-			</HeaderCellContent>
+			</div>
 			<ColumnResizer onDrag={onDrag} />
 		</div>
 	);
@@ -95,7 +82,6 @@ function HeaderCell({
  * A HeaderCell is present for each column and contains the header cell content and column resizer
  */
 type TableHeaderProps = {
-	className?: string;
 	outerStyle?: React.CSSProperties;
 	innerStyle?: React.CSSProperties;
 	fixed: boolean;
@@ -107,7 +93,6 @@ type TableHeaderProps = {
 const TableHeader = React.forwardRef<HTMLDivElement, TableHeaderProps>(
 	(
 		{
-			className,
 			outerStyle,
 			innerStyle,
 			fixed,
@@ -148,20 +133,24 @@ const TableHeader = React.forwardRef<HTMLDivElement, TableHeaderProps>(
 			defaultHeaderCellRenderer,
 		]);
 
-		const classNames = [className, "AppTable__headerRow"].join(" ");
-
 		return (
-			<HeaderAnchor ref={anchorRef}>
-				<HeaderContainer
+			<div
+				className="header-anchor"
+				ref={anchorRef}
+			>
+				<div
+					className="header-container"
 					ref={ref}
-					className="AppTable__headerContainer"
 					style={outerStyle}
 				>
-					<HeaderRow className={classNames} style={innerStyle}>
+					<div
+						className="header-row"
+						style={innerStyle}
+					>
 						{cells}
-					</HeaderRow>
-				</HeaderContainer>
-			</HeaderAnchor>
+					</div>
+				</div>
+			</div>
 		);
 	}
 );

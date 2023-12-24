@@ -1,24 +1,5 @@
 import React from "react";
 import { DraggableCore, DraggableEventHandler } from "react-draggable";
-import styled from "@emotion/styled";
-
-const ResizeHandle = styled.div`
-	height: 100%;
-	width: 10px;
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	align-items: center;
-	cursor: col-resize;
-	color: #0085ff;
-	::after {
-		content: "⋮";
-	}
-	:hover {
-		color: #0b6fcc;
-		background-color: rgba(0, 0, 0, 0.1);
-	}
-`;
 
 export type ColumnResizerProps = {
 	style?: React.CSSProperties;
@@ -32,18 +13,20 @@ export function ColumnResizer({ style, onDrag }: ColumnResizerProps) {
 	const [drag, setDrag] = React.useState(false);
 	if (drag) style = { ...style, backgroundColor: "rgba(0, 0, 0, 0.1)" };
 
+	const className = "column-resizer-handle";
+
 	return (
 		<DraggableCore
 			onDrag={onDrag}
 			onStart={(e) => setDrag(true)}
 			onStop={(e) => setDrag(false)}
-			handle=".column-resizer-handle"
+			handle={"." + className}
 			nodeRef={nodeRef}
 		>
-			<ResizeHandle
+			<div
 				ref={nodeRef}
 				style={style}
-				className={"column-resizer-handle "}
+				className={className}
 			/>
 		</DraggableCore>
 	);

@@ -1,22 +1,8 @@
-import React from "react";
+import * as React from "react";
 import type { EntityId } from "@reduxjs/toolkit";
 import { areEqual } from "react-window";
-import styled from "@emotion/styled";
 
 import type { GetEntityField, ColumnProperties, RowGetter } from "./AppTable";
-
-const OuterRow = styled.div`
-	overflow: hidden;
-	box-sizing: border-box;
-`;
-
-const InnerRow = styled.div`
-	display: flex;
-	position: relative;
-	box-sizing: unset;
-	width: 100%;
-	height: fit-content;
-`;
 
 /**
  * TableRow component for AppTable
@@ -98,18 +84,22 @@ function PureTableRow({
 			if (dataRenderer) content = dataRenderer(content);
 		}
 		return (
-			<div key={dataKey} className="AppTable__dataCell" style={style}>
+			<div
+				key={dataKey}
+				className="data-cell"
+				style={style}
+			>
 				{content}
 			</div>
 		);
 	});
 
 	// Add appropriate row classNames
-	let classNames = ["AppTable__dataRow"];
+	let classNames = ["data-row"];
 	classNames.push(
-		rowIndex % 2 === 0 ? "AppTable__dataRow-even" : "AppTable__dataRow-odd"
+		rowIndex % 2 === 0 ? "data-row-even" : "data-row-odd"
 	);
-	if (isSelected) classNames.push("AppTable__dataRow-selected");
+	if (isSelected) classNames.push("data-row-selected");
 
 	if (typeof style.top === "number" && typeof style.height === "number")
 		style = {
@@ -119,13 +109,18 @@ function PureTableRow({
 		}; // Adjust style for gutter
 
 	return (
-		<OuterRow
+		<div
 			style={style}
 			className={classNames.join(" ")}
 			onClick={onClick}
 		>
-			<InnerRow ref={rowRef}>{cells}</InnerRow>
-		</OuterRow>
+			<div
+				ref={rowRef}
+				className="data-row-inner"
+			>
+				{cells}
+			</div>
+		</div>
 	);
 }
 

@@ -1,9 +1,7 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import styled from "@emotion/styled";
 import { FixedSizeList as List } from "react-window";
 
-//import { Icon } from "../icons";
 import { Row, Field, Button, Checkbox, Input } from "../form";
 import { Dropdown, DropdownRendererProps } from "../dropdown";
 
@@ -25,45 +23,9 @@ import {
 
 import type { HeaderCellRendererProps } from "./AppTable";
 
-const StyledCustomContainer = styled.div`
-	margin: 10px 10px 0;
-	line-height: 30px;
-	padding-left: 20px;
-	border: 1px solid #ccc;
-	border-radius: 3px;
-	:focus {
-		outline: none;
-		border: 1px solid deepskyblue;
-	}
-`;
+import styles from "./HeaderCell.module.css";
 
-const StyledList = styled(List)`
-	min-height: 35px;
-	max-height: 250px;
-	border: 1px solid #ccc;
-	border-radius: 3px;
-	margin-top: 10px;
-`;
-
-type ItemProps = {
-	disabled?: boolean;
-	isSelected?: boolean;
-};
-
-const Item = styled.div<ItemProps>`
-	display: flex;
-	align-items: center;
-	${({ disabled }) => disabled && "text-decoration: line-through;"}
-	${({ isSelected }) =>
-		isSelected ? "background: #0074d9;" : ":hover{background: #ccc;}"}
-	& > div {
-		margin: 5px 5px;
-		${({ isSelected }) => isSelected && "color: #fff;"}
-		overflow: hidden;
-		white-space: nowrap;
-		text-overflow: ellipsis;
-	}
-`;
+const Item = ({isSelected, disabled, ...props}: {isSelected: boolean, disabled?: boolean} & React.HTMLAttributes<HTMLDivElement>) => <div className={"item" + (isSelected? " selected": "") + (disabled? " disabled": "")} {...props} />;
 
 function IconSort({
 	style,
@@ -375,9 +337,11 @@ function FilterComponent({
 				</Button>
 			</Row>
 			{customFilterElement && (
-				<StyledCustomContainer>
+				<div
+					className="custom-filter-element-container"
+				>
 					{customFilterElement}
-				</StyledCustomContainer>
+				</div>
 			)}
 			{filter.type === "DATE" && (
 				<DateFilter
@@ -399,7 +363,8 @@ function FilterComponent({
 				</Field>
 			</Row>
 
-			<StyledList
+			<List
+				className="filter-list"
 				height={listHeight}
 				itemCount={items.length}
 				itemSize={itemHeight}
@@ -420,36 +385,12 @@ function FilterComponent({
 						</Item>
 					);
 				}}
-			</StyledList>
+			</List>
 		</>
 	);
 }
 
-const Header = styled.div`
-	display: flex;
-	align-items: center;
-	flex-wrap: wrap;
-	user-select: none;
-	width: 100%;
-	overflow: hidden;
-	box-sizing: border-box;
-	margin-right: 5px;
-	:hover {
-		color: tomato;
-	}
-	& .handle {
-		position: absolute;
-		right: 0;
-		background: inherit;
-		display: flex;
-		flex-wrap: nowrap;
-		align-items: center;
-	}
-`;
-
-const Label = styled.label`
-	font-weight: bold;
-`;
+const Header = ({className, ...props}: React.HTMLAttributes<HTMLDivElement>) => <div className={styles["header"] + (className? " " + className: "")} {...props} />
 
 type AppTableHeaderCellProps = HeaderCellRendererProps & {
 	className?: string;
@@ -483,13 +424,13 @@ function AppTableHeaderCell({
 	if (!sort && !filter)
 		return (
 			<Header>
-				<Label>{label}</Label>
+				<label>{label}</label>
 			</Header>
 		);
 
 	const selectRenderer = ({ state, methods }: DropdownRendererProps) => (
 		<Header onClick={state.isOpen ? methods.close : methods.open}>
-			<Label>{label || dataKey}</Label>
+			<label>{label || dataKey}</label>
 			<div className="handle">
 				{isFiltered && <i className="bi-funnel" style={{ opacity: 0.2 }} />}
 				{isSorted && (
@@ -530,6 +471,7 @@ function AppTableHeaderCell({
 	return (
 		<Dropdown
 			className={className}
+			dropdownClassName={styles["header-dropdown"]}
 			style={style}
 			selectRenderer={selectRenderer}
 			dropdownRenderer={dropdownRenderer}

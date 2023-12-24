@@ -1,6 +1,5 @@
-import React from "react";
+import * as React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import styled from "@emotion/styled";
 
 import { ActionIcon } from "../icons";
 import { Checkbox } from "../form";
@@ -13,25 +12,10 @@ import type {
 	AppTableDataActions,
 } from "./AppTable";
 
-const Selector = styled.div`
-	display: flex;
-	flex-direction: row;
-	border-radius: 3px;
-	align-items: center;
-	:hover {
-		color: tomato;
-	}
-	:hover,
-	:focus-within {
-		background-color: #ddd;
-	}
-`;
+import styles from "./ControlColumn.module.css";
 
-const Container = styled.div`
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-`;
+const Container = ({className, ...props}: React.HTMLAttributes<HTMLDivElement>) => <div className={styles.container} {...props} />
+const Selector = ({className, ...props}: React.HTMLAttributes<HTMLDivElement>) => <div className={styles.selector} {...props} />
 
 type ControlHeaderCellProps = HeaderCellRendererProps & {
 	customSelectorElement?: React.ReactNode;
@@ -105,9 +89,8 @@ function ControlHeaderCell({
 			</Selector>
 			{showExpanded && (
 				<ActionIcon
-					type={allExpanded? "double-caret-down": "double-caret-right"} //"double-expander"}
+					type={allExpanded? "double-caret-down": "double-caret-right"}
 					title="Expand all"
-					//open={allExpanded}
 					onClick={toggleExpand}
 				/>
 			)}

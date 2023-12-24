@@ -1,6 +1,5 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import styled from "@emotion/styled";
 
 import { ActionIcon } from "../icons";
 
@@ -14,46 +13,22 @@ import {
 	CompOp,
 } from "../store/appTableData";
 
-const ActiveFilterLabel = styled.label`
-	font-weight: bold;
-	line-height: 22px;
-	margin: 3px;
-`;
+import styles from "./ShowFilters.module.css";
 
-const ActiveFilterContainer = styled.div`
-	display: flex;
-	flex-direction: row;
-	height: 22px;
-	max-width: 200px;
-	margin: 3px 3px 3px 0;
-	background: #0074d9;
-	color: #fff;
-	border-radius: 3px;
-	align-items: center;
-	:hover {
-		opacity: 0.9;
-	}
-`;
-
-const ActiveFilterItem = styled.span`
-	color: #fff;
-	line-height: 21px;
-	padding: 0 0 0 5px;
-	overflow: hidden;
-	white-space: nowrap;
-	text-overflow: ellipsis;
-`;
-
-interface ActiveFilterProps {
+const ActiveFilter = ({
+	remove,
+	children,
+}: {
 	remove: React.MouseEventHandler;
 	children?: React.ReactNode;
-}
-
-const ActiveFilter = ({ children, remove }: ActiveFilterProps) => (
-	<ActiveFilterContainer role="listitem">
-		{children && <ActiveFilterItem>{children}</ActiveFilterItem>}
+}) => (
+	<div
+		className={styles["filter-container"]}
+		role="listitem"
+	>
+		{children && <span className={styles["filter-item"]}>{children}</span>}
 		<ActionIcon style={{ minWidth: 16 }} type="clear" onClick={remove} />
-	</ActiveFilterContainer>
+	</div>
 );
 
 function renderActiveFilters({
@@ -78,9 +53,12 @@ function renderActiveFilters({
 		const { comps, options } = filter;
 		if (comps.length > 0) {
 			elements.push(
-				<ActiveFilterLabel key={dataKey}>
+				<label
+					key={dataKey}
+					className={styles["filter-label"]}
+				>
 					{label + ":"}
-				</ActiveFilterLabel>
+				</label>
 			);
 			for (let comp of comps) {
 				const o =
@@ -108,9 +86,12 @@ function renderActiveFilters({
 	}
 	if (elements.length > 2) {
 		elements.push(
-			<ActiveFilterLabel key="clear_all_label">
+			<label
+				key="clear_all_label"
+				className={styles["filter-label"]}
+			>
 				Clear All:
-			</ActiveFilterLabel>
+			</label>
 		);
 		elements.push(
 			<ActiveFilter key="clear_all" remove={clearAllFilters} />
@@ -118,36 +99,6 @@ function renderActiveFilters({
 	}
 	return elements;
 }
-
-const FiltersContainer = styled.div`
-	display: flex;
-	flex-direction: row;
-	width: 100%;
-	padding: 10px;
-	box-sizing: border-box;
-`;
-
-const FiltersLabel = styled.div`
-	margin-right: 5px;
-	& label {
-		font-weight: bold;
-	}
-`;
-
-const FiltersPlaceholder = styled.span`
-	color: #ccc;
-	margin-left: 5px;
-`;
-
-const FiltersContent = styled.div`
-	flex: 1;
-	display: flex;
-	flex-direction: row;
-	flex-wrap: wrap;
-	align-content: flex-start;
-	border: solid 1px #ccc;
-	border-radius: 3px;
-`;
 
 type ShowFiltersProps = {
 	className?: string;
@@ -187,20 +138,23 @@ function ShowFilters({
 	}, [actions, fields, filters, dispatch]);
 
 	return (
-		<FiltersContainer style={style} className={className}>
-			<FiltersLabel>
+		<div
+			className={styles["container"] + (className? " " + className: "")}
+			style={style}
+		>
+			<div className={styles["label-block"]}>
 				<label>Filters:</label>
 				<br />
 				<span>{`Showing ${shownRows} of ${totalRows}`}</span>
-			</FiltersLabel>
-			<FiltersContent>
+			</div>
+			<div className={styles["content-block"]}>
 				{activeFilterElements.length ? (
 					activeFilterElements
 				) : (
-					<FiltersPlaceholder>No filters</FiltersPlaceholder>
+					<span className={styles["placeholder"]}>No filters</span>
 				)}
-			</FiltersContent>
-		</FiltersContainer>
+			</div>
+		</div>
 	);
 }
 

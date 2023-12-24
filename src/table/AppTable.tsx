@@ -1,13 +1,12 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import type { Action, EntityId } from "@reduxjs/toolkit";
-import styled from "@emotion/styled";
 import { VariableSizeGrid as Grid } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
 
 import AppTableRow, { AppTableRowData } from "./AppTableRow";
 import TableHeader from "./AppTableHeader";
-import AppTableHeaderCell from "./AppTableHeaderCell";
+import AppTableHeaderCell from "./HeaderCell";
 
 import { debounce, getScrollbarSize } from "../lib";
 
@@ -19,6 +18,8 @@ import type {
 	AppTableDataActions,
 	AppTableDataSelectors,
 } from "../store/appTableData";
+
+import styles from "./AppTable.module.css";
 
 export type { GetEntityField, AppTableDataSelectors, AppTableDataActions };
 
@@ -77,56 +78,9 @@ export type AppTableProps = {
 
 const scrollbarSize = getScrollbarSize();
 
-const Table = styled.div`
-	position: relative;
-	display: flex;
-	flex-direction: column-reverse;
-	align-items: center;
-	& * {
-		box-sizing: border-box;
-	}
-	:focus {
-		outline: none;
-	}
-	.AppTable__headerRow,
-	.AppTable__dataRow {
-		display: flex;
-		flex-direction: row;
-		flex-wrap: nowrap;
-		align-items: stretch;
-		overflow: hidden;
-	}
-	.AppTable__headerContainer {
-	}
-	.AppTable__headerRow {
-		background-color: #efefef;
-	}
-	.AppTable__dataRow {
-		/*padding: 5px 0;*/
-	}
-	.AppTable__dataRow-even {
-		background-color: #fafafa;
-	}
-	.AppTable__dataRow-odd {
-		background-color: #f6f6f6;
-	}
-	.AppTable__dataRow-selected {
-		background-color: #b9b9f7;
-	}
-	.AppTable__headerCell {
-	}
-	.AppTable__dataCell {
-		padding-right: 10px;
-	}
-`;
+const Table = ({className, ...props}: React.HTMLAttributes<HTMLDivElement>) => <div className={styles["table"] + (className? " " + className: "")} {...props} />
 
-const NoGrid = styled.div`
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	font-size: 1em;
-	color: #bdbdbd;
-`;
+const Placeholder = ({className, ...props}: React.HTMLAttributes<HTMLDivElement>) => <div className={"placeholder" + (className? " " + className: "")} {...props} />
 
 /*
  * Key down handler for Grid (when focused)
@@ -476,9 +430,9 @@ function AppTableSized({
 					{AppTableRow}
 				</Grid>
 			) : (
-				<NoGrid style={{ height: height - props.headerHeight, width }}>
+				<Placeholder style={{ height: height - props.headerHeight, width }}>
 					{loading ? "Loading..." : "Empty"}
-				</NoGrid>
+				</Placeholder>
 			)}
 			<TableHeader
 				ref={headerRef}
