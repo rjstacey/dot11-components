@@ -144,7 +144,9 @@ function InputDates({
 
 	return (
 		<div
-			className={styles["input-dates"] + (className? " " + className: "")}
+			className={
+				styles["input-dates"] + (className ? " " + className : "")
+			}
 			style={style}
 		>
 			<TextArea
