@@ -1,5 +1,4 @@
 import React from "react";
-import styled from "@emotion/styled";
 import { useDispatch, useSelector } from "react-redux";
 
 import { Button, ActionButtonDropdown } from "../form";
@@ -10,39 +9,7 @@ import type {
 } from "../store/appTableData";
 import type { ColumnProperties, ChangeableColumnProperties } from "./AppTable";
 
-const Row = styled.div`
-	margin: 5px 10px;
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-`;
-
-const ItemList = styled.div`
-	min-height: 10px;
-	border: 1px solid #ccc;
-	border-radius: 3px;
-	margin: 10px;
-	padding: 10px;
-	overflow: auto;
-`;
-
-type ItemProps = {
-	disabled?: boolean;
-	isSelected?: boolean;
-};
-
-const Item = styled.div<ItemProps>`
-	overflow: hidden;
-	white-space: nowrap;
-	text-overflow: ellipsis;
-	${({ disabled }) => disabled && "text-decoration: line-through;"}
-	${({ isSelected }) =>
-		isSelected ? "background: #0074d9;" : ":hover{background: #ccc;}"}
-	& > span {
-		margin: 5px 5px;
-		${({ isSelected }) => isSelected && "color: #fff;"}
-	}
-`;
+import styles from "./TableColumnSelector.module.css";
 
 export type ColumnSelectorProps = {
 	columns: Array<ColumnProperties>;
@@ -86,11 +53,11 @@ function ColumnSelectorDropdown({
 
 	return (
 		<>
-			<Row>
+			<div className={styles.row}>
 				<label>Table view:</label>
 				<span>{view}</span>
-			</Row>
-			<Row>
+			</div>
+			<div className={styles.row}>
 				<label>Fixed width:</label>
 				<Button
 					onClick={toggleCurrentTableFixed}
@@ -98,10 +65,13 @@ function ColumnSelectorDropdown({
 				>
 					On
 				</Button>
-			</Row>
-			<ItemList>
+			</div>
+			<div className={styles.list}>
 				{selectableColumns.map((col) => (
-					<Item key={col.key} isSelected={col.shown}>
+					<div
+						key={col.key}
+						className={styles.item + (col.shown ? " selected" : "")}
+					>
 						<input
 							type="checkbox"
 							checked={col.shown}
@@ -110,9 +80,9 @@ function ColumnSelectorDropdown({
 							}
 						/>
 						<span>{col.label}</span>
-					</Item>
+					</div>
 				))}
-			</ItemList>
+			</div>
 		</>
 	);
 }

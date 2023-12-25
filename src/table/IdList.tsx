@@ -2,7 +2,6 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import type { EntityId } from "@reduxjs/toolkit";
 
-import styled from "@emotion/styled";
 import {
 	Editor,
 	EditorState,
@@ -20,19 +19,7 @@ import {
 	CompOp,
 } from "../store/appTableData";
 
-const Container = styled.div`
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-	justify-content: space-between;
-	.DraftEditor-root {
-		width: 100%;
-		cursor: text;
-	}
-	:hover {
-		border-color: #0074d9;
-	}
-`;
+import styles from "./IdList.module.css";
 
 const idRegex = /[^\s,]+/g; // /\d+\.\d+|\d+/g
 
@@ -143,9 +130,9 @@ function IdList({
 	}*/
 
 	return (
-		<Container
+		<div
 			style={style}
-			className={className}
+			className={styles.main + (className? " " + className: "")}
 			onClick={(e) => editorRef.current && editorRef.current.focus()}
 		>
 			<Editor
@@ -159,7 +146,7 @@ function IdList({
 			{editorState.getCurrentContent().hasText() && (
 				<ActionIcon type="clear" onClick={clear} />
 			)}
-		</Container>
+		</div>
 	);
 }
 

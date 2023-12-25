@@ -1,0 +1,15 @@
+.main {
+    display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.main:hover {
+    border-color: #0074d9;
+}
+
+.main :global(.DraftEditor-root) {
+    width: 100%;
+		cursor: text;
+}
