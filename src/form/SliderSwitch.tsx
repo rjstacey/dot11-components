@@ -1,5 +1,4 @@
 import * as React from "react";
-
 import styles from "./form.module.css";
 
 interface SliderSwitchProps
