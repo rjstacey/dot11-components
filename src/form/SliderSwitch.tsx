@@ -17,7 +17,7 @@ const SliderSwitch = ({
 	...otherProps
 }: SliderSwitchProps) => (
 	<input
-		className={styles["sliderswitch"] + (className? " " + className: "")}
+		className={styles["sliderswitch"] + (className ? " " + className : "")}
 		type="checkbox"
 		checked={value}
 		onChange={(e) => onChange(e.target.checked)}
