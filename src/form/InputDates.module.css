@@ -1,0 +1,48 @@
+.input-dates {
+	display: flex;
+	align-items: center;
+	border: solid 1px #ddd;
+	background-color: #fafafa;
+	box-sizing: border-box;
+	border-radius: 3px;
+	line-height: 25px;
+	padding: 0 5px;
+}
+.input-dates:global(.clear) {
+    visibility: hidden;
+    margin: 0 5px;
+}
+
+.input-dates:not([disabled]):hover :global(.clear.active),
+.input-dates:focus-within :global(.clear.active) {
+	visibility: visible;
+}
+
+.input-dates:focus-within {
+	outline: 0;
+	box-shadow: 0 0 0 3px rgba(0, 116, 217, 0.2);
+}
+
+.input-dates:focus-within,
+.input-dates:not([disabled]):hover {
+	border-color: #0074d9;
+}
+
+.input-dates :global(.textarea) {
+    font-family: inherit;
+    border: none;
+    resize: none;
+}
+
+.input-dates :global(.textarea.invalid) {
+	color: red;
+}
+
+.input-dates :global .textarea:focus-visible {
+		outline: none;
+		box-shadow: none;
+	}
+
+.input-dates :global .textarea::placeholder {
+	font-style: italic;
+}
