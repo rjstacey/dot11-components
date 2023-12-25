@@ -11,7 +11,7 @@ const Row = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
 
 const Col = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
 	<div
-		className={styles["row"] + (className ? " " + className : "")}
+		className={styles["col"] + (className ? " " + className : "")}
 		{...props}
 	/>
 );

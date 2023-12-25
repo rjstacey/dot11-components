@@ -1,7 +1,6 @@
 import React from "react";
 
 import type { ViewDate } from "./Calendar";
-
 import { getMonthGrid, weekdayLabels } from "./utils";
 
 function DayLabel({ cell }) {
@@ -102,22 +101,17 @@ type NodeRef = {
 	listener: (e: any) => void;
 };
 
-type MonthProps = {
-	style?: React.CSSProperties;
-	className?: string;
-	dates: Array<string>;
-	onDateClick: (isoDate: string) => void;
-	viewDate: ViewDate;
-	options: object;
-};
-
 function Month({
-	style,
 	dates,
 	onDateClick,
 	viewDate,
 	options,
-}: MonthProps) {
+}: {
+	dates: Array<string>;
+	onDateClick: (isoDate: string) => void;
+	viewDate: ViewDate;
+	options: object;
+}) {
 	/* Use a callback ref instead of useEffect. The callback ref, by definition, is called
 	 * when the referenced node changes. useEffect doesn't necessarily trigger with ref changes. */
 	const ref = React.useRef<NodeRef | null>(null);
@@ -146,12 +140,8 @@ function Month({
 	);
 
 	return (
-		<div
-			className="month"
-		>
-			<div
-				className="week-row weekends"
-			>
+		<div className="month">
+			<div className="week-row">
 				{matrix[0].map((cell, index) => (
 					<DayLabel key={index} cell={cell} />
 				))}
@@ -163,8 +153,8 @@ function Month({
 			>
 				{matrix.map((row, index) => (
 					<div
-						key={index}
 						className="week-row"
+						key={index}
 					>
 						{row.map((cell) => (
 							<Day
