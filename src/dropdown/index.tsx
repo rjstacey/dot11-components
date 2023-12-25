@@ -1,25 +1,12 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import styled from "@emotion/styled";
 
 import { Icon } from "../icons";
 import { Button } from "../form";
 
 import { debounce } from "../lib";
 
-import "./index.css";
-
-const Header = styled.div`
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	min-width: 1em;
-	min-height: 1em;
-	cursor: pointer;
-	:hover {
-		color: tomato;
-	}
-`;
+import styles from "./dropdown.module.css";
 
 export type DropdownRendererProps = {
 	props: DropdownProps;
@@ -73,7 +60,8 @@ function defaultSelectRenderer({
 }: DropdownRendererProps) {
 	const { title, label, handle = true, disabled = false } = props;
 	return (
-		<Header
+		<div
+			className={styles["default-select"]}
 			title={title}
 			onClick={
 				disabled
@@ -85,7 +73,7 @@ function defaultSelectRenderer({
 		>
 			{label && <label>{label}</label>}
 			{handle && <i className={"bi-chevron" + (state.isOpen? "-up": "-down")} />}
-		</Header>
+		</div>
 	);
 }
 
@@ -255,7 +243,7 @@ export class Dropdown extends React.Component<DropdownProps, DropdownState> {
 			dropdownHeight = 300,
 		} = props;
 
-		let className = "dropdown-container";
+		let className = styles["dropdown-container"];
 		if (props.dropdownClassName) className += ` ${props.dropdownClassName}`;
 
 		const dropdownEl = (
@@ -330,7 +318,7 @@ export class Dropdown extends React.Component<DropdownProps, DropdownState> {
 			keepOpen,
 		} = this.props;
 
-		let className = "dropdown";
+		let className = styles["select-container"];
 		if (props.className) className += ` ${props.className}`;
 
 		return (

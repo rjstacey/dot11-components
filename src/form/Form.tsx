@@ -1,140 +1,66 @@
-import React from "react";
-import styled from "@emotion/styled";
+import * as React from "react";
 import { Spinner } from "../icons";
+import styles from "./form.module.css";
 
-const Container = styled.div`
-	display: flex;
-	flex-direction: column;
-`;
-
-const Row = styled.div`
-	display: flex;
-	flex-direction: row;
-	margin: 5px 0;
-	justify-content: space-between;
-`;
-
-const Col = styled.div`
-	display: flex;
-	flex-direction: column;
-	flex: 1;
-	margin: 0 10px;
-	:first-of-type {
-		margin-left: 0;
-	}
-	:last-child {
-		margin-right: 0;
-	}
-`;
-
-export const Title = styled.h3`
-	margin: 5px 0 20px;
-	align-self: center;
-	font-weight: bold;
-	color: #0099cc;
-`;
-
-const ErrMsg = styled(Row)`
-	color: red;
-	font-weight: bold;
-	justify-content: center;
-`;
-
-const ButtonRow = styled(Row)`
-	justify-content: space-around;
-`;
-
-const Button = styled.button`
-	width: 100px;
-	padding: 8px 16px;
-	text-transform: uppercase;
-	color: white;
-	font-weight: bold;
-	background-color: #0099cc;
-	border: none;
-	border-radius: 30px;
-	:focus {
-		outline: none;
-	}
-`;
-
-const FieldContainer = styled.div`
-	display: flex;
-	align-items: center;
-	flex: 1;
-	justify-content: space-between;
-	/*margin: 10px 0;
-	:first-of-type {margin-top: 0}
-	:last-child {margin-bottom: 0}*/
-	& > label {
-		margin-right: 10px;
-	}
-`;
-
-type FieldProps = {
-	style?: object;
-	className?: string;
-	label: string;
-	children?: React.ReactNode;
-};
-
-const Field = ({ style, className, label, children }: FieldProps) => (
-	<FieldContainer style={style} className={className}>
-		<label>{label}</label>
-		{typeof children === "string" ? <span>{children}</span> : children}
-	</FieldContainer>
+const Row = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+	<div
+		className={styles["row"] + (className ? " " + className : "")}
+		{...props}
+	/>
 );
 
-const FieldLeft = styled(Field)`
-	justify-content: left;
-	flex: unset;
-`;
+const Col = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+	<div
+		className={styles["row"] + (className ? " " + className : "")}
+		{...props}
+	/>
+);
 
-const ListContainer = styled.div`
-	display: flex;
-	flex-direction: column;
-	flex: 1;
-`;
-
-type ListProps = {
-	style?: object;
-	className?: string;
-	label?: string;
-	children?: React.ReactNode;
-} & React.ComponentProps<"div">;
-
-const List = ({
-	style,
+const Field = ({
 	className,
 	label,
 	children,
-	...otherProps
-}: ListProps) => (
-	<ListContainer style={style} className={className} {...otherProps}>
-		{label && <label>{label}</label>}
-		{children}
-	</ListContainer>
+	...props
+}: { label: string } & React.HTMLAttributes<HTMLDivElement>) => (
+	<div
+		className={styles["field"] + (className ? " " + className : "")}
+		{...props}
+	>
+		<label>{label}</label>
+		{typeof children === "string" ? <span>{children}</span> : children}
+	</div>
 );
 
-const ListItemContainer = styled.div`
-	display: flex;
-	align-items: center;
-	margin: 5px 0 0 10px;
-	label {
-		margin: 0 5px;
-	}
-`;
+const FieldLeft = ({
+	className,
+	...props
+}: React.ComponentProps<typeof Field>) => (
+	<Field className={"left" + (className ? " " + className : "")} {...props} />
+);
 
-type ListItemProps = {
-	style?: object;
-	className?: string;
-	children?: React.ReactNode;
-};
-
-const ListItem = ({ style, className, children }: ListItemProps) => (
-	<ListItemContainer style={style} className={className}>
+const List = ({
+	className,
+	label,
+	children,
+	...props
+}: { label: string } & React.HTMLAttributes<HTMLDivElement>) => (
+	<div
+		className={styles["list"] + (className ? " " + className : "")}
+		{...props}
+	>
+		{label && <label>{label}</label>}
 		{children}
-	</ListItemContainer>
+	</div>
+);
+
+const ListItem = ({
+	className,
+	...props
+}: React.HTMLAttributes<HTMLDivElement>) => (
+	<div
+		className={styles["list-item"] + (className ? " " + className : "")}
+		{...props}
+	/>
 );
 
 type FormProps = {
@@ -164,8 +90,11 @@ const Form = ({
 	cancelLabel,
 	children,
 }: FormProps) => (
-	<Container style={style} className={className}>
-		{title && <Title>{title}</Title>}
+	<div
+		style={style}
+		className={styles["form"] + (className ? " " + className : "")}
+	>
+		{title && <h3 className="title">{title}</h3>}
 		{busy !== undefined && (
 			<Spinner
 				style={{
@@ -175,16 +104,22 @@ const Form = ({
 			/>
 		)}
 		{children}
-		{errorText !== undefined && <ErrMsg>{errorText || "\u00a0"}</ErrMsg>}
-		<ButtonRow>
-			{submit && <Button onClick={submit}>{submitLabel || "OK"}</Button>}
-			{(cancel || close) && (
-				<Button onClick={cancel || close}>
-					{cancelLabel || "Cancel"}
-				</Button>
+		{errorText !== undefined && (
+			<Row className="error-message">{errorText || "\u00a0"}</Row>
+		)}
+		<Row className="button-row">
+			{submit && (
+				<button className="button" onClick={submit}>
+					{submitLabel || "OK"}
+				</button>
 			)}
-		</ButtonRow>
-	</Container>
+			{(cancel || close) && (
+				<button className="button" onClick={cancel || close}>
+					{cancelLabel || "Cancel"}
+				</button>
+			)}
+		</Row>
+	</div>
 );
 
 export { Form, Field, FieldLeft, Row, Col, List, ListItem };

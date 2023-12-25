@@ -1,71 +1,46 @@
 import React from "react";
-import styled from "@emotion/styled";
 
 import type { ViewDate } from "./Calendar";
 
 import { getMonthGrid, weekdayLabels } from "./utils";
 
-const Week = styled.div`
-	display: flex;
-	align-items: center;
-`;
-
-const DayOuter = styled.div`
-	padding: 3px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-`;
-
-const DayInner = styled.div`
-	width: 1.5em;
-	height: 1em;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-`;
-
 function DayLabel({ cell }) {
-	const classNames = ["calendar_day"];
-	if (cell.isWeekend) classNames.push("calendar_weekend");
+	const classNames = ["day"];
+	if (cell.isWeekend) classNames.push("weekend");
 
 	return (
-		<DayOuter className={classNames.join(" ")}>
-			<DayInner className="calendar_day_inner">
-				<span className={"calendar_weekday_label"}>
+		<div className={classNames.join(" ")}>
+			<div className="inner">
+				<span>
 					{weekdayLabels[cell.date.getDay()]}
 				</span>
-			</DayInner>
-		</DayOuter>
+			</div>
+		</div>
 	);
 }
 
 function Day({ cell, onClick }) {
-	const classNames = ["calendar_date"];
-	if (cell.isInactive) classNames.push("calendar_inactive");
-	if (cell.isDisabled) classNames.push("calendar_disabled");
-	if (cell.isWeekend) classNames.push("calendar_weekend");
-	if (cell.isToday) classNames.push("calendar_today");
-	if (cell.isSelected) classNames.push("calendar_selected");
+	const classNames = ["day", "date"];
+	if (cell.isInactive) classNames.push("inactive");
+	if (cell.isDisabled) classNames.push("disabled");
+	if (cell.isWeekend) classNames.push("weekend");
+	if (cell.isToday) classNames.push("today");
+	if (cell.isSelected) classNames.push("selected");
 
 	return (
-		<DayOuter
+		<div
 			className={classNames.join(" ")}
 			tabIndex={cell.isDisabled ? -1 : 0}
 			onClick={cell.isDisabled ? undefined : () => onClick(cell)}
 		>
-			<DayInner className="calendar_date_inner">
-				<span className="calendar_date_label">
+			<div className="inner">
+				<span>
 					{cell.date.getDate()}
 				</span>
-			</DayInner>
-		</DayOuter>
+			</div>
+		</div>
 	);
 }
-
-const MonthOuter = styled.div`
-	padding: 5px;
-`;
 
 /* onKeyPress is called with an array of nodes representing the active dates in the month.
  * Navigate these nodes using arrow keys, etc. */
@@ -138,7 +113,6 @@ type MonthProps = {
 
 function Month({
 	style,
-	className,
 	dates,
 	onDateClick,
 	viewDate,
@@ -172,18 +146,26 @@ function Month({
 	);
 
 	return (
-		<MonthOuter
-			style={style}
-			className={(className ? className + " " : "") + "calendar_month"}
+		<div
+			className="month"
 		>
-			<Week className="calendar_weekdays">
+			<div
+				className="week-row weekends"
+			>
 				{matrix[0].map((cell, index) => (
 					<DayLabel key={index} cell={cell} />
 				))}
-			</Week>
-			<div ref={setRef} className="calendar_month_dates" role="grid">
+			</div>
+			<div
+				ref={setRef}
+				className="dates-block"
+				role="grid"
+			>
 				{matrix.map((row, index) => (
-					<Week key={index} className="calendar_week">
+					<div
+						key={index}
+						className="week-row"
+					>
 						{row.map((cell) => (
 							<Day
 								key={cell.isoDate}
@@ -191,10 +173,10 @@ function Month({
 								onClick={() => onDateClick(cell.isoDate)}
 							/>
 						))}
-					</Week>
+					</div>
 				))}
 			</div>
-		</MonthOuter>
+		</div>
 	);
 }
 

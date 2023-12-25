@@ -1,7 +1,7 @@
 import React from "react";
 import type { SelectItemRendererProps } from ".";
 
-const Clear = (props) => <div {...props} />;
+const Clear = (props: React.ComponentProps<"div">) => <div {...props} />;
 
 const MultiSelectItem = ({
 	item,

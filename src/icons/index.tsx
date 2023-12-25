@@ -6,7 +6,7 @@ import {
 } from "@fortawesome/free-regular-svg-icons";
 
 import "bootstrap-icons/font/bootstrap-icons.css";
-import styles from "./index.module.css";
+import styles from "./icons.module.css";
 
 export const IconCollapse = ({ isCollapsed, ...props }) => (
 	<FontAwesomeIcon

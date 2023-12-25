@@ -1,10 +1,11 @@
 import PropTypes from "prop-types";
 import React from "react";
-import styled from "@emotion/styled";
 import { ActionIcon } from "../icons";
 import Calendar from "../calendar";
 import TextArea from "./TextArea";
 import { Dropdown } from "../dropdown";
+
+import styles from "./InputDates.module.css";
 
 const months = [
 	"Jan",
@@ -20,55 +21,6 @@ const months = [
 	"Nov",
 	"Dec",
 ];
-
-const Wrapper = styled.div`
-	display: flex;
-	align-items: center;
-	border: solid 1px #ddd;
-	background-color: #fafafa;
-	box-sizing: border-box;
-	border-radius: 3px;
-	line-height: 25px;
-	padding: 0 5px;
-
-	.clear {
-		visibility: hidden;
-		margin: 0 5px;
-	}
-
-	:not([disabled]):hover .clear.active,
-	:focus-within .clear.active {
-		visibility: visible;
-	}
-
-	:focus-within {
-		outline: 0;
-		box-shadow: 0 0 0 3px rgba(0, 116, 217, 0.2);
-	}
-	:focus-within,
-	:not([disabled]):hover {
-		border-color: #0074d9;
-	}
-
-	.textarea {
-		font-family: inherit;
-		border: none;
-		resize: none;
-	}
-
-	.textarea.invalid {
-		color: red;
-	}
-
-	.textarea:focus-visible {
-		outline: none;
-		box-shadow: none;
-	}
-
-	.textarea::placeholder {
-		font-style: italic;
-	}
-`;
 
 const toISODate = (d: Date) =>
 	"" +
@@ -185,13 +137,16 @@ function InputDates({
 		setDatesStr(str);
 	}
 
-	function changeDatesArray(dates) {
+	function changeDatesArray(dates: string[]) {
 		setDatesStr(toDatesStr(dates));
 		setDates(dates);
 	}
 
 	return (
-		<Wrapper className={className} style={style}>
+		<div
+			className={styles["input-dates"] + (className? " " + className: "")}
+			style={style}
+		>
 			<TextArea
 				className={"textarea" + (dates.length === 0 ? " invalid" : "")}
 				value={datesStr}
@@ -229,7 +184,7 @@ function InputDates({
 					/>
 				)}
 			/>
-		</Wrapper>
+		</div>
 	);
 }
 

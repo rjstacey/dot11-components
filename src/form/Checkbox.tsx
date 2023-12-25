@@ -1,15 +1,14 @@
-import React from "react";
+import * as React from "react";
 import Input from "./Input";
 
-interface CheckboxProps extends React.ComponentProps<typeof Input> {
-	indeterminate?: boolean;
-}
-
-const Checkbox = ({ indeterminate = false, ...otherProps }: CheckboxProps) => (
+const Checkbox = ({
+	indeterminate = false,
+	...props
+}: { indeterminate?: boolean } & React.ComponentProps<typeof Input>) => (
 	<Input
 		type="checkbox"
 		ref={(el) => el && (el.indeterminate = indeterminate)}
-		{...otherProps}
+		{...props}
 	/>
 );
 

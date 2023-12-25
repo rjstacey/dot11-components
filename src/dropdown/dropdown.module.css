@@ -1,9 +1,22 @@
-.dropdown {
+.select-container {
 	position: relative;
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
 	user-select: none;
+}
+
+.default-select {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	min-width: 1em;
+	min-height: 1em;
+	cursor: pointer;
+}
+
+.default-select:hover {
+	color: tomato;
 }
 
 .dropdown-container {
@@ -21,12 +34,4 @@
 
 .dropdown-container:focus {
 	outline: none;
-}
-
-.dropdown-overlay {
-	position: fixed;
-	top: 0;
-	bottom: 0;
-	left: 0;
-	right: 0;
 }
