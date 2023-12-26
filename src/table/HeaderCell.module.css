@@ -26,19 +26,6 @@
     font-weight: bold;
 }
 
-.header-dropdown :global .custom-filter-element-container {
-    margin: 10px 10px 0;
-	line-height: 30px;
-	padding-left: 20px;
-	border: 1px solid #ccc;
-	border-radius: 3px;
-}
-
-.header-dropdown :global .custom-filter-element-container:focus {
-    outline: none;
-	border: 1px solid deepskyblue;
-}
-
 .header-dropdown :global .filter-list {
     min-height: 35px;
 	max-height: 250px;

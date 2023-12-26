@@ -2,36 +2,20 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import type { EntityId } from "@reduxjs/toolkit";
 
-import {
-	Editor,
-	EditorState,
-	ContentState,
-	CompositeDecorator,
-} from "draft-js";
-import "draft-js/dist/Draft.css";
-
 import { ActionIcon } from "../icons";
 import { parseNumber } from "../lib";
+import { TextArea } from "../form";
 import {
 	AppTableDataSelectors,
 	AppTableDataActions,
 	FilterComp,
 	CompOp,
+	FieldType,
 } from "../store/appTableData";
 
 import styles from "./IdList.module.css";
 
 const idRegex = /[^\s,]+/g; // /\d+\.\d+|\d+/g
-
-type IdListProps = {
-	style?: React.CSSProperties;
-	className?: string;
-	ids: EntityId[];
-	isValid: (id: EntityId) => boolean;
-	isNumber: boolean;
-	onChange: (ids: EntityId[]) => void;
-	focusOnMount?: boolean;
-};
 
 function IdList({
 	style,
@@ -41,166 +25,153 @@ function IdList({
 	isNumber,
 	onChange,
 	focusOnMount,
-}: IdListProps) {
-	const editorRef = React.useRef<Editor>(null);
-	const [editorState, setEditorState] =
-		React.useState<EditorState>(initState);
-
-	/*React.useEffect(() => {
-		// Close the dropdown if the user scrolls
-		// (we don't track position changes during scrolling)
-		window.addEventListener('scroll', close, true);
-		return () => window.removeEventListener('scroll', close);
-	}, [close])*/
+}: {
+	style?: React.CSSProperties;
+	className?: string;
+	ids: EntityId[];
+	isValid: (id: EntityId) => boolean;
+	isNumber: boolean;
+	onChange: (ids: EntityId[]) => void;
+	focusOnMount?: boolean;
+}) {
+	const inputRef = React.useRef<HTMLTextAreaElement>(null);
+	const mirrorRef = React.useRef<HTMLDivElement>(null);
+	const [value, setValue] = React.useState(() => ids.join(", "));
+	const [mirrorHtml, setMirrorHtml] = React.useState(value);
 
 	React.useEffect(() => {
-		if (!editorState.getSelection().getHasFocus()) {
-			let state = EditorState.push(
-				editorState,
-				ContentState.createFromText(ids.join(", ")),
-				"remove-range"
-			);
-			state = EditorState.moveSelectionToEnd(state);
-			setEditorState(state);
-		}
-	}, [ids]);
+		const inputEl = inputRef.current!;
+		const mirrorEl = mirrorRef.current!;
 
-	function initState() {
-		const decorator = new CompositeDecorator([
-			{
-				strategy: findInvalidIds,
-				component: (props) => (
-					<span style={{ color: "red" }}>{props.children}</span>
-				),
-			},
-		]);
-		let state = EditorState.createWithContent(
-			ContentState.createFromText(ids.join(", ")),
-			decorator
-		);
-		if (focusOnMount) state = EditorState.moveFocusToEnd(state);
-		return state;
-	}
-
-	function findInvalidIds(contentBlock, callback, contentState) {
-		const text = contentBlock.getText();
-		let matchArr: RegExpExecArray | null, start: number;
-		while ((matchArr = idRegex.exec(text)) !== null) {
-			start = matchArr.index;
-			const id = isNumber ? parseNumber(matchArr[0]) : matchArr[0];
-			if (!isValid(id)) callback(start, start + matchArr[0].length);
-		}
-	}
-
-	function clear(e: React.MouseEvent) {
-		e.stopPropagation(); // don't take focus from editor
-
-		//setEditorState(EditorState.push(editorState, ContentState.createFromText('')))
-		/*let contentState = editorState.getCurrentContent();
-		const firstBlock = contentState.getFirstBlock();
-		const lastBlock = contentState.getLastBlock();
-		const allSelected = new SelectionState({
-			anchorKey: firstBlock.getKey(),
-			anchorOffset: 0,
-			focusKey: lastBlock.getKey(),
-			focusOffset: lastBlock.getLength(),
-			hasFocus: true
+		const inputStyles = window.getComputedStyle(inputEl);
+		[
+			"border",
+			"boxSizing",
+			"fontFamily",
+			"fontSize",
+			"fontWeight",
+			"letterSpacing",
+			"lineHeight",
+			"padding",
+			"textDecoration",
+			"textIndent",
+			"textTransform",
+			"whiteSpace",
+			"wordSpacing",
+			"wordWrap",
+		].forEach((property) => {
+			mirrorEl.style[property] = inputStyles[property];
 		});
-		contentState = Modifier.removeRange(contentState, allSelected, 'backward');
-		const state = EditorState.push(editorState, contentState, 'remove-range');
-		setEditorState(state);*/
-		onChange([]);
-	}
+		mirrorEl.style.borderColor = "transparent";
 
-	function emitChange(state: EditorState) {
-		const s = state.getCurrentContent().getPlainText();
-		let updatedIds: Array<EntityId> = s.match(idRegex) || [];
-		if (isNumber) updatedIds = updatedIds.map((id) => parseNumber(id));
-		if (updatedIds.join() !== ids.join()) onChange(updatedIds);
-		return null;
-	}
+		const parseValue = (v: string) =>
+			v.endsWith("px") ? parseInt(v.slice(0, -2), 10) : 0;
+		const borderWidth = parseValue(inputStyles.borderWidth);
 
-	/*function handleKeyCommand(command) {
-		if (command === 'enter') {
-			// Perform a request to save your contents, set
-			// a new `editorState`, etc.
-			return 'handled';
+		const ro = new ResizeObserver(() => {
+			mirrorEl.style.width = `${inputEl.clientWidth + 2 * borderWidth}px`;
+			mirrorEl.style.height = `${
+				inputEl.clientHeight + 2 * borderWidth
+			}px`;
+		});
+		ro.observe(inputEl);
+
+		inputEl.addEventListener("scroll", () => {
+			mirrorEl.scrollTop = inputEl.scrollTop;
+			mirrorEl.scrollLeft = inputEl.scrollLeft;
+		});
+	}, []);
+
+	React.useEffect(() => {
+		if (focusOnMount) {
+			const inputEl = inputRef.current!;
+			inputEl.focus();
+			inputEl.selectionStart = inputEl.value.length;
 		}
-		return 'not-handled';
-	}*/
+	}, [focusOnMount]);
+
+	function markInvalid(value: string) {
+		return value.replace(idRegex, (match) => {
+			const id = isNumber ? parseNumber(match) : match;
+			return isValid(id) ? match : `<mark>${match}</mark>`;
+		});
+	}
+
+	function handleChange(value: string) {
+		setValue(value);
+
+		// Update mirror HTML, marking all the invalid ids
+		setMirrorHtml(markInvalid(value));
+
+		let updatedIds: EntityId[] = value.match(idRegex) || [];
+		if (isNumber) updatedIds = updatedIds.map(parseNumber);
+		if (updatedIds.join() !== ids.join()) onChange(updatedIds);
+	}
 
 	return (
 		<div
+			className={styles.main + (className ? " " + className : "")}
 			style={style}
-			className={styles.main + (className? " " + className: "")}
-			onClick={(e) => editorRef.current && editorRef.current.focus()}
 		>
-			<Editor
-				ref={editorRef}
-				editorState={editorState}
-				onChange={setEditorState}
-				handleReturn={() => emitChange(editorState) || "handled"} // return 'handled' to prevent default handler
-				onBlur={() => emitChange(editorState)}
-				placeholder={"Enter list..."}
+			<div
+				ref={mirrorRef}
+				className="mirror"
+				dangerouslySetInnerHTML={{ __html: mirrorHtml }}
 			/>
-			{editorState.getCurrentContent().hasText() && (
-				<ActionIcon type="clear" onClick={clear} />
-			)}
+			<TextArea
+				ref={inputRef}
+				className="input"
+				value={value}
+				onChange={(e) => handleChange(e.target.value)}
+				placeholder="Enter list..."
+			/>
+			<ActionIcon
+				style={{visibility: value? 'visible': 'hidden'}}
+				className="clear"
+				type="clear"
+				onClick={() => handleChange("")}
+			/>
 		</div>
 	);
 }
-
-type IdFilterProps = {
-	dataKey?: string;
-	style?: React.CSSProperties;
-	className?: string;
-	focusOnMount?: boolean;
-	selectors: AppTableDataSelectors;
-	actions: AppTableDataActions;
-};
 
 export function IdFilter({
 	selectors,
 	actions,
 	dataKey = "id",
 	...props
-}: IdFilterProps) {
+}: {
+	dataKey?: string;
+	style?: React.CSSProperties;
+	className?: string;
+	focusOnMount?: boolean;
+	selectors: AppTableDataSelectors;
+	actions: AppTableDataActions;
+}) {
 	const dispatch = useDispatch();
-
 	const { getField } = selectors;
+	const ids = useSelector(selectors.selectIds);
+	const entities = useSelector(selectors.selectEntities);
+	//const isNumber = ids.length > 0 && typeof getField(entities[ids[0]], dataKey) === "number";
 
-	const selectInfo = React.useCallback(
-		(state: any) => {
-			const ids = selectors.selectIds(state);
-			const entities = selectors.selectEntities(state);
-			const filter = selectors.selectFilter(state, dataKey);
-			return {
-				values: filter.comps.map((v) => v.value) || [],
-				isNumber:
-					ids.length > 0 &&
-					typeof getField(entities[ids[0]]!, dataKey) === "number",
-				ids,
-				entities,
-			};
-		},
-		[selectors, getField, dataKey]
-	);
-
-	const { values, isNumber, ids, entities } = useSelector(selectInfo);
+	const selectFilter = React.useCallback((state: any) => selectors.selectFilter(state, dataKey), [selectors, dataKey]);
+	const filter = useSelector(selectFilter);
+	const isNumber = filter.type === FieldType.NUMERIC;
+	const values = filter.comps.map((v) => v.value);
 
 	const isValid = React.useCallback(
 		(value: any) =>
 			ids.findIndex(
-				(id) => getField(entities[id]!, dataKey) === value
+				(id) => getField(entities[id], dataKey) === value
 			) !== -1,
 		[ids, entities, dataKey, getField]
 	);
 
 	const onChange = React.useCallback(
-		(values: any) => {
-			const comps: FilterComp[] = values.map((value: any) => ({
+		(values: EntityId[]) => {
+			const comps: FilterComp[] = values.map((value: EntityId) => ({
 				value,
-				type: CompOp.EQ,
+				operation: CompOp.EQ,
 			}));
 			dispatch(actions.setFilter({ dataKey, comps }));
 		},
@@ -218,47 +189,31 @@ export function IdFilter({
 	);
 }
 
-type IdSelectorProps = {
+export function IdSelector({
+	dataKey = "id",
+	selectors,
+	actions,
+	...props
+}: {
 	dataKey?: string;
+	selectors: AppTableDataSelectors;
+	actions: AppTableDataActions;
 	style?: React.CSSProperties;
 	className?: string;
 	focusOnMount?: boolean;
-	selectors: AppTableDataSelectors;
-	actions: AppTableDataActions;
-};
-
-export function IdSelector({
-	selectors,
-	actions,
-	dataKey = "id",
-	...props
-}: IdSelectorProps) {
+}) {
 	const dispatch = useDispatch();
 	const { getField } = selectors;
-
-	const selectInfo = React.useCallback(
-		(state: any) => {
-			const ids = selectors.selectIds(state);
-			const entities = selectors.selectEntities(state);
-			const selected = selectors.selectSelected(state);
-			return {
-				values: selected.map((id) => getField(entities[id]!, dataKey)),
-				isNumber:
-					ids.length > 0 &&
-					typeof getField(entities[ids[0]]!, dataKey) === "number",
-				ids,
-				entities,
-			};
-		},
-		[selectors, getField, dataKey]
-	);
-
-	const { values, isNumber, ids, entities } = useSelector(selectInfo);
+	const ids = useSelector(selectors.selectIds);
+	const entities = useSelector(selectors.selectEntities);
+	const selected = useSelector(selectors.selectSelected);
+	const values = selected.map((id) => getField(entities[id]!, dataKey));
+	const isNumber = ids.length > 0 && typeof getField(entities[ids[0]], dataKey) === "number";
 
 	const isValid = React.useCallback(
 		(value: EntityId) =>
 			ids.findIndex(
-				(id) => getField(entities[id]!, dataKey) === value
+				(id) => getField(entities[id], dataKey) === value
 			) !== -1,
 		[ids, entities, dataKey, getField]
 	);

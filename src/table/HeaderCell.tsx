@@ -336,13 +336,7 @@ function FilterComponent({
 					Clear
 				</Button>
 			</Row>
-			{customFilterElement && (
-				<div
-					className="custom-filter-element-container"
-				>
-					{customFilterElement}
-				</div>
-			)}
+			{customFilterElement}
 			{filter.type === "DATE" && (
 				<DateFilter
 					dataKey={dataKey}

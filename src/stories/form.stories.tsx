@@ -64,6 +64,11 @@ export const TwoColsForm = ({
 				<Col>
 					<List label="List 1:">
 						<ListItem>
+							<Field label={"Search:"}>
+								<Input type="search" disabled={disabled} />
+							</Field>
+						</ListItem>
+						<ListItem>
 							<Field label={"Text:"}>
 								<Input type="text" disabled={disabled} />
 							</Field>
