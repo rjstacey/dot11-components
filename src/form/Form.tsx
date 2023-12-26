@@ -43,7 +43,7 @@ const List = ({
 	label,
 	children,
 	...props
-}: { label: string } & React.HTMLAttributes<HTMLDivElement>) => (
+}: { label?: string } & React.HTMLAttributes<HTMLDivElement>) => (
 	<div
 		className={styles["list"] + (className ? " " + className : "")}
 		{...props}

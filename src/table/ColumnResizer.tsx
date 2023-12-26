@@ -1,5 +1,6 @@
 import React from "react";
 import { DraggableCore, DraggableEventHandler } from "react-draggable";
+import styles from "./ColumnResizer.module.css";
 
 export type ColumnResizerProps = {
 	style?: React.CSSProperties;
@@ -13,7 +14,7 @@ export function ColumnResizer({ style, onDrag }: ColumnResizerProps) {
 	const [drag, setDrag] = React.useState(false);
 	if (drag) style = { ...style, backgroundColor: "rgba(0, 0, 0, 0.1)" };
 
-	const className = "column-resizer-handle";
+	const className = styles["column-resizer-handle"];
 
 	return (
 		<DraggableCore

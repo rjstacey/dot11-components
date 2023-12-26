@@ -1,18 +1,9 @@
 import React from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-	faPlusSquare,
-	faMinusSquare,
-} from "@fortawesome/free-regular-svg-icons";
-
 import "bootstrap-icons/font/bootstrap-icons.css";
 import styles from "./icons.module.css";
 
-export const IconCollapse = ({ isCollapsed, ...props }) => (
-	<FontAwesomeIcon
-		icon={isCollapsed ? faPlusSquare : faMinusSquare}
-		{...props}
-	/>
+export const IconCollapse = ({ isCollapsed, className, ...props }: { isCollapsed: boolean } & React.ComponentProps<"i">) => (
+	<i className={(isCollapsed? "bi-plus-square": "bi-dash-square") + (className? " " + className: "")} {...props} />
 );
 
 const SvgCaretRight = ({

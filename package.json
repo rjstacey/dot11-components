@@ -1,6 +1,6 @@
 {
   "name": "dot11-components",
-  "version": "1.9.63",
+  "version": "1.9.64",
   "description": "Components for 802 tools",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -27,10 +27,6 @@
   },
   "homepage": "https://github.com/rjstacey/dot11-components#readme",
   "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "^1.2.36",
-    "@fortawesome/free-regular-svg-icons": "^5.15.4",
-    "@fortawesome/free-solid-svg-icons": "^5.15.4",
-    "@fortawesome/react-fontawesome": "^0.1.19",
     "@types/lodash.debounce": "^4.0.7",
     "bootstrap-icons": "^1.11.1",
     "file-saver": "^2.0.5",
