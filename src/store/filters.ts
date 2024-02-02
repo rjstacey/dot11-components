@@ -19,13 +19,16 @@ export const CompOp = {
 	LT: "LT",
 	GTEQ: "GTEQ",
 	LTEQ: "LTEQ",
+	NOTEQ: "NOTEQ",
+	BLANK: "BLANK",
+	NOTBLANK: "NOTBLANK",
 	CONTAINS: "CONTAINS",
 	REGEX: "REGEX",
 	CLAUSE: "CLAUSE",
 	PAGE: "PAGE",
 } as const;
 type CompOpKey = keyof typeof CompOp;
-export type CompOpValue = typeof CompOp[CompOpKey];
+export type CompOpValue = (typeof CompOp)[CompOpKey];
 
 export const globalFilterKey = "__global__";
 
@@ -33,12 +36,6 @@ export type FilterComp = {
 	value: any;
 	operation: CompOpValue;
 };
-
-/**
- * Exact match;
- * Exact if truthy true, but any truthy false will match
- */
-const cmpEq = (d: any, val: any) => (d ? d === val : !val);
 
 /** Clause match */
 const cmpClause = (d: string, val: string) => {
@@ -60,23 +57,35 @@ const cmpPage = (d: number, val: string) => {
 	return val.search(/\d+\./) !== -1 ? d === n : Math.round(d) === n;
 };
 
-const cmpRegex = (d: string, regex: RegExp) => regex.test(d);
+const cmpContains = (d: any, val: string) => {
+	if (typeof d === "number") d = d.toString();
+	if (typeof d !== "string") return false;
+	return d.toLocaleLowerCase().includes(val.toLowerCase());
+};
 
-function cmpValue(d: any, comp: FilterComp) {
+type CmpFunc = (d: any) => boolean;
+
+export function getCompFunc(comp: FilterComp): CmpFunc {
 	const { value, operation } = comp;
 	let regex: RegExp | undefined, parts: string[];
 
 	switch (operation) {
 		case CompOp.EQ:
-			return cmpEq(d, value);
+			return (d: any) => d == value;	// eslint-disable-line
 		case CompOp.GT:
-			return d > value;
+			return (d: any) => d > value;
 		case CompOp.LT:
-			return d < value;
+			return (d: any) => d < value;
 		case CompOp.GTEQ:
-			return d >= value;
+			return (d: any) => d >= value;
 		case CompOp.LTEQ:
-			return d <= value;
+			return (d: any) => d <= value;
+		case CompOp.NOTEQ:
+			return (d: any) => d != value;	// eslint-disable-line
+		case CompOp.BLANK:
+			return (d: any) => d === null || d === "";
+		case CompOp.NOTBLANK:
+			return (d: any) => d !== null && d !== "";
 		case CompOp.REGEX:
 			parts = value.split("/");
 			if (value[0] === "/" && parts.length > 2) {
@@ -86,21 +95,16 @@ function cmpValue(d: any, comp: FilterComp) {
 					console.error(err);
 				}
 			}
-			return regex ? cmpRegex(d, regex) : false;
+			return regex ? regex.test : () => false;
 		case CompOp.CONTAINS:
-			try {
-				regex = new RegExp(value, "i");
-			} catch (err) {
-				console.error(err);
-			}
-			return regex ? cmpRegex(d, regex) : false;
+			return (d: any) => cmpContains(d, value);
 		case CompOp.CLAUSE:
-			return cmpClause(d, value);
+			return (d: any) => cmpClause(d, value);
 		case CompOp.PAGE:
-			return cmpPage(d, value);
+			return (d: any) => cmpPage(d, value);
 		default:
 			console.error(`Unexpected comp operation ${operation}`);
-			return false;
+			return () => false;
 	}
 }
 
@@ -121,28 +125,21 @@ export function filterData<T>(
 	// Apply the column filters
 	for (const dataKey of dataKeys) {
 		const comps = filters[dataKey].comps;
-		if (comps.length === 0) continue;
-		filteredIds = filteredIds.filter((id) =>
-			comps.reduce(
-				(result, comp) =>
-					result ||
-					!!cmpValue(getField(entities[id]!, dataKey), comp),
-				false
-			)
-		);
+		if (comps.length > 0) {
+			const cmpFuncs = comps.map(getCompFunc);
+			filteredIds = filteredIds.filter((id) => {
+				const d = getField(entities[id]!, dataKey);
+				return cmpFuncs.some(cmpFunc => cmpFunc(d));
+			});
+		}
 	}
 	// Apply the global filter
 	if (filters[globalFilterKey]) {
 		const comps = filters[globalFilterKey].comps;
-		if (comps.length) {
-			const comp = comps[0];
+		if (comps.length > 0) {
+			const cmpFunc = getCompFunc(comps[0]);
 			filteredIds = filteredIds.filter((id) =>
-				dataKeys.reduce(
-					(result, dataKey) =>
-						result ||
-						!!cmpValue(getField(entities[id]!, dataKey), comp),
-					false
-				)
+				dataKeys.some(dataKey => cmpFunc(getField(entities[id]!, dataKey)))
 			);
 		}
 	}

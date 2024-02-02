@@ -34,17 +34,15 @@ const defaultModalStyle: {
 	},
 };
 
-type AppModalProps = {
-	style?: React.CSSProperties;
-	overlayStyle?: React.CSSProperties;
-} & React.ComponentProps<typeof Modal>;
-
 function AppModal({
 	style,
 	overlayStyle,
-	children,
-	...otherProps
-}: AppModalProps) {
+	...props
+}: {
+	style?: React.CSSProperties;
+	overlayStyle?: React.CSSProperties;
+} & React.ComponentProps<typeof Modal>
+) {
 	const modalStyle = {
 		content: { ...defaultModalStyle.content, ...style },
 		overlay: { ...defaultModalStyle.overlay, ...overlayStyle },
@@ -52,11 +50,9 @@ function AppModal({
 	return (
 		<Modal
 			style={modalStyle}
-			appElement={document.querySelector("body") as HTMLElement}
-			{...otherProps}
-		>
-			{children}
-		</Modal>
+			appElement={document.querySelector("body")!}
+			{...props}
+		/>
 	);
 }
 

@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import ReactDOM from "react-dom";
 
 import { Icon } from "../icons";
@@ -243,7 +243,7 @@ export class Dropdown extends React.Component<DropdownProps, DropdownState> {
 			dropdownHeight = 300,
 		} = props;
 
-		let className = styles["dropdown-container"];
+		let className = styles["dropdown"];
 		if (props.dropdownClassName) className += ` ${props.dropdownClassName}`;
 
 		const dropdownEl = (
@@ -318,7 +318,7 @@ export class Dropdown extends React.Component<DropdownProps, DropdownState> {
 			keepOpen,
 		} = this.props;
 
-		let className = styles["select-container"];
+		let className = styles["select"];
 		if (props.className) className += ` ${props.className}`;
 
 		return (

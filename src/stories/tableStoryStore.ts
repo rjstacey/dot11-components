@@ -183,7 +183,7 @@ const genData = (n: number): DataEntity[] =>
 		name_id: Math.floor(Math.random() * MaxNames),
 		Date: randomDate(new Date(2010, 0, 1), new Date()).toISOString(),
 		Number: Math.round(Math.random() * 5),
-		Text: lorem.generateSentences(3),
+		Text: Math.random() > 0.9? "": lorem.generateSentences(3),
 		Status: randomStatus(),
 	}));
 

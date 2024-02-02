@@ -19,37 +19,48 @@ import {
 	FieldType,
 	CompOpValue,
 	FieldTypeValue,
+	getCompFunc,
 } from "../store/appTableData";
 
 import type { HeaderCellRendererProps } from "./AppTable";
 
 import styles from "./HeaderCell.module.css";
 
-const Item = ({isSelected, disabled, ...props}: {isSelected: boolean, disabled?: boolean} & React.HTMLAttributes<HTMLDivElement>) => <div className={"item" + (isSelected? " selected": "") + (disabled? " disabled": "")} {...props} />;
+const Item = ({
+	isSelected,
+	disabled,
+	...props
+}: {
+	isSelected: boolean;
+	disabled?: boolean;
+} & React.HTMLAttributes<HTMLDivElement>) => (
+	<div
+		className={
+			"item" +
+			(isSelected ? " selected" : "") +
+			(disabled ? " disabled" : "")
+		}
+		{...props}
+	/>
+);
 
 function IconSort({
 	style,
 	type,
-	direction
+	direction,
 }: {
 	style?: React.CSSProperties;
-	type: FieldTypeValue,
-	direction: SortDirectionValue
+	type: FieldTypeValue;
+	direction: SortDirectionValue;
 }) {
 	let className = "bi-sort";
-	if (type === FieldType.NUMERIC)
-		className += "-numeric";
-	if (type === FieldType.STRING)
-		className += "-alpha";
-	if (direction === SortDirection.ASC)
-		className += "-down";
-	else if (direction === SortDirection.DESC)
-		className += "-up";
-	else
-		return null;
-	if (!/numeric|alpha/.test(className))
-		className += "-alt";
-	return <i className={className} style={style} />
+	if (type === FieldType.NUMERIC) className += "-numeric";
+	if (type === FieldType.STRING) className += "-alpha";
+	if (direction === SortDirection.ASC) className += "-down";
+	else if (direction === SortDirection.DESC) className += "-up";
+	else return null;
+	if (!/numeric|alpha/.test(className)) className += "-alt";
+	return <i className={className} style={style} />;
 }
 
 function SortComponent({
@@ -104,6 +115,8 @@ function SortComponent({
 	);
 }
 
+type FilterItem = Option & FilterComp;
+
 function FilterComponent({
 	dataKey,
 	selectors,
@@ -122,8 +135,14 @@ function FilterComponent({
 
 	const dispatch = useDispatch();
 
-	const selectSort = React.useCallback((state: any) => selectors.selectSort(state, dataKey), [selectors, dataKey]);
-	const selectFilter = React.useCallback((state: any) => selectors.selectFilter(state, dataKey), [selectors, dataKey]);
+	const selectSort = React.useCallback(
+		(state: any) => selectors.selectSort(state, dataKey),
+		[selectors, dataKey]
+	);
+	const selectFilter = React.useCallback(
+		(state: any) => selectors.selectFilter(state, dataKey),
+		[selectors, dataKey]
+	);
 	const sort = useSelector(selectSort);
 	const filter = useSelector(selectFilter);
 	const selected = useSelector(selectors.selectSelected);
@@ -131,9 +150,18 @@ function FilterComponent({
 	const ids = useSelector(selectors.selectIds);
 	const getField = selectors.getField;
 
-	const values = React.useMemo(() => (
-		[...new Set(ids.map((id) => getField(entities[id]!, dataKey)))]
-	), [dataKey, ids, entities, getField]);
+	const values = React.useMemo(
+		() => [...new Set(ids.map((id) => getField(entities[id]!, dataKey)))],
+		[dataKey, ids, entities, getField]
+	);
+
+	const options: Option[] = React.useMemo(() => {
+		if (!filter) return [];
+
+		if (filter.options) return filter.options;
+
+		return values.map<Option>((v) => ({ value: v, label: dataRenderer?.(v) || v }));
+	}, [values, dataRenderer, filter]);
 
 	const filterSelected = React.useCallback(() => {
 		const comps: FilterComp[] = selected.map((id) => ({
@@ -149,116 +177,107 @@ function FilterComponent({
 		return filter.comps.map((comp) => comp.value).join() === list.join();
 	}, [filter, dataKey, selected, entities, getField]);
 
-	type FilterItem = Option & FilterComp;
-
-	const options: Option[] = React.useMemo(() => {
-		if (!filter) return [];
-
-		if (filter.options) return filter.options;
-
-		const renderLabel = (v: any) => {
-			let s = dataRenderer ? dataRenderer(v) : v;
-			if (s === "") s = "(Blank)";
-			return s;
-		};
-
-		return values.map<Option>((v) => ({ value: v, label: renderLabel(v) }));
-	}, [values, dataRenderer, filter]);
-
-	let searchItems: FilterItem[] = [];
-	if (filter) {
-		searchItems = filter.comps
-			.filter((comp) => comp.operation !== CompOp.EQ)
-			.map((comp) => {
-				let label = "Contains: ";
-				if (comp.operation === CompOp.REGEX) label = "Regex: ";
-				else if (
-					filter.type === FieldType.DATE &&
-					comp.operation === CompOp.GT
-				)
-					label = "After: ";
-				else if (
-					filter.type === FieldType.DATE &&
-					comp.operation === CompOp.LT
-				)
-					label = "Before: ";
-				else if (filter.type === FieldType.NUMERIC) {
-					label =
-						{
-							[CompOp.GTEQ]: "≥ ",
-							[CompOp.LTEQ]: "≤ ",
-							[CompOp.GT]: "> ",
-							[CompOp.LT]: "< ",
-						}[comp.operation] || "";
-				}
-				label += comp.value;
-				return {
-					label,
-					value: comp.value,
-					operation: comp.operation,
-				};
-			});
-	}
-
-	let exactItems: FilterItem[] = options.map((o) => ({
-		...o,
-		operation: CompOp.EQ,
-	}));
-
-	if (search) {
-		let regexp: RegExp | undefined;
-		const parts = search.split("/");
-		if (search[0] === "/" && parts.length > 2) {
-			// User is entering a regex in the form /pattern/flags.
-			// If the regex doesn't validate then ignore it
-			try {
-				regexp = new RegExp(parts[1], parts[2]);
-			} catch (err) {}
-			if (regexp) {
-				exactItems = exactItems.filter((item) =>
-					regexp!.test(item.label)
-				);
-				let item: FilterItem = {
-					label: "Regex: " + regexp.toString(),
-					value: search,
-					operation: CompOp.REGEX,
-				};
-				searchItems.unshift(item);
-			}
-		} else if (
-			filter.type === FieldType.NUMERIC &&
-			(search[0] === ">" || search[0] === "<")
-		) {
-			const m = /^(>=|<=|>|<)\s*(\d+)/.exec(search);
-			if (m) {
-				let operation: CompOpValue;
-				if (m[1] === ">=") operation = CompOp.GTEQ;
-				else if (m[1] === "<=") operation = CompOp.LTEQ;
-				else if (m[1] === ">") operation = CompOp.GT;
-				else operation = CompOp.LT;
-				let item: FilterItem = {
-					label: search,
-					value: m[2],
-					operation,
-				};
-				searchItems.unshift(item);
-			}
-		} else {
-			regexp = new RegExp(search, "i");
-			exactItems = exactItems.filter((item) => regexp!.test(item.label));
-			let item: FilterItem = {
-				label: "Contains: " + search,
-				value: search,
-				operation: CompOp.CONTAINS,
-			};
-			searchItems.unshift(item);
+	const items = React.useMemo(() => {
+		let searchItems: FilterItem[] = [];
+		if (filter) {
+			searchItems = filter.comps
+				.filter((comp) => comp.operation !== CompOp.EQ && comp.operation !== CompOp.BLANK && comp.operation !== CompOp.NOTBLANK)
+				.map((comp) => {
+					let label = "Contains: ";
+					if (comp.operation === CompOp.REGEX) {
+						label = "Regex: ";
+					} else if (
+						filter.type === FieldType.DATE &&
+						comp.operation === CompOp.GT
+					) {
+						label = "After: ";
+					} else if (
+						filter.type === FieldType.DATE &&
+						comp.operation === CompOp.LT
+					) {
+						label = "Before: ";
+					} else if (filter.type === FieldType.NUMERIC) {
+						label =
+							{
+								[CompOp.GTEQ]: "≥ ",
+								[CompOp.LTEQ]: "≤ ",
+								[CompOp.GT]: "> ",
+								[CompOp.LT]: "< ",
+							}[comp.operation] || "";
+					}
+					label += comp.value;
+					return {
+						label,
+						value: comp.value,
+						operation: comp.operation,
+					};
+				});
 		}
-	}
 
-	if (sort) exactItems = sortOptions(sort, exactItems);
+		let exactItems: FilterItem[] = options
+			.filter((o) => o.value !== null && o.value !== "")
+			.map((o) => ({
+				...o,
+				operation: CompOp.EQ,
+			}));
+		const hasBlank = options.findIndex(o => o.value === null || o.value === "") >= 0;
+		if (hasBlank) {
+			exactItems.unshift({value: null, label: "(Blank)", operation: CompOp.BLANK});
+			exactItems.unshift({value: null, label: "Not (Blank)", operation: CompOp.NOTBLANK});
+		}
 
-	// "Contains:" and "Regex:" items at the top of the list
-	const items = searchItems.concat(exactItems);
+		if (search) {
+			let item: FilterItem | undefined = undefined;
+			const parts = search.split("/");
+			if (search[0] === "/" && parts.length > 2) {
+				// User is entering a regex in the form /pattern/flags.
+				// If the regex doesn't validate then ignore it
+				try {
+					let regexp = new RegExp(parts[1], parts[2]);
+					item = {
+						label: "Regex: " + regexp.toString(),
+						value: search,
+						operation: CompOp.REGEX,
+					};
+				} catch (err) {}
+			} else if (
+				filter.type === FieldType.NUMERIC &&
+				(search[0] === ">" || search[0] === "<")
+			) {
+				const m = /^(>=|<=|>|<)\s*(\d+)/.exec(search);
+				if (m) {
+					let operation: CompOpValue;
+					if (m[1] === ">=") operation = CompOp.GTEQ;
+					else if (m[1] === "<=") operation = CompOp.LTEQ;
+					else if (m[1] === ">") operation = CompOp.GT;
+					else operation = CompOp.LT;
+					item = {
+						label: search,
+						value: m[2],
+						operation,
+					};
+				}
+			} else {
+				item = {
+					label: "Contains: " + search,
+					value: search,
+					operation: CompOp.CONTAINS,
+				};
+			}
+
+			if (item) {
+				searchItems.unshift(item);
+				const cmpFunc = getCompFunc(item);
+				exactItems = exactItems.filter((item) => cmpFunc(item.label));
+			}
+		}
+
+		if (sort) exactItems = sortOptions(sort, exactItems);
+
+		// "Contains:" and "Regex:" items at the top of the list
+		return searchItems.concat(exactItems);
+
+	}, [options, search, filter, sort]);
 
 	React.useEffect(() => {
 		if (search === "//" && inputRef.current)
@@ -266,13 +285,12 @@ function FilterComponent({
 	}, [search]);
 
 	const isItemSelected = React.useCallback(
-		(item: FilterItem) =>
-			filter !== undefined &&
-			filter.comps.find(
+		(item: FilterItem) => Boolean(
+			filter?.comps.find(
 				(comp) =>
 					comp.value === item.value &&
 					comp.operation === item.operation
-			) !== undefined,
+			)),
 		[filter]
 	);
 
@@ -384,7 +402,15 @@ function FilterComponent({
 	);
 }
 
-const Header = ({className, ...props}: React.HTMLAttributes<HTMLDivElement>) => <div className={styles["header"] + (className? " " + className: "")} {...props} />
+const Header = ({
+	className,
+	...props
+}: React.HTMLAttributes<HTMLDivElement>) => (
+	<div
+		className={styles["header"] + (className ? " " + className : "")}
+		{...props}
+	/>
+);
 
 type AppTableHeaderCellProps = HeaderCellRendererProps & {
 	className?: string;
@@ -403,7 +429,6 @@ function AppTableHeaderCell({
 	actions,
 	customFilterElement, // Custom filter element for dropdown
 }: AppTableHeaderCellProps) {
-
 	const sorts = useSelector(selectors.selectSorts);
 	const sort = sorts.settings[dataKey];
 	const isSorted = sorts.by.includes(dataKey);
@@ -426,7 +451,9 @@ function AppTableHeaderCell({
 		<Header onClick={state.isOpen ? methods.close : methods.open}>
 			<label>{label || dataKey}</label>
 			<div className="handle">
-				{isFiltered && <i className="bi-funnel" style={{ opacity: 0.2 }} />}
+				{isFiltered && (
+					<i className="bi-funnel" style={{ opacity: 0.2 }} />
+				)}
 				{isSorted && (
 					<IconSort
 						style={{ opacity: 0.2, paddingRight: 4 }}
@@ -434,7 +461,9 @@ function AppTableHeaderCell({
 						type={sort.type}
 					/>
 				)}
-				<i className={"bi-chevron" + (state.isOpen? "-up": "-down")} />
+				<i
+					className={"bi-chevron" + (state.isOpen ? "-up" : "-down")}
+				/>
 			</div>
 		</Header>
 	);

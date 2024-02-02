@@ -30,11 +30,11 @@ function Item({
 	const isActive = state.cursor === index;
 	const isNew = props.create && state.search && index === 0;
 
-	let cn = `dropdown-select-item`;
-	if (isNew) cn += ` dropdown-select-item-new`;
-	if (isActive) cn += ` dropdown-select-item-active`;
-	if (isSelected) cn += ` dropdown-select-item-selected`;
-	if (isDisabled) cn += ` dropdown-select-item-disabled`;
+	let cn = "item";
+	if (isNew) cn += " new";
+	if (isActive) cn += " active";
+	if (isSelected) cn += " selected";
+	if (isDisabled) cn += " disabled";
 	if (className) cn += " " + className;
 
 	const addItem = isDisabled

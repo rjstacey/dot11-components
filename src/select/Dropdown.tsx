@@ -17,11 +17,11 @@ function ItemWrapper({ style, item, index, setHeight, props, state, methods }) {
 	const isActive = state.cursor === index;
 	const isNew = props.create && state.search && index === 0;
 
-	let className = `dropdown-select-item`;
-	if (isNew) className += ` dropdown-select-item-new`;
-	if (isActive) className += ` dropdown-select-item-active`;
-	if (isSelected) className += ` dropdown-select-item-selected`;
-	if (isDisabled) className += ` dropdown-select-item-disabled`;
+	let className = "item";
+	if (isNew) className += " new";
+	if (isActive) className += " active";
+	if (isSelected) className += " selected";
+	if (isDisabled) className += " disabled";
 
 	const addItem = isNew
 		? () => methods.addSearchItem()

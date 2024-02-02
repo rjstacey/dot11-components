@@ -11,6 +11,7 @@ import {
 	AppTableDataActions,
 	CompOpValue,
 	CompOp,
+	FilterComp,
 } from "../store/appTableData";
 
 import styles from "./ShowFilters.module.css";
@@ -30,6 +31,16 @@ const ActiveFilter = ({
 		<ActionIcon style={{ minWidth: 16 }} type="clear" onClick={remove} />
 	</div>
 );
+
+function compPrefix(comp: FilterComp): string {
+	return {
+		[CompOp.GTEQ]: "≥ ",
+		[CompOp.LTEQ]: "≤ ",
+		[CompOp.GT]: "> ",
+		[CompOp.LT]: "< ",
+		[CompOp.NOTBLANK]: "Not "
+	}[comp.operation] || "";
+}
 
 function renderActiveFilters({
 	fields,
@@ -61,16 +72,10 @@ function renderActiveFilters({
 				</label>
 			);
 			for (let comp of comps) {
-				const o =
-					options && options.find((o) => o.value === comp.value);
-				let s = o
-					? o.label
-					: dataRenderer
-					? dataRenderer(comp.value)
-					: comp.value;
-				if (s === "") s = "(Blank)";
-				if (comp.operation === CompOp.GT) s = "> " + s;
-				if (comp.operation === CompOp.LT) s = "< " + s;
+				const o = options?.find((o) => o.value === comp.value);
+				let s = o?.label || dataRenderer?.(comp.value) || comp.value;
+				if (s === null || s === "") s = "(Blank)";
+				const label = compPrefix(comp) + s;
 				elements.push(
 					<ActiveFilter
 						key={`${dataKey}_${comp.value}`}
@@ -78,7 +83,7 @@ function renderActiveFilters({
 							removeFilter(dataKey, comp.value, comp.operation)
 						}
 					>
-						{s}
+						{label}
 					</ActiveFilter>
 				);
 			}

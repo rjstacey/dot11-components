@@ -1,8 +1,8 @@
 {
   "name": "dot11-components",
-  "version": "1.9.69",
+  "version": "1.9.72",
   "description": "Components for 802 tools",
-  "main": "dist/index.js",
+  "browser": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
     ".": "./dist/index.js",
@@ -27,7 +27,6 @@
   },
   "homepage": "https://github.com/rjstacey/dot11-components#readme",
   "dependencies": {
-    "@types/lodash.debounce": "^4.0.7",
     "bootstrap-icons": "^1.11.1",
     "file-saver": "^2.0.5",
     "lodash.debounce": "^4.0.8",
@@ -36,8 +35,7 @@
     "react-modal": "^3.16.1",
     "react-virtualized-auto-sizer": "^1.0.7",
     "react-window": "^1.8.10",
-    "reselect": "^4.1.2",
-    "typescript": "^4.9.5"
+    "reselect": "^4.1.2"
   },
   "peerDependencies": {
     "@reduxjs/toolkit": "^1.9.7",
@@ -62,6 +60,7 @@
     "@testing-library/react": "^11.2.7",
     "@testing-library/user-event": "^12.8.3",
     "@types/file-saver": "^2.0.5",
+    "@types/lodash.debounce": "^4.0.7",
     "@types/react-dom": "^18.2.4",
     "@types/react-modal": "^3.13.1",
     "@types/react-virtualized-auto-sizer": "^1.0.1",
@@ -80,6 +79,7 @@
     "rimraf": "^4.4.0",
     "storybook": "^7.4.6",
     "tsconfig-paths-webpack-plugin": "^4.0.0",
+    "typescript": "^4.9.5",
     "webpack": "^5.75.0"
   },
   "scripts": {

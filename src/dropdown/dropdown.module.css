@@ -1,4 +1,4 @@
-.select-container {
+.select {
 	position: relative;
 	display: flex;
 	flex-direction: column;
@@ -19,7 +19,7 @@
 	color: tomato;
 }
 
-.dropdown-container {
+.dropdown {
 	position: absolute;
 	padding: 10px;
 	display: flex;
@@ -32,6 +32,6 @@
 	box-sizing: border-box;
 }
 
-.dropdown-container:focus {
+.dropdown:focus {
 	outline: none;
 }

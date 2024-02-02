@@ -1,7 +1,7 @@
 import React from "react";
 import type { SelectItemRendererProps } from ".";
 
-const Clear = (props: React.ComponentProps<"div">) => <div {...props} />;
+const Clear = (props: React.ComponentProps<"div">) => <div className="multi-item-clear" {...props} />;
 
 const MultiSelectItem = ({
 	item,
@@ -18,14 +18,13 @@ const MultiSelectItem = ({
 		<div
 			role="listitem"
 			//direction={props.direction}
-			className="dropdown-select-multi-item"
+			className="multi-item"
 		>
 			<span className="dropdown-select-multi-item-label">
 				{item[props.labelField]}
 			</span>
 			{!props.readOnly && (
 				<Clear
-					className="dropdown-select-multi-item-remove"
 					onClick={remove}
 				/>
 			)}

@@ -28,18 +28,33 @@ const story = {
 		submit: { action: "submit" },
 		cancel: { action: "cancel" },
 		disabled: { type: "boolean" },
+		hasActionButtons: { type: "boolean" },
 	},
 	args: {
 		disabled: false,
 		busy: false,
 		title: "Some sort of title",
 		errorText: "Something wrong",
+		hasActionButtons: false
 	},
 };
 
-export const EmptyForm = (args: React.ComponentProps<typeof Form>) => (
-	<Form {...args} />
-);
+export const EmptyForm = ({hasActionButtons, ...args}: {hasActionButtons: boolean} & React.ComponentProps<typeof Form>) => {
+	let actionButtons: JSX.Element | undefined;
+	if (hasActionButtons) {
+		actionButtons = (
+			<div style={{display: 'flex'}}>
+				<i className="bi-pencil" />
+				<i className="bi-copy" />
+			</div>
+		)
+
+	}
+	console.log(actionButtons)
+	return (
+		<Form actionButtons={actionButtons} {...args} />
+	)
+};
 
 const options = [
 	{ label: "One", value: 1 },
@@ -48,16 +63,28 @@ const options = [
 
 export const TwoColsForm = ({
 	disabled,
+	hasActionButtons,
 	...otherArgs
-}: { disabled: boolean } & React.ComponentProps<typeof Form>) => {
+}: { disabled: boolean, hasActionButtons: boolean } & React.ComponentProps<typeof Form>) => {
 	const [dates, setDates] = React.useState<Array<string>>([]);
 	const [time, setTime] = React.useState("");
 	const [checkbox, setCheckbox] = React.useState(false);
 	const [select, setSelect] = React.useState<any[]>([]);
 	const [slider, setSlider] = React.useState(false);
 
+	let actionButtons: JSX.Element | undefined;
+	if (hasActionButtons) {
+		actionButtons = (
+			<div style={{display: 'flex'}}>
+				<i className="bi-add" />
+				<i className="bi-edit" />
+			</div>
+		)
+
+	}
 	return (
 		<Form
+			actionButtons={actionButtons}
 			{...otherArgs}
 		>
 			<Row>
@@ -120,6 +147,7 @@ export const TwoColsForm = ({
 							<Field label="Checkbox:">
 								<Checkbox
 									checked={checkbox}
+									disabled={disabled}
 									onChange={(e) =>
 										setCheckbox(e.target.checked)
 									}
@@ -131,6 +159,7 @@ export const TwoColsForm = ({
 								<SliderSwitch
 									value={slider}
 									onChange={setSlider}
+									disabled={disabled}
 								/>
 							</Field>
 						</ListItem>

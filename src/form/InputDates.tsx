@@ -5,7 +5,7 @@ import Calendar from "../calendar";
 import TextArea from "./TextArea";
 import { Dropdown } from "../dropdown";
 
-import styles from "./InputDates.module.css";
+import styles from "./form.module.css";
 
 const months = [
 	"Jan",
@@ -145,7 +145,7 @@ function InputDates({
 	return (
 		<div
 			className={
-				styles["input-dates"] + (className ? " " + className : "")
+				styles["input-dates"] + (disabled? " disabled": "") + (className ? " " + className : "")
 			}
 			style={style}
 		>

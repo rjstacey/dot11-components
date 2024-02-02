@@ -141,6 +141,7 @@
 	appearance: none;
 	border: 1px solid #adb8c0;
 }
+
 .sliderswitch:before {
 	position: absolute;
 	content: "";
@@ -162,14 +163,67 @@
 }
 
 .sliderswitch:focus,
-.sliderswitch:focus-visible {
-	outline: 0; /*1px solid #0074d9;*/
+.sliderswitch:not([disabled]):hover {
 	border-color: #0074d9;
+}
+
+.sliderswitch:focus {
+	outline: 0;
 	box-shadow: 0 0 0 3px rgb(0 116 217 / 20%);
 }
 
+.input-dates {
+	display: flex;
+	align-items: center;
+	border: solid 1px #ddd;
+	background-color: #fafafa;
+	box-sizing: border-box;
+	border-radius: 3px;
+	line-height: 25px;
+	padding: 0 5px;
+}
+
+.input-dates:global(.disabled) :global(.clear),
+.input-dates:global(.disabled) :global(.calendar) {
+	visibility: hidden;
+}
+
+.input-dates:not(:global(.disabled)):hover :global(.clear.active),
+.input-dates:focus-within :global(.clear.active) {
+	visibility: visible;
+}
+
+.input-dates:focus-within {
+	outline: 0;
+	box-shadow: 0 0 0 3px rgba(0, 116, 217, 0.2);
+}
+
+.input-dates:focus-within,
+.input-dates:not(:global(.disabled)):hover {
+	border-color: #0074d9;
+}
+
+.input-dates :global(.textarea) {
+	font-family: inherit;
+	border: none;
+	resize: none;
+}
+
+.input-dates :global(.textarea.invalid) {
+	color: red;
+}
+
+.input-dates :global .textarea:focus-visible {
+	outline: none;
+	box-shadow: none;
+}
+
+.input-dates :global .textarea::placeholder {
+	font-style: italic;
+}
+
 .form {
-    display: flex;
+	display: flex;
 	flex-direction: column;
 }
 
@@ -196,7 +250,7 @@
 }
 
 .field {
-    display: flex;
+	display: flex;
 	align-items: center;
 	flex: 1;
 	justify-content: space-between;
@@ -207,18 +261,18 @@
 }
 
 .field:global(.left) {
-    justify-content: left;
+	justify-content: left;
 	flex: unset;
 }
 
 .list {
-    display: flex;
+	display: flex;
 	flex-direction: column;
 	flex: 1;
 }
 
 .list-item {
-    display: flex;
+	display: flex;
 	align-items: center;
 	margin: 5px 0 0 10px;
 }
@@ -227,25 +281,39 @@
 	margin: 0 5px;
 }
 
+.form :global .top-row {
+	display: flex;
+	flex-wrap: nowrap;
+	justify-content: space-between;
+	margin: 5px 0 20px;
+}
+
+.form :global .top-row.title-only {
+	justify-content: space-around;
+}
+
+.form :global .top-row.buttons-only {
+	justify-content: flex-end;
+}
+
 .form :global .title {
-    margin: 5px 0 20px;
 	align-self: center;
 	font-weight: bold;
 	color: #0099cc;
 }
 
 .form :global .error-message {
-    color: red;
+	color: red;
 	font-weight: bold;
 	justify-content: center;
 }
 
 .form :global .button-row {
-    justify-content: space-around;
+	justify-content: space-around;
 }
 
 .form :global .button {
-    width: 100px;
+	width: 100px;
 	padding: 8px 16px;
 	text-transform: uppercase;
 	color: white;

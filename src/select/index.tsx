@@ -8,28 +8,28 @@ import Input from "./Input";
 
 import { debounce } from "../lib";
 
-import "./index.css";
+import styles from "./select.module.css";
 
 const Content = (props: React.ComponentProps<"div">) => (
-	<div className="dropdown-select-content" {...props} />
+	<div className="content" {...props} />
 );
 const Loading = (props: React.ComponentProps<"div">) => (
-	<div className="dropdown-select-loading" {...props} />
+	<div className="loading" {...props} />
 );
 const Clear = (props: React.ComponentProps<"div">) => (
-	<div className="dropdown-select-clear-all" {...props} />
+	<div className="clear" {...props} />
 );
 const Separator = (props: React.ComponentProps<"div">) => (
-	<div className="dropdown-select-separator" {...props} />
+	<div className="separator" {...props} />
 );
 /*const DropdownHandle = (props: React.ComponentProps<typeof Icon>) => (
 	<Icon className="dropdown-select-handle" type="handle" {...props} />
 );*/
 const Placeholder = (props: React.ComponentProps<"div">) => (
-	<div className="dropdown-select-placeholder" {...props} />
+	<div className="placeholder" {...props} />
 );
 const NoData = ({ props }) => (
-	<div className="dropdown-select-no-data">{props.noDataLabel}</div>
+	<div className="no-data">{props.noDataLabel}</div>
 );
 
 function defaultContentRenderer({
@@ -579,12 +579,8 @@ class SelectInternal extends React.Component<SelectInternalProps, SelectState> {
 			width: props.dropdownWidth || selectBounds.width,
 		};
 
-		let className = "dropdown-select-dropdown";
+		let className = styles["dropdown"];
 		if (props.dropdownClassName) className += ` ${props.dropdownClassName}`;
-
-		const dropdownRenderer =
-			props.dropdownRenderer ||
-			((props: SelectRendererProps) => <Dropdown {...props} />);
 
 		const dropdownEl = (
 			<div
@@ -593,7 +589,7 @@ class SelectInternal extends React.Component<SelectInternalProps, SelectState> {
 				style={style}
 				onClick={(e) => e.stopPropagation()} // prevent click propagating to select and closing the dropdown
 			>
-				{dropdownRenderer({ props, state, methods })}
+				{props.dropdownRenderer({ props, state, methods })}
 			</div>
 		);
 
@@ -636,9 +632,9 @@ class SelectInternal extends React.Component<SelectInternalProps, SelectState> {
 	render() {
 		const { props, state, methods } = this;
 
-		let cn = "dropdown-select";
-		if (props.disabled) cn += " dropdown-select-disabled";
-		if (props.readOnly) cn += " dropdown-select-read-only";
+		let cn = styles["select"];
+		if (props.disabled) cn += " disabled";
+		if (props.readOnly) cn += " read-only";
 		if (props.className) cn += ` ${props.className}`;
 
 		let content = props.contentRenderer({ props, state, methods });

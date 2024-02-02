@@ -12,7 +12,7 @@ function Input({ inputRef, props, state, methods }) {
 		<input
 			ref={inputRef}
 			tabIndex={-1}
-			className="dropdown-select-input"
+			className="input"
 			style={{ width: `${state.search.length + 1}ch` }}
 			value={state.search}
 			onChange={(event) => methods.setSearch(event.target.value)}
