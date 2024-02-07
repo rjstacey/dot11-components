@@ -58,9 +58,10 @@ const renderStatus = (v: number) => {
 type DataEntity = {
 	id: number;
 	name_id: number;
-	Date: string;
-	Number: number;
-	Text: string;
+	Date: string | null;
+	Number: number | null;
+	Text: string | null;
+	Clause: string | null;
 	Status: number;
 };
 
@@ -78,6 +79,10 @@ export const dataFields: Fields = {
 	Number: {
 		label: "Number",
 		type: FieldType.NUMERIC,
+	},
+	Clause: {
+		label: "Clause",
+		type: FieldType.CLAUSE,
 	},
 	Status: {
 		label: "Status",
@@ -162,29 +167,65 @@ export const dataSelectors = getAppTableDataSelectors(
 );
 export const dataActions = dataSlice.actions;
 
-const randomDate = (start: Date, end: Date) =>
-	new Date(
+function randomDate() {
+	if (Math.random() > 0.9)
+		return null;
+	const start = new Date(2010, 0, 1);
+	const end = new Date();
+	return new Date(
 		start.getTime() + Math.random() * (end.getTime() - start.getTime())
-	);
-
-const randomStatus = () =>
-	Math.round(Math.random() * (statusOptions.length - 1));
+	).toISOString();
+}
 
 const lorem = new LoremIpsum({
 	sentencesPerParagraph: { max: 8, min: 4 },
 	wordsPerSentence: { max: 16, min: 4 },
 });
 
+function randomText() {
+	const n = Math.random();
+	if (n > 0.95)
+		return null;
+	if (n > 0.9)
+		return "";
+	return lorem.generateSentences(3)
+}
+
+function randomNumber() {
+	if (Math.random() > 0.9)
+		return null;
+	return Math.round(Math.random() * 5);
+}
+
+const randomStatus = () =>
+	Math.round(Math.random() * (statusOptions.length - 1));
+
 const MaxNames = 4;
+
+function randomClause() {
+	const clauses = [
+		null,
+		"4",
+		"4.1",
+		"4.1.1",
+		"4.1.2",
+		"4.2",
+		"4.2.1",
+		"4.2.2",
+		"5"
+	];
+	return clauses[Math.round(Math.random() * (clauses.length - 1))];
+}
 
 const genData = (n: number): DataEntity[] =>
 	new Array(n).fill(true).map((r, i) => ({
 		id: i,
 		name_id: Math.floor(Math.random() * MaxNames),
-		Date: randomDate(new Date(2010, 0, 1), new Date()).toISOString(),
-		Number: Math.round(Math.random() * 5),
-		Text: Math.random() > 0.9? "": lorem.generateSentences(3),
+		Date: randomDate(),
+		Number: randomNumber(),
+		Text: randomText(),
 		Status: randomStatus(),
+		Clause: randomClause()
 	}));
 
 const genNames = (): NameEntity[] =>

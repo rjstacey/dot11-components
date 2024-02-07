@@ -71,14 +71,14 @@ function renderActiveFilters({
 					{label + ":"}
 				</label>
 			);
-			for (let comp of comps) {
+			comps.forEach((comp, i) => {
 				const o = options?.find((o) => o.value === comp.value);
 				let s = o?.label || dataRenderer?.(comp.value) || comp.value;
 				if (s === null || s === "") s = "(Blank)";
 				const label = compPrefix(comp) + s;
 				elements.push(
 					<ActiveFilter
-						key={`${dataKey}_${comp.value}`}
+						key={`${dataKey}_${i}`}
 						remove={() =>
 							removeFilter(dataKey, comp.value, comp.operation)
 						}
@@ -86,7 +86,7 @@ function renderActiveFilters({
 						{label}
 					</ActiveFilter>
 				);
-			}
+			})
 		}
 	}
 	if (elements.length > 2) {

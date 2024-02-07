@@ -3,7 +3,6 @@
       "target": "es2020",
       "module": "esnext",
       "moduleResolution": "node",
-      "lib": ["dom", "dom.iterable"],
       "strict": true,
       "esModuleInterop": true,
       "forceConsistentCasingInFileNames": true,

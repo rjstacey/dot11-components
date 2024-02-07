@@ -1,9 +1,8 @@
-import React from "react";
+import * as React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import type { EntityId } from "@reduxjs/toolkit";
 
 import { ActionIcon } from "../icons";
-import { parseNumber } from "../lib";
 import { TextArea } from "../form";
 import {
 	AppTableDataSelectors,
@@ -34,16 +33,16 @@ function IdList({
 	onChange: (ids: EntityId[]) => void;
 	focusOnMount?: boolean;
 }) {
-	const inputRef = React.useRef<HTMLTextAreaElement>(null);
+	const textAreaRef = React.useRef<HTMLTextAreaElement>(null);
 	const mirrorRef = React.useRef<HTMLDivElement>(null);
 	const [value, setValue] = React.useState(() => ids.join(", "));
-	const [mirrorHtml, setMirrorHtml] = React.useState(value);
+	const [mirrorHtml, setMirrorHtml] = React.useState(markInvalid(value));
 
 	React.useEffect(() => {
-		const inputEl = inputRef.current!;
+		const textAreaEl = textAreaRef.current!;
 		const mirrorEl = mirrorRef.current!;
 
-		const inputStyles = window.getComputedStyle(inputEl);
+		const inputStyles = window.getComputedStyle(textAreaEl);
 		[
 			"border",
 			"boxSizing",
@@ -64,35 +63,33 @@ function IdList({
 		});
 		mirrorEl.style.borderColor = "transparent";
 
-		const parseValue = (v: string) =>
-			v.endsWith("px") ? parseInt(v.slice(0, -2), 10) : 0;
-		const borderWidth = parseValue(inputStyles.borderWidth);
-
-		const ro = new ResizeObserver(() => {
-			mirrorEl.style.width = `${inputEl.clientWidth + 2 * borderWidth}px`;
-			mirrorEl.style.height = `${
-				inputEl.clientHeight + 2 * borderWidth
-			}px`;
+		textAreaEl.addEventListener("scroll", () => {
+			mirrorEl.scrollTop = textAreaEl.scrollTop;
+			mirrorEl.scrollLeft = textAreaEl.scrollLeft;
 		});
-		ro.observe(inputEl);
 
-		inputEl.addEventListener("scroll", () => {
-			mirrorEl.scrollTop = inputEl.scrollTop;
-			mirrorEl.scrollLeft = inputEl.scrollLeft;
-		});
 	}, []);
+
+	React.useLayoutEffect(() => {
+		const textAreaEl = textAreaRef.current!;
+		const mirrorEl = mirrorRef.current!;
+
+		const c = textAreaEl.getBoundingClientRect();
+		mirrorEl.style.width = `${c.width}px`;
+		mirrorEl.style.height = `${c.height}px`;
+	}, [value]);
 
 	React.useEffect(() => {
 		if (focusOnMount) {
-			const inputEl = inputRef.current!;
-			inputEl.focus();
-			inputEl.selectionStart = inputEl.value.length;
+			const textAreaEl = textAreaRef.current!;
+			textAreaEl.focus();
+			textAreaEl.selectionStart = textAreaEl.value.length;
 		}
 	}, [focusOnMount]);
 
 	function markInvalid(value: string) {
 		return value.replace(idRegex, (match) => {
-			const id = isNumber ? parseNumber(match) : match;
+			const id = isNumber ? Number(match) : match;
 			return isValid(id) ? match : `<mark>${match}</mark>`;
 		});
 	}
@@ -104,7 +101,7 @@ function IdList({
 		setMirrorHtml(markInvalid(value));
 
 		let updatedIds: EntityId[] = value.match(idRegex) || [];
-		if (isNumber) updatedIds = updatedIds.map(parseNumber);
+		if (isNumber) updatedIds = updatedIds.map(Number);
 		if (updatedIds.join() !== ids.join()) onChange(updatedIds);
 	}
 
@@ -119,14 +116,15 @@ function IdList({
 				dangerouslySetInnerHTML={{ __html: mirrorHtml }}
 			/>
 			<TextArea
-				ref={inputRef}
+				ref={textAreaRef}
 				className="input"
 				value={value}
-				onChange={(e) => handleChange(e.target.value)}
+				onChange={e => handleChange(e.target.value)}
 				placeholder="Enter list..."
+				rows={1}
 			/>
 			<ActionIcon
-				style={{visibility: value? 'visible': 'hidden'}}
+				style={{ visibility: value ? "visible" : "hidden" }}
 				className="clear"
 				type="clear"
 				onClick={() => handleChange("")}
@@ -154,16 +152,18 @@ export function IdFilter({
 	const entities = useSelector(selectors.selectEntities);
 	//const isNumber = ids.length > 0 && typeof getField(entities[ids[0]], dataKey) === "number";
 
-	const selectFilter = React.useCallback((state: any) => selectors.selectFilter(state, dataKey), [selectors, dataKey]);
+	const selectFilter = React.useCallback(
+		(state: any) => selectors.selectFilter(state, dataKey),
+		[selectors, dataKey]
+	);
 	const filter = useSelector(selectFilter);
 	const isNumber = filter.type === FieldType.NUMERIC;
 	const values = filter.comps.map((v) => v.value);
 
 	const isValid = React.useCallback(
 		(value: any) =>
-			ids.findIndex(
-				(id) => getField(entities[id], dataKey) === value
-			) !== -1,
+			ids.findIndex((id) => getField(entities[id], dataKey) === value) !==
+			-1,
 		[ids, entities, dataKey, getField]
 	);
 
@@ -208,13 +208,14 @@ export function IdSelector({
 	const entities = useSelector(selectors.selectEntities);
 	const selected = useSelector(selectors.selectSelected);
 	const values = selected.map((id) => getField(entities[id]!, dataKey));
-	const isNumber = ids.length > 0 && typeof getField(entities[ids[0]], dataKey) === "number";
+	const isNumber =
+		ids.length > 0 &&
+		typeof getField(entities[ids[0]], dataKey) === "number";
 
 	const isValid = React.useCallback(
 		(value: EntityId) =>
-			ids.findIndex(
-				(id) => getField(entities[id], dataKey) === value
-			) !== -1,
+			ids.findIndex((id) => getField(entities[id], dataKey) === value) !==
+			-1,
 		[ids, entities, dataKey, getField]
 	);
 

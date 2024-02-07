@@ -1,4 +1,3 @@
-import { parseNumber } from "../lib";
 import type { EntityId, PayloadAction } from "@reduxjs/toolkit";
 import {
 	FieldType,
@@ -28,15 +27,20 @@ export const SortDirection = {
 export type SortDirectionKey = keyof typeof SortDirection;
 export type SortDirectionValue = typeof SortDirection[SortDirectionKey];
 
-export const cmpNumeric = (a: string | number, b: string | number) => {
-	const A = parseNumber(a);
-	const B = parseNumber(b);
+export const cmpNumeric = (a: string | number | null, b: string | number | null) => {
+	if (a === null || b === null) {
+		if (a === null && b === null)
+			return 0;
+		return a === null? -1: 1;
+	}
+	const A = Number(a);
+	const B = Number(b);
 	return A - B;
 };
 
-export const cmpClause = (a: string, b: string) => {
-	const A = a.split(".");
-	const B = b.split(".");
+export const cmpClause = (a: string | null, b: string | null) => {
+	const A = a? a.split("."): [];
+	const B = b? b.split("."): [];
 	for (let i = 0; i < Math.min(A.length, B.length); i++) {
 		if (A[i] !== B[i]) {
 			// compare as a number if it looks like a number
@@ -54,14 +58,17 @@ export const cmpClause = (a: string, b: string) => {
 	return A < B ? -1 : A > B ? 1 : 0;
 };
 
-export const cmpString = (a: string, b: string) => {
+export const cmpString = (a: string | null, b: string | null) => {
 	const A = ("" + a).toLowerCase();
 	const B = ("" + b).toLowerCase();
 	return A < B ? -1 : A > B ? 1 : 0;
 };
 
-export const cmpDate = (a: string, b: string) =>
-	new Date(a).valueOf() - new Date(b).valueOf();
+export const cmpDate = (a: string | null, b: string | null) => {
+	const date_a = a? new Date(a): new Date(0);
+	const date_b = b? new Date(b): new Date(0);
+	return date_a.valueOf() - date_b.valueOf();
+}
 
 export const sortFunc = {
 	NUMERIC: cmpNumeric,

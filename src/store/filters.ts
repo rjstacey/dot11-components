@@ -3,7 +3,6 @@
 // Began life here https://github.com/koalyptus/TableFilter
 //
 import type { PayloadAction, EntityId } from "@reduxjs/toolkit";
-import { parseNumber } from "../lib";
 import {
 	Fields,
 	FieldProperties,
@@ -38,7 +37,7 @@ export type FilterComp = {
 };
 
 /** Clause match */
-const cmpClause = (d: string, val: string) => {
+const cmpClause = (d: string | null, val: string) => {
 	let len = val.length;
 	if (len && val[len - 1] === ".") len = len - 1;
 	return (
@@ -52,9 +51,9 @@ const cmpClause = (d: string, val: string) => {
  * floating point number => match page and line
  * Integer value => match page
  */
-const cmpPage = (d: number, val: string) => {
-	const n = parseNumber(val);
-	return val.search(/\d+\./) !== -1 ? d === n : Math.round(d) === n;
+const cmpPage = (d: number | null, val: string) => {
+	const n = Number(val);
+	return (val.search(/\d+\./) !== -1 || d === null)? d === n : Math.round(d) === n;
 };
 
 const cmpContains = (d: any, val: string) => {
@@ -91,9 +90,7 @@ export function getCompFunc(comp: FilterComp): CmpFunc {
 			if (value[0] === "/" && parts.length > 2) {
 				try {
 					regex = new RegExp(parts[1], parts[2]);
-				} catch (err) {
-					console.error(err);
-				}
+				} catch (err) {}
 			}
 			return regex ? regex.test : () => false;
 		case CompOp.CONTAINS:

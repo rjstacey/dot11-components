@@ -1,8 +1,8 @@
-import React from "react";
+import * as React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { FixedSizeList as List } from "react-window";
 
-import { Row, Field, Button, Checkbox, Input } from "../form";
+import { Row, Button, Checkbox, Input } from "../form";
 import { Dropdown, DropdownRendererProps } from "../dropdown";
 
 import { DateFilter } from "./DateFilter";
@@ -363,16 +363,14 @@ function FilterComponent({
 				/>
 			)}
 			<Row>
-				<Field label="">
-					<Input
-						type="search"
-						value={search}
-						ref={inputRef}
-						onChange={(e) => setSearch(e.target.value)}
-						onKeyDown={onInputKey}
-						placeholder="Search..."
-					/>
-				</Field>
+				<Input
+					type="search"
+					value={search}
+					ref={inputRef}
+					onChange={(e) => setSearch(e.target.value)}
+					onKeyDown={onInputKey}
+					placeholder="Search..."
+				/>
 			</Row>
 
 			<List
