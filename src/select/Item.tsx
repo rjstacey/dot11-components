@@ -1,20 +1,10 @@
-import React from "react";
+import * as React from "react";
 import type {
 	ItemType,
 	SelectInternalProps,
 	SelectState,
 	SelectMethods,
 } from "./index";
-
-type ItemProps = {
-	style?: React.CSSProperties;
-	className?: string;
-	index: number;
-	item: ItemType;
-	props: SelectInternalProps;
-	state: SelectState;
-	methods: SelectMethods;
-};
 
 function Item({
 	style,
@@ -24,7 +14,15 @@ function Item({
 	props,
 	state,
 	methods,
-}: ItemProps) {
+}: {
+	style?: React.CSSProperties;
+	className?: string;
+	index: number;
+	item: ItemType;
+	props: SelectInternalProps;
+	state: SelectState;
+	methods: SelectMethods;
+}) {
 	const isSelected = methods.isSelected(item);
 	const isDisabled = methods.isDisabled(item);
 	const isActive = state.cursor === index;

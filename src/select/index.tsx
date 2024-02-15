@@ -102,6 +102,10 @@ export type SelectRendererProps = {
 };
 export type SelectItemRendererProps = { item: ItemType } & SelectRendererProps;
 
+export type SelectInputRendererProps = {
+	inputRef: React.RefObject<HTMLInputElement>;
+} & SelectRendererProps;
+
 export type SelectInternalProps = SelectDefaultProps & {
 	values: ItemType[];
 	options: ItemType[];
@@ -167,11 +171,7 @@ type SelectDefaultProps = {
 	multiSelectItemRenderer: (
 		props: SelectItemRendererProps
 	) => React.ReactNode;
-	inputRenderer: (
-		props: {
-			inputRef: React.RefObject<HTMLInputElement>;
-		} & SelectRendererProps
-	) => React.ReactNode;
+	inputRenderer: (props: SelectInputRendererProps) => React.ReactNode;
 
 	/* Dropdown */
 	dropdownRenderer: (props: SelectRendererProps) => React.ReactNode;
@@ -587,7 +587,7 @@ class SelectInternal extends React.Component<SelectInternalProps, SelectState> {
 				ref={this.dropdownRef}
 				className={className}
 				style={style}
-				onClick={(e) => e.stopPropagation()} // prevent click propagating to select and closing the dropdown
+				onMouseDown={(e) => {e.stopPropagation()}} // prevent click propagating to select and closing the dropdown
 			>
 				{props.dropdownRenderer({ props, state, methods })}
 			</div>

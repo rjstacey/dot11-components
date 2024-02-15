@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import { Button } from "../form";
 
 import { Dropdown, DropdownRendererProps } from "../dropdown";

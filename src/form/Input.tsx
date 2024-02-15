@@ -5,7 +5,7 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
 	({ className, ...props }, ref) => (
 		<input
 			ref={ref}
-			className={styles["input"] + (className ? " " + className : "")}
+			className={styles.input + (className ? " " + className : "")}
 			{...props}
 		/>
 	)

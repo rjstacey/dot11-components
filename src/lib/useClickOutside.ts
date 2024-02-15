@@ -1,9 +1,11 @@
-import React from "react";
+import * as React from "react";
 
 export default function useClickOutside(
 	ref: React.RefObject<HTMLElement>,
-	handler: (event: MouseEvent) => void
+	callback: (event: MouseEvent) => void
 ) {
+	const callbackRef = React.useRef(callback);
+	callbackRef.current = callback;		// update on each render
 	React.useEffect(
 		() => {
 			const listener = (event: MouseEvent) => {
@@ -15,27 +17,15 @@ export default function useClickOutside(
 					return;
 				}
 
-				handler(event);
+				callbackRef.current(event);
 			};
 
-			//document.addEventListener('mousedown', listener);
-			//document.addEventListener('touchstart', listener);
 			document.addEventListener("click", listener);
-			//document.addEventListener('scroll', listener, true);
 
 			return () => {
-				//document.removeEventListener('mousedown', listener);
-				//document.removeEventListener('touchstart', listener);
 				document.removeEventListener("click", listener);
-				//document.removeEventListener('scroll', listener)
 			};
 		},
-		// Add ref and handler to effect dependencies
-		// It's worth noting that because passed in handler is a new ...
-		// ... function on every render that will cause this effect ...
-		// ... callback/cleanup to run every render. It's not a big deal ...
-		// ... but to optimize you can wrap handler in useCallback before ...
-		// ... passing it into this hook.
-		[ref, handler]
+		[ref]
 	);
 }

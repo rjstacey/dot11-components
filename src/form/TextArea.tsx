@@ -8,7 +8,7 @@ const TextArea = React.forwardRef<
 >(({ className, ...props }, ref) => (
 	<ExpandingTextArea
 		ref={ref}
-		className={styles["textarea"] + (className ? " " + className : "")}
+		className={styles.textarea + (className ? " " + className : "")}
 		{...props}
 	/>
 ));

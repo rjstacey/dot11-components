@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import React from "react";
+import * as React from "react";
 import { ActionIcon } from "../icons";
 import Calendar from "../calendar";
 import TextArea from "./TextArea";

@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import { VariableSizeList as List } from "react-window";
 import type { SelectRendererProps } from ".";
 

@@ -4,14 +4,14 @@ import styles from "./form.module.css";
 
 const Row = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
 	<div
-		className={styles["row"] + (className ? " " + className : "")}
+		className={styles.row + (className ? " " + className : "")}
 		{...props}
 	/>
 );
 
 const Col = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
 	<div
-		className={styles["col"] + (className ? " " + className : "")}
+		className={styles.col + (className ? " " + className : "")}
 		{...props}
 	/>
 );
@@ -23,7 +23,7 @@ const Field = ({
 	...props
 }: { label: string } & React.HTMLAttributes<HTMLDivElement>) => (
 	<div
-		className={styles["field"] + (className ? " " + className : "")}
+		className={styles.field + (className ? " " + className : "")}
 		{...props}
 	>
 		<label>{label}</label>
@@ -45,7 +45,7 @@ const List = ({
 	...props
 }: { label?: string } & React.HTMLAttributes<HTMLDivElement>) => (
 	<div
-		className={styles["list"] + (className ? " " + className : "")}
+		className={styles.list + (className ? " " + className : "")}
 		{...props}
 	>
 		{label && <label>{label}</label>}
@@ -107,7 +107,7 @@ function Form({
 	return (
 		<div
 			style={style}
-			className={styles["form"] + (className ? " " + className : "")}
+			className={styles.form + (className ? " " + className : "")}
 		>
 			{topRow}
 			{busy !== undefined && (

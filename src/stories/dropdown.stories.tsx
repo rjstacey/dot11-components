@@ -61,6 +61,18 @@ function Content({ close, state, setState }: ContentProps) {
 					dropdownHeight={150}
 				/>
 			</label>
+			<label>
+				Select (portal dropdown):
+				<Select
+					values={state.selectValues}
+					onChange={(selectValues: Option[]) =>
+						changeState({ selectValues })
+					}
+					options={options}
+					dropdownHeight={150}
+					portal={document.querySelector('body')}
+				/>
+			</label>
 			<button onClick={() => alert(JSON.stringify(state))}>OK</button>
 			<button onClick={close}>Cancel</button>
 		</form>

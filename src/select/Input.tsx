@@ -1,13 +1,6 @@
-import React from "react";
+import type { SelectInputRendererProps } from ".";
 
-export type InputProps = {
-	inputRef: any;
-	props: object;
-	state: object;
-	methods: object;
-};
-
-function Input({ inputRef, props, state, methods }) {
+function Input({ inputRef, props, state, methods }: SelectInputRendererProps) {
 	return (
 		<input
 			ref={inputRef}

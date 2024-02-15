@@ -54,8 +54,8 @@ export function recursivelyDiffObjects(l: any, r: any) {
  * @param modified - object with modified content
  * @returns changes - object with content from modified that differs from original
  */
-export function shallowDiff(original: object, modified: object): object {
-	const changes = {};
+export function shallowDiff<O1 extends O2, O2 extends object>(original: O1, modified: O2): Partial<O2> {
+	const changes: Partial<O2> = {};
 	for (let key in modified)
 		if (modified[key] !== original[key]) changes[key] = modified[key];
 	return changes;
@@ -138,7 +138,7 @@ export type Multiple<O extends object> = {
 };
 
 /**
- * Merge two objects and identify properties that have differences.
+ * Merge two objects and tag properties that have differences.
  *
  * @param fist object
  * @param second object
@@ -185,24 +185,35 @@ export function deepMergeTagMultiple(obj1: any, obj2: any) {
 	return result;
 }
 
-export function shallowEqual(obj1: object, obj2: object) {
-	console.log("in");
+export function shallowEqual(obj1: any, obj2: any): boolean {
 	if (obj1 === obj2) return true;
-	if (
-		obj1 === null ||
-		typeof obj1 !== "object" ||
-		obj2 === null ||
-		typeof obj2 !== "object"
-	)
-		return false;
-	const keys1 = Object.keys(obj1);
-	const keys2 = Object.keys(obj2);
-	if (keys1.length !== keys2.length) return false;
-	console.log(keys1);
-	for (const key of keys1) {
-		console.log(obj1[key], obj2[key]);
+	if (obj1 !== Object(obj1) || obj2 !== Object(obj2)) return obj1 === obj2;
+	if (Object.keys(obj1).length !== Object.keys(obj2).length) return false;
+	for (let key in obj1) {
+		if (!(key in obj2)) return false;
 		if (obj1[key] !== obj2[key]) return false;
 	}
-	console.log("out", obj1, obj2);
+	return true;
+}
+
+export function deepEqual(obj1: any, obj2: any): boolean {
+	if (obj1 === obj2) return true;
+
+	if (Array.isArray(obj1) && Array.isArray(obj2)) {
+		if (obj1.length !== obj2.length) return false;
+		for (let i = 0; i < obj1.length; i++) {
+			if (!deepEqual(obj1[i], obj2[i])) return false;
+		}
+		return true;
+	}
+
+	if (obj1 !== Object(obj1) || obj2 !== Object(obj2)) return obj1 === obj2;
+
+	if (Object.keys(obj1).length !== Object.keys(obj2).length) return false;
+	for (let key in obj1) {
+		if (!(key in obj2)) return false;
+		if (!deepEqual(obj1[key], obj2[key])) return false;
+	}
+
 	return true;
 }
