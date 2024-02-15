@@ -185,8 +185,8 @@ export class Dropdown extends React.Component<DropdownProps, DropdownState> {
 		if (state.isOpen) return;
 
 		window.addEventListener("resize", this.debouncedUpdateBounds);
-		document.addEventListener("scroll", this.debouncedOnScroll, true);
-		document.addEventListener("click", this.onOutsideClick, true);
+		document.addEventListener("scroll", this.debouncedOnScroll);
+		document.addEventListener("click", this.onOutsideClick);
 
 		this.updateBounds();
 
@@ -200,8 +200,8 @@ export class Dropdown extends React.Component<DropdownProps, DropdownState> {
 		if (!state.isOpen) return;
 
 		window.removeEventListener("resize", this.debouncedUpdateBounds);
-		document.removeEventListener("scroll", this.debouncedOnScroll, true);
-		document.removeEventListener("click", this.onOutsideClick, true);
+		document.removeEventListener("scroll", this.debouncedOnScroll);
+		document.removeEventListener("click", this.onOutsideClick);
 
 		this.setState({ isOpen: false });
 
