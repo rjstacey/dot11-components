@@ -1,6 +1,6 @@
 {
   "name": "dot11-components",
-  "version": "1.9.84",
+  "version": "1.9.85",
   "description": "Components for 802 tools",
   "browser": "dist/index.js",
   "types": "dist/index.d.ts",

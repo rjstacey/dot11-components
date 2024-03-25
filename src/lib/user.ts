@@ -5,10 +5,7 @@ export type User = {
 	SAPIN: number;
 	Name: string;
 	Email: string;
-	Status: string;
 	Token: any;
-	Access: number;
-	Permissions: string[];
 }
 
 export async function logout() {
