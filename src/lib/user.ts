@@ -1,18 +1,20 @@
+import { fetcher } from ".";
 
-const LOGIN_STORAGE = 'User';
+const LOGIN_STORAGE = "User";
 
 export type User = {
 	SAPIN: number;
 	Name: string;
 	Email: string;
 	Token: any;
+};
+
+export function setUser(user: User) {
+	localStorage.setItem(LOGIN_STORAGE, JSON.stringify(user));
 }
 
-export async function logout() {
+export function clearUser() {
 	localStorage.removeItem(LOGIN_STORAGE);
-	window.location.href = '/login?redirect=' + window.location.pathname;
-	await new Promise(r => setTimeout(r, 1000));
-	throw new Error('redirect to login failed');
 }
 
 export function getUser() {
@@ -20,10 +22,22 @@ export function getUser() {
 	let user: User | undefined;
 	try {
 		const s = localStorage.getItem(LOGIN_STORAGE);
-		if (s)
-			user = JSON.parse(s);
+		if (s) user = JSON.parse(s);
 	} catch (err) {
 		/* ignore errors */
 	}
-	return user? Promise.resolve(user): Promise.reject(new Error('User account info not available'));
+	return user
+		? Promise.resolve(user)
+		: Promise.reject(new Error("User account info not available"));
 }
+
+export async function loginAndReturn() {
+	try {
+		clearUser();
+	} catch (error) {}
+	window.location.href = "/login?redirect=" + window.location.pathname;
+	await new Promise((r) => setTimeout(r, 1000));
+	throw new Error("redirect to login failed");
+}
+
+//export const logout = loginAndReturn;

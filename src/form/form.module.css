@@ -76,7 +76,10 @@
 }
 .input[type="text"],
 .input[type="search"],
-.input[type="date"] {
+.input[type="date"],
+.input[type="email"],
+.input[type="number"],
+.input[type="tel"] {
 	border-radius: 3px;
 	line-height: 25px;
 	padding: 0 5px;

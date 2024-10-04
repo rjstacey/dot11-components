@@ -37,6 +37,7 @@ export type CellRendererProps<T = any> = {
 	rowIndex: number;
 	rowId: EntityId;
 	rowData: T;
+	prevRowId: EntityId | undefined;
 };
 
 export type ColumnProperties = {
@@ -78,9 +79,25 @@ export type AppTableProps = {
 
 const scrollbarSize = getScrollbarSize();
 
-const Table = ({className, ...props}: React.HTMLAttributes<HTMLDivElement>) => <div className={styles["table"] + (className? " " + className: "")} {...props} />
+const Table = ({
+	className,
+	...props
+}: React.HTMLAttributes<HTMLDivElement>) => (
+	<div
+		className={styles["table"] + (className ? " " + className : "")}
+		{...props}
+	/>
+);
 
-const Placeholder = ({className, ...props}: React.HTMLAttributes<HTMLDivElement>) => <div className={"placeholder" + (className? " " + className: "")} {...props} />
+const Placeholder = ({
+	className,
+	...props
+}: React.HTMLAttributes<HTMLDivElement>) => (
+	<div
+		className={"placeholder" + (className ? " " + className : "")}
+		{...props}
+	/>
+);
 
 /*
  * Key down handler for Grid (when focused)
@@ -430,7 +447,9 @@ function AppTableSized({
 					{AppTableRow}
 				</Grid>
 			) : (
-				<Placeholder style={{ height: height - props.headerHeight, width }}>
+				<Placeholder
+					style={{ height: height - props.headerHeight, width }}
+				>
 					{loading ? "Loading..." : "Empty"}
 				</Placeholder>
 			)}
@@ -462,11 +481,7 @@ export function AppTable(props: AppTableProps) {
 	return (
 		<AutoSizer disableWidth={props.fitWidth} style={{ maxWidth: "100vw" }}>
 			{({ height, width }) => (
-				<AppTableSized
-					height={height}
-					width={width}
-					{...props}
-				/>
+				<AppTableSized height={height} width={width} {...props} />
 			)}
 		</AutoSizer>
 	);

@@ -2,17 +2,23 @@ import * as React from "react";
 import { Button } from "../form";
 
 import { Dropdown, DropdownRendererProps } from "../dropdown";
-import { logout, User } from "../lib";
+import { loginAndReturn, User } from "../lib";
 
-const SignOutForm = ({
+function SignOutForm({
 	user,
 	children,
+	onSignout,
 	methods,
-}: { user: User; children?: React.ReactNode } & DropdownRendererProps) => {
-	const submit = () => {
-		logout();
+}: {
+	user: User;
+	children?: React.ReactNode;
+	onSignout?: () => void;
+} & DropdownRendererProps) {
+	function submit() {
+		if (onSignout) onSignout();
+		else loginAndReturn();
 		methods.close();
-	};
+	}
 
 	return (
 		<>
@@ -25,19 +31,26 @@ const SignOutForm = ({
 			</Button>
 		</>
 	);
-};
+}
 
 const Account = ({
 	user,
 	children,
+	onSignout,
 }: {
 	user: User;
 	children?: React.ReactNode;
+	onSignout?: () => void;
 }) => (
 	<Dropdown
 		label={`${user.Name} (${user.SAPIN})`}
 		dropdownRenderer={(args) => (
-			<SignOutForm user={user} children={children} {...args} />
+			<SignOutForm
+				user={user}
+				children={children}
+				onSignout={onSignout}
+				{...args}
+			/>
 		)}
 	/>
 );

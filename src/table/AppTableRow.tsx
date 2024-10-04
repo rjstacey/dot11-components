@@ -13,6 +13,7 @@ function PureTableRow({
 	rowIndex,
 	rowId,
 	rowData,
+	prevRowId,
 	isSelected,
 	isExpanded,
 	fixed,
@@ -31,6 +32,7 @@ function PureTableRow({
 	rowIndex: number;
 	rowId: EntityId;
 	rowData: { [k: string]: unknown };
+	prevRowId: EntityId | undefined;
 	isSelected: boolean;
 	isExpanded: boolean;
 	fixed: boolean;
@@ -75,7 +77,13 @@ function PureTableRow({
 		};
 		let content: React.ReactNode;
 		if (cellRenderer) {
-			content = cellRenderer({ rowIndex, rowId, rowData, dataKey });
+			content = cellRenderer({
+				rowIndex,
+				rowId,
+				prevRowId,
+				rowData,
+				dataKey,
+			});
 		} else {
 			content =
 				dataKey in rowData
@@ -84,11 +92,7 @@ function PureTableRow({
 			if (dataRenderer) content = dataRenderer(content);
 		}
 		return (
-			<div
-				key={dataKey}
-				className="data-cell"
-				style={style}
-			>
+			<div key={dataKey} className="data-cell" style={style}>
 				{content}
 			</div>
 		);
@@ -96,9 +100,7 @@ function PureTableRow({
 
 	// Add appropriate row classNames
 	let classNames = ["data-row"];
-	classNames.push(
-		rowIndex % 2 === 0 ? "data-row-even" : "data-row-odd"
-	);
+	classNames.push(rowIndex % 2 === 0 ? "data-row-even" : "data-row-odd");
 	if (isSelected) classNames.push("data-row-selected");
 
 	if (typeof style.top === "number" && typeof style.height === "number")
@@ -109,15 +111,8 @@ function PureTableRow({
 		}; // Adjust style for gutter
 
 	return (
-		<div
-			style={style}
-			className={classNames.join(" ")}
-			onClick={onClick}
-		>
-			<div
-				ref={rowRef}
-				className="data-row-inner"
-			>
+		<div style={style} className={classNames.join(" ")} onClick={onClick}>
+			<div ref={rowRef} className="data-row-inner">
 				{cells}
 			</div>
 		</div>
@@ -174,12 +169,13 @@ function AppTableRow({
 		...otherProps
 	} = data;
 
-	const { rowId, rowData } = React.useMemo(() => {
+	const { rowId, rowData, prevRowId } = React.useMemo(() => {
 		const rowId = ids[rowIndex];
+		const prevRowId = rowIndex > 0 ? ids[rowIndex - 1] : undefined;
 		const rowData = getRowData
 			? getRowData({ rowIndex, rowId, ids, entities })
 			: entities[rowId];
-		return { rowId, rowData };
+		return { rowId, rowData, prevRowId };
 	}, [getRowData, rowIndex, ids, entities]);
 
 	const isSelected = selected && selected.includes(rowId);
@@ -200,6 +196,7 @@ function AppTableRow({
 			style={style}
 			rowIndex={rowIndex}
 			rowId={rowId}
+			prevRowId={prevRowId}
 			rowData={rowData}
 			isSelected={isSelected}
 			isExpanded={isExpanded}
