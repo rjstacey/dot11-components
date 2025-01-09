@@ -37,7 +37,6 @@ const defaultModalStyle: {
 function AppModal({
 	style,
 	overlayStyle,
-	parentSelector = () => document.querySelector("#root") || document.body,
 	...props
 }: {
 	style?: React.CSSProperties;
@@ -50,7 +49,7 @@ function AppModal({
 	return (
 		<Modal
 			style={modalStyle}
-			appElement={document.querySelector("body")!}
+			appElement={document.getElementById("root")!}
 			{...props}
 		/>
 	);
