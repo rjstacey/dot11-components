@@ -1,21 +1,15 @@
 import { saveAs } from "file-saver";
 
-type Methods = {
-	[key: string]: Function;
-};
-
-const methods: Methods = {};
-
 type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 const apiBaseUrl = "";
 let jwtBearerToken: string;
 let onUnauthorized: () => void;
 
-methods.setAuth = (token: string, onUnauthorizedFunc: () => void) => {
+function setAuth(token: string, onUnauthorizedFunc: () => void) {
 	jwtBearerToken = token;
 	onUnauthorized = onUnauthorizedFunc;
-};
+}
 
 export class NetworkError extends Error {
 	public status: number;
@@ -39,7 +33,7 @@ function tryParseJSON(json: string | undefined) {
 	}
 }
 
-function getResponseBody(res: Response): Promise<any> {
+async function getResponseBody(res: Response): Promise<any> {
 	const contentType = res.headers.get("content-type");
 	if (contentType && contentType.indexOf("json") >= 0)
 		return res.text().then(tryParseJSON);
@@ -66,11 +60,11 @@ function urlParams(params: Record<string, any>) {
 	return p.toString();
 }
 
-methods.fetch = async (
+async function myFetch(
 	method: Method,
 	url: string,
-	params: Record<string, any>
-) => {
+	params?: Record<string, any>
+) {
 	url = apiBaseUrl + url;
 
 	const options: RequestInit = { method };
@@ -91,13 +85,10 @@ methods.fetch = async (
 	const res = await fetch(url, options);
 
 	return res.ok ? getResponseBody(res) : errHandler(res);
-};
+}
 
-["GET", "POST", "PUT", "DELETE", "PATCH"].forEach(
-	(m) => (methods[m.toLowerCase()] = (...args) => methods.fetch(m, ...args))
-);
-
-methods.getFile = async (url: string, params: Record<string, any>) => {
+/** GET that returns a file */
+async function getFile(url: string, params?: Record<string, any>) {
 	url = apiBaseUrl + url;
 	if (params) url += "?" + urlParams(params);
 
@@ -119,13 +110,76 @@ methods.getFile = async (url: string, params: Record<string, any>) => {
 	}
 
 	return errHandler(res);
-};
+}
 
-methods.postForFile = async (url: string, params: any, file?: File) => {
+/** PATCH that sends a file and returns a modified version of the file */
+async function patchFile(
+	url: string,
+	file?: File,
+	params?: Record<string, any>
+) {
 	url = apiBaseUrl + url;
 
 	const formData = new FormData();
-	formData.append("params", JSON.stringify(params));
+	if (params) formData.append("params", JSON.stringify(params));
+	if (file) formData.append("file", file);
+
+	const options: RequestInit = {
+		method: "PATCH",
+		body: formData,
+	};
+	if (jwtBearerToken)
+		options.headers = { Authorization: `Bearer ${jwtBearerToken}` };
+
+	const res = await fetch(url, options);
+
+	if (res.ok) {
+		let filename = "download";
+		const d = res.headers.get("content-disposition");
+		if (d) {
+			const m = d.match(/filename="(.*)"/i);
+			if (m) filename = m[1];
+		}
+		saveAs(await res.blob(), filename);
+		return filename;
+	}
+
+	return errHandler(res);
+}
+
+/** POST that sends a file and returns JSON */
+async function postFile(
+	url: string,
+	file?: File,
+	params?: Record<string, any>
+) {
+	url = apiBaseUrl + url;
+
+	const formData = new FormData();
+	if (params) formData.append("params", JSON.stringify(params));
+	if (file) formData.append("file", file);
+
+	const options: RequestInit = {
+		method: "POST",
+		body: formData,
+	};
+	if (jwtBearerToken)
+		options.headers = { Authorization: `Bearer ${jwtBearerToken}` };
+
+	const res = await fetch(url, options);
+
+	return res.ok ? res.json() : errHandler(res);
+}
+
+async function postForFile(
+	url: string,
+	params?: Record<string, any>,
+	file?: File
+) {
+	url = apiBaseUrl + url;
+
+	const formData = new FormData();
+	if (params) formData.append("params", JSON.stringify(params));
 	if (file) formData.append("file", file);
 
 	const options: RequestInit = {
@@ -149,10 +203,10 @@ methods.postForFile = async (url: string, params: any, file?: File) => {
 	}
 
 	return errHandler(res);
-};
+}
 
 /** Deprecated */
-methods.postMultipart = async (url: string, params: Record<string, any>) => {
+async function postMultipart(url: string, params: Record<string, any>) {
 	url = apiBaseUrl + url;
 
 	let formData = new FormData();
@@ -170,13 +224,17 @@ methods.postMultipart = async (url: string, params: Record<string, any>) => {
 	const res = await fetch(url, options);
 
 	return res.ok ? res.json() : errHandler(res);
-};
+}
 
-methods.postWithFile = async (url: string, params: any, file?: File) => {
+async function postWithFile(
+	url: string,
+	params?: Record<string, any>,
+	file?: File
+) {
 	url = apiBaseUrl + url;
 
 	const formData = new FormData();
-	formData.append("params", JSON.stringify(params));
+	if (params) formData.append("params", JSON.stringify(params));
 	if (file) formData.append("file", file);
 
 	const options: RequestInit = {
@@ -189,6 +247,32 @@ methods.postWithFile = async (url: string, params: any, file?: File) => {
 	const res = await fetch(url, options);
 
 	return res.ok ? res.json() : errHandler(res);
+}
+
+const methods = {
+	setAuth,
+	fetch: myFetch,
+	get(url: string, params?: Record<string, any>) {
+		return myFetch("GET", url, params);
+	},
+	post(url: string, params?: Record<string, any>) {
+		return myFetch("POST", url, params);
+	},
+	patch(url: string, params?: Record<string, any>) {
+		return myFetch("PATCH", url, params);
+	},
+	put(url: string, params?: Record<string, any>) {
+		return myFetch("PUT", url, params);
+	},
+	delete(url: string, params?: Record<string, any>) {
+		return myFetch("DELETE", url, params);
+	},
+	getFile,
+	patchFile,
+	postFile,
+	postForFile,
+	postWithFile,
+	postMultipart,
 };
 
 export default methods;

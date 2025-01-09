@@ -12,10 +12,7 @@ const defaultUser: User = {
 	Name: "Fred Flintstone",
 	SAPIN: 112233,
 	Email: "fred.flintstone@pleistocene.info",
-	Access: 0,
-    Status: "Non-Voter",
-    Permissions: [],
-    Token: ""
+	Token: "",
 };
 
 export const Signout = (args) => (

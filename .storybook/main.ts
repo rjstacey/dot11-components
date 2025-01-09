@@ -6,7 +6,12 @@ module.exports = {
     options: {}
   },
 
-  addons: ["@storybook/addon-links", "@storybook/addon-essentials", "@storybook/preset-create-react-app"],
+  addons: [
+    "@storybook/addon-links",
+    "@storybook/addon-essentials",
+    "@storybook/preset-create-react-app",
+    "@chromatic-com/storybook"
+  ],
 
   webpackFinal: async (config, { configType }) => {
     // Make whatever fine-grained changes you need
@@ -15,7 +20,9 @@ module.exports = {
     return config;
   },
 
-  docs: {
-    autodocs: true
+  docs: {},
+
+  typescript: {
+    reactDocgen: "react-docgen-typescript"
   }
 };
