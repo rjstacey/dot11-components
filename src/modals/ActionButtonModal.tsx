@@ -5,14 +5,14 @@ import { Icon } from "../icons";
 import { Button } from "../form";
 
 interface ActionButtonModalProps
-	extends React.ComponentProps<typeof AppModal> {
+	extends Omit<React.ComponentProps<typeof AppModal>, "isOpen"> {
 	name?: string;
 	label?: string;
 	title?: string;
 	disabled?: boolean;
 	onRequestOpen?: () => void;
 	onRequestClose?: () => void;
-	//children?: React.ReactNode;
+	children?: React.ReactNode;
 }
 
 export type ChildProps = {

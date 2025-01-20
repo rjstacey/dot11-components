@@ -1,7 +1,8 @@
 {
 	"name": "dot11-components",
-	"version": "1.9.97",
+	"version": "1.9.98",
 	"description": "Components for 802 tools",
+	"type": "module",
 	"browser": "dist/index.js",
 	"types": "dist/index.d.ts",
 	"exports": {
@@ -15,6 +16,14 @@
 		"package.json",
 		"README.md"
 	],
+	"scripts": {
+		"start": "storybook dev -p 6006",
+		"clean": "rimraf dist/*",
+		"copy-files": "copyfiles -u 1 src/**/*.css dist/",
+		"build": "npm run clean && tsc -p ./tsconfig.json && npm run copy-files",
+		"storybook": "storybook dev -p 6006 -s public",
+		"build-storybook": "storybook build -s public"
+	},
 	"private": false,
 	"repository": {
 		"type": "git",
@@ -33,14 +42,14 @@
 		"prop-types": "^15.8.1",
 		"react-draggable": "^4.4.6",
 		"react-expanding-textarea": "^2.3.2",
-		"react-modal": "^3.16.1",
+		"react-modal": "^3.16.3",
 		"react-virtualized-auto-sizer": "^1.0.7",
 		"react-window": "^1.8.10",
 		"reselect": "^4.1.2"
 	},
 	"peerDependencies": {
 		"@reduxjs/toolkit": "^1.9.7",
-		"react": "^18.2.0",
+		"react": "^18.3.1",
 		"react-redux": "^8.0.1"
 	},
 	"devDependencies": {
@@ -58,7 +67,6 @@
 		"@testing-library/user-event": "^12.8.3",
 		"@types/file-saver": "^2.0.5",
 		"@types/lodash.debounce": "^4.0.7",
-		"@types/react-dom": "^18.2.4",
 		"@types/react-modal": "^3.13.1",
 		"@types/react-virtualized-auto-sizer": "^1.0.1",
 		"@types/react-window": "^1.8.5",
@@ -73,16 +81,7 @@
 		"redux-logger": "^3.0.6",
 		"rimraf": "^4.4.0",
 		"storybook": "^8.4.7",
-		"tsconfig-paths-webpack-plugin": "^4.0.0",
-		"typescript": "^4.9.5"
-	},
-	"scripts": {
-		"start": "storybook dev -p 6006",
-		"clean": "rimraf dist/*",
-		"copy-files": "copyfiles -u 1 src/**/*.css dist/",
-		"build": "npm run clean && tsc -p ./tsconfig.json && npm run copy-files",
-		"storybook": "storybook dev -p 6006 -s public",
-		"build-storybook": "storybook build -s public"
+		"tsconfig-paths-webpack-plugin": "^4.0.0"
 	},
 	"eslintConfig": {
 		"extends": [
@@ -98,18 +97,6 @@
 					"import/no-anonymous-default-export": "off"
 				}
 			}
-		]
-	},
-	"browserslist": {
-		"production": [
-			">0.2%",
-			"not dead",
-			"not op_mini all"
-		],
-		"development": [
-			"last 1 chrome version",
-			"last 1 firefox version",
-			"last 1 safari version"
 		]
 	}
 }

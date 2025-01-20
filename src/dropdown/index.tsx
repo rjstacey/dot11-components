@@ -72,7 +72,11 @@ function defaultSelectRenderer({
 			}
 		>
 			{label && <label>{label}</label>}
-			{handle && <i className={"bi-chevron" + (state.isOpen? "-up": "-down")} />}
+			{handle && (
+				<i
+					className={"bi-chevron" + (state.isOpen ? "-up" : "-down")}
+				/>
+			)}
 		</div>
 	);
 }
@@ -359,7 +363,7 @@ export function ActionButtonDropdown({
 	return (
 		<Dropdown
 			handle={false}
-			selectRenderer={({ props, state, methods }: DropdownRendererProps) => (
+			selectRenderer={({ state, methods }) => (
 				<Button
 					title={title}
 					disabled={disabled}

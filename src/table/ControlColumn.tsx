@@ -14,11 +14,21 @@ import type {
 
 import styles from "./ControlColumn.module.css";
 
-const Container = ({className, ...props}: React.HTMLAttributes<HTMLDivElement>) => <div className={styles.container} {...props} />
-const Selector = ({className, ...props}: React.HTMLAttributes<HTMLDivElement>) => <div className={styles.selector} {...props} />
+const Container = ({
+	className,
+	...props
+}: React.HTMLAttributes<HTMLDivElement>) => (
+	<div className={styles.container} {...props} />
+);
+const Selector = ({
+	className,
+	...props
+}: React.HTMLAttributes<HTMLDivElement>) => (
+	<div className={styles.selector} {...props} />
+);
 
 type ControlHeaderCellProps = HeaderCellRendererProps & {
-	customSelectorElement?: React.ReactNode;
+	customSelectorElement?: JSX.Element; //React.ReactNode;
 	showExpanded?: boolean;
 };
 
@@ -89,7 +99,9 @@ function ControlHeaderCell({
 			</Selector>
 			{showExpanded && (
 				<ActionIcon
-					type={allExpanded? "double-caret-down": "double-caret-right"}
+					type={
+						allExpanded ? "double-caret-down" : "double-caret-right"
+					}
 					title="Expand all"
 					onClick={toggleExpand}
 				/>
@@ -135,7 +147,7 @@ function ControlCell({
 			/>
 			{showExpanded && (
 				<ActionIcon
-					type={isExpanded? "caret-down": "caret-right"} //"expander"
+					type={isExpanded ? "caret-down" : "caret-right"} //"expander"
 					title="Expand row"
 					//open={expanded.includes(rowId)}
 					onClick={toggleExpand}
